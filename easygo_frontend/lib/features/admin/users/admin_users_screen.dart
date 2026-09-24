@@ -15,9 +15,27 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   String _query = '';
 
   final List<Map<String, String>> _users = const [
-    {'name': 'Marie N.', 'email': 'marie@example.com', 'status': 'Active', 'trips': '8', 'parcels': '3'},
-    {'name': 'Paul T.', 'email': 'paul@example.com', 'status': 'Active', 'trips': '5', 'parcels': '1'},
-    {'name': 'Kevin A.', 'email': 'kevin@example.com', 'status': 'Suspended', 'trips': '2', 'parcels': '0'},
+    {
+      'name': 'Marie N.',
+      'email': 'marie@example.com',
+      'status': 'Active',
+      'trips': '8',
+      'parcels': '3',
+    },
+    {
+      'name': 'Paul T.',
+      'email': 'paul@example.com',
+      'status': 'Active',
+      'trips': '5',
+      'parcels': '1',
+    },
+    {
+      'name': 'Kevin A.',
+      'email': 'kevin@example.com',
+      'status': 'Suspended',
+      'trips': '2',
+      'parcels': '0',
+    },
   ];
 
   @override

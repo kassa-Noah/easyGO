@@ -5,8 +5,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import 'parcel_confirmation_screen.dart';
 
-class ParcelPaymentScreen
-    extends StatefulWidget {
+class ParcelPaymentScreen extends StatefulWidget {
   final String recipientName;
   final String recipientPhone;
   final String departureCity;
@@ -30,19 +29,13 @@ class ParcelPaymentScreen
   });
 
   @override
-  State<ParcelPaymentScreen>
-      createState() =>
-          _ParcelPaymentScreenState();
+  State<ParcelPaymentScreen> createState() => _ParcelPaymentScreenState();
 }
 
-class _ParcelPaymentScreenState
-    extends State<ParcelPaymentScreen> {
-  final GlobalKey<FormState> _formKey =
-      GlobalKey<FormState>();
+class _ParcelPaymentScreenState extends State<ParcelPaymentScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController
-      _phoneController =
-      TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   String? _selectedMethod;
 
@@ -54,10 +47,7 @@ class _ParcelPaymentScreenState
    * These values remain unchanged regardless
    * of the selected application language.
    */
-  final List<String> _paymentMethods = [
-    'MTN Mobile Money',
-    'Orange Money',
-  ];
+  final List<String> _paymentMethods = ['MTN Mobile Money', 'Orange Money'];
 
   @override
   void dispose() {
@@ -67,20 +57,13 @@ class _ParcelPaymentScreenState
   }
 
   String _formatPrice(int value) {
-    return value
-        .toString()
-        .replaceAllMapped(
-      RegExp(
-        r'(?=(\d{3})+(?!\d))',
-      ),
+    return value.toString().replaceAllMapped(
+      RegExp(r'(?=(\d{3})+(?!\d))'),
       (match) => ',',
     );
   }
 
-  String _paymentMethodLabel(
-    AppLocalizations l10n,
-    String method,
-  ) {
+  String _paymentMethodLabel(AppLocalizations l10n, String method) {
     switch (method) {
       case 'MTN Mobile Money':
         return l10n.mtnMobileMoney;
@@ -94,24 +77,17 @@ class _ParcelPaymentScreenState
   }
 
   Future<void> _processPayment() async {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
     if (_selectedMethod == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.selectPaymentMethodError,
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.selectPaymentMethodError)));
 
       return;
     }
 
-    if (!_formKey.currentState!
-        .validate()) {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -138,11 +114,7 @@ class _ParcelPaymentScreenState
      * Flutter must not independently
      * authorize a real payment.
      */
-    await Future.delayed(
-      const Duration(
-        seconds: 2,
-      ),
-    );
+    await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) {
       return;
@@ -151,26 +123,17 @@ class _ParcelPaymentScreenState
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            ParcelConfirmationScreen(
-          recipientName:
-              widget.recipientName,
-          recipientPhone:
-              widget.recipientPhone,
-          departureCity:
-              widget.departureCity,
-          destinationCity:
-              widget.destinationCity,
-          description:
-              widget.description,
+        builder: (context) => ParcelConfirmationScreen(
+          recipientName: widget.recipientName,
+          recipientPhone: widget.recipientPhone,
+          departureCity: widget.departureCity,
+          destinationCity: widget.destinationCity,
+          description: widget.description,
           weight: widget.weight,
-          agencyName:
-              widget.agencyName,
+          agencyName: widget.agencyName,
           amount: widget.amount,
-          paymentMethod:
-              _selectedMethod!,
-          trackingReference:
-              'PAR-DEMO-001',
+          paymentMethod: _selectedMethod!,
+          trackingReference: 'PAR-DEMO-001',
         ),
       ),
     );
@@ -178,29 +141,20 @@ class _ParcelPaymentScreenState
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.parcelPayment,
-        ),
-      ),
+      appBar: AppBar(title: Text(l10n.parcelPayment)),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF09111F),
                     Color(0xFF0D1B2A),
@@ -208,10 +162,8 @@ class _ParcelPaymentScreenState
                   ],
                 )
               : const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFFF2F8FF),
                     Color(0xFFF7FBFF),
@@ -228,156 +180,77 @@ class _ParcelPaymentScreenState
                 Expanded(
                   child: ListView(
                     keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior
-                            .onDrag,
-                    padding:
-                        const EdgeInsets
-                            .all(20),
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    padding: const EdgeInsets.all(20),
                     children: [
                       Center(
-                        child:
-                            ConstrainedBox(
-                          constraints:
-                              const BoxConstraints(
-                            maxWidth:
-                                760,
-                          ),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 760),
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .stretch,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              _buildAmountCard(
-                                context,
-                                l10n,
-                              ),
+                              _buildAmountCard(context, l10n),
 
-                              const SizedBox(
-                                height:
-                                    24,
-                              ),
+                              const SizedBox(height: 24),
 
                               Text(
-                                l10n
-                                    .paymentMethod,
-                                style:
-                                    Theme.of(
-                                  context,
-                                )
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontWeight:
-                                              FontWeight.bold,
-                                        ),
+                                l10n.paymentMethod,
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
 
-                              const SizedBox(
-                                height:
-                                    15,
-                              ),
+                              const SizedBox(height: 15),
 
-                              ..._paymentMethods
-                                  .map(
-                                (method) =>
-                                    Padding(
-                                  padding:
-                                      const EdgeInsets
-                                          .only(
-                                    bottom:
-                                        12,
-                                  ),
-                                  child:
-                                      _PaymentMethodCard(
-                                    title:
-                                        _paymentMethodLabel(
-                                      l10n,
-                                      method,
-                                    ),
-                                    selected:
-                                        _selectedMethod ==
-                                            method,
-                                    onTap:
-                                        _isProcessing
-                                            ? null
-                                            : () {
-                                                setState(
-                                                  () {
-                                                    _selectedMethod =
-                                                        method;
-                                                  },
-                                                );
-                                              },
+                              ..._paymentMethods.map(
+                                (method) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: _PaymentMethodCard(
+                                    title: _paymentMethodLabel(l10n, method),
+                                    selected: _selectedMethod == method,
+                                    onTap: _isProcessing
+                                        ? null
+                                        : () {
+                                            setState(() {
+                                              _selectedMethod = method;
+                                            });
+                                          },
                                   ),
                                 ),
                               ),
 
-                              const SizedBox(
-                                height:
-                                    8,
-                              ),
+                              const SizedBox(height: 8),
 
                               GlassContainer(
-                                padding:
-                                    const EdgeInsets
-                                        .all(
-                                  16,
-                                ),
-                                borderRadius:
-                                    16,
-                                child:
-                                    TextFormField(
-                                  controller:
-                                      _phoneController,
-                                  enabled:
-                                      !_isProcessing,
-                                  keyboardType:
-                                      TextInputType
-                                          .phone,
-                                  textInputAction:
-                                      TextInputAction
-                                          .done,
-                                  onFieldSubmitted:
-                                      (_) {
+                                padding: const EdgeInsets.all(16),
+                                borderRadius: 16,
+                                child: TextFormField(
+                                  controller: _phoneController,
+                                  enabled: !_isProcessing,
+                                  keyboardType: TextInputType.phone,
+                                  textInputAction: TextInputAction.done,
+                                  onFieldSubmitted: (_) {
                                     if (!_isProcessing) {
                                       _processPayment();
                                     }
                                   },
-                                  decoration:
-                                      InputDecoration(
-                                    labelText:
-                                        l10n.paymentPhoneNumber,
-                                    prefixIcon:
-                                        const Icon(
-                                      Icons
-                                          .phone_outlined,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.paymentPhoneNumber,
+                                    prefixIcon: const Icon(
+                                      Icons.phone_outlined,
                                     ),
                                   ),
-                                  validator:
-                                      (value) {
-                                    if (value ==
-                                            null ||
-                                        value
-                                            .trim()
-                                            .isEmpty) {
-                                      return l10n
-                                          .enterPaymentPhoneNumber;
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return l10n.enterPaymentPhoneNumber;
                                     }
 
-                                    final String
-                                        digits =
-                                        value.replaceAll(
-                                      RegExp(
-                                        r'\D',
-                                      ),
+                                    final String digits = value.replaceAll(
+                                      RegExp(r'\D'),
                                       '',
                                     );
 
-                                    if (digits
-                                            .length <
-                                        9) {
-                                      return l10n
-                                          .enterValidPaymentPhoneNumber;
+                                    if (digits.length < 9) {
+                                      return l10n.enterValidPaymentPhoneNumber;
                                     }
 
                                     return null;
@@ -385,20 +258,11 @@ class _ParcelPaymentScreenState
                                 ),
                               ),
 
-                              const SizedBox(
-                                height:
-                                    20,
-                              ),
+                              const SizedBox(height: 20),
 
-                              _buildPrototypeNotice(
-                                context,
-                                l10n,
-                              ),
+                              _buildPrototypeNotice(context, l10n),
 
-                              const SizedBox(
-                                height:
-                                    24,
-                              ),
+                              const SizedBox(height: 24),
                             ],
                           ),
                         ),
@@ -407,10 +271,7 @@ class _ParcelPaymentScreenState
                   ),
                 ),
 
-                _buildBottomSection(
-                  context,
-                  l10n,
-                ),
+                _buildBottomSection(context, l10n),
               ],
             ),
           ),
@@ -419,41 +280,22 @@ class _ParcelPaymentScreenState
     );
   }
 
-  Widget _buildAmountCard(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildAmountCard(BuildContext context, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient:
-            const LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
-          end:
-              Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
         ),
-        borderRadius:
-            BorderRadius.circular(
-          20,
-        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary
-                .withValues(
-              alpha: 0.20,
-            ),
+            color: AppColors.primary.withValues(alpha: 0.20),
             blurRadius: 24,
-            offset:
-                const Offset(
-              0,
-              10,
-            ),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -461,106 +303,64 @@ class _ParcelPaymentScreenState
         children: [
           Text(
             l10n.amountToPay,
-            style:
-                const TextStyle(
-              fontSize: 13,
-              color:
-                  Colors.white70,
-            ),
+            style: const TextStyle(fontSize: 13, color: Colors.white70),
           ),
 
-          const SizedBox(
-            height: 8,
-          ),
+          const SizedBox(height: 8),
 
           Text(
             '${_formatPrice(widget.amount)} FCFA',
-            textAlign:
-                TextAlign.center,
-            style:
-                const TextStyle(
+            textAlign: TextAlign.center,
+            style: const TextStyle(
               fontSize: 30,
-              fontWeight:
-                  FontWeight.bold,
+              fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
 
-          const SizedBox(
-            height: 16,
-          ),
+          const SizedBox(height: 16),
 
           Container(
             width: double.infinity,
-            padding:
-                const EdgeInsets
-                    .all(12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                12,
-              ),
+              color: Colors.white.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               children: [
                 Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment
-                          .center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
-                      Icons
-                          .business_outlined,
+                      Icons.business_outlined,
                       size: 17,
-                      color:
-                          Colors.white70,
+                      color: Colors.white70,
                     ),
 
-                    const SizedBox(
-                      width: 7,
-                    ),
+                    const SizedBox(width: 7),
 
                     Flexible(
                       child: Text(
-                        widget
-                            .agencyName,
-                        textAlign:
-                            TextAlign
-                                .center,
-                        style:
-                            const TextStyle(
-                          fontSize:
-                              14,
-                          fontWeight:
-                              FontWeight
-                                  .w600,
-                          color:
-                              Colors.white,
+                        widget.agencyName,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(
-                  height: 7,
-                ),
+                const SizedBox(height: 7),
 
                 Text(
                   '${widget.departureCity} → '
                   '${widget.destinationCity}',
-                  textAlign:
-                      TextAlign.center,
-                  style:
-                      const TextStyle(
-                    fontSize: 12,
-                    color:
-                        Colors.white70,
-                  ),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
                 ),
               ],
             ),
@@ -570,58 +370,35 @@ class _ParcelPaymentScreenState
     );
   }
 
-  Widget _buildPrototypeNotice(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildPrototypeNotice(BuildContext context, AppLocalizations l10n) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(
-        15,
-      ),
+      padding: const EdgeInsets.all(15),
       borderRadius: 14,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 40,
             height: 40,
-            decoration:
-                BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                10,
-              ),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.info_outline,
               size: 20,
-              color:
-                  AppColors.primary,
+              color: AppColors.primary,
             ),
           ),
 
-          const SizedBox(
-            width: 11,
-          ),
+          const SizedBox(width: 11),
 
           Expanded(
             child: Text(
-              l10n
-                  .parcelPrototypePaymentNotice,
-              style:
-                  Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        height:
-                            1.5,
-                      ),
+              l10n.parcelPrototypePaymentNotice,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(height: 1.5),
             ),
           ),
         ],
@@ -629,97 +406,47 @@ class _ParcelPaymentScreenState
     );
   }
 
-  Widget _buildBottomSection(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+  Widget _buildBottomSection(BuildContext context, AppLocalizations l10n) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final String formattedAmount =
-        _formatPrice(
-      widget.amount,
-    );
+    final String formattedAmount = _formatPrice(widget.amount);
 
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surface
-            .withValues(
-              alpha:
-                  isDark ? 0.92 : 0.96,
-            ),
-        border: Border(
-          top: BorderSide(
-            color: Theme.of(context)
-                .dividerColor,
-          ),
-        ),
+        color: Theme.of(
+          context,
+        ).colorScheme.surface.withValues(alpha: isDark ? 0.92 : 0.96),
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: SafeArea(
         top: false,
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(
-              maxWidth: 760,
-            ),
+            constraints: const BoxConstraints(maxWidth: 760),
             child: SizedBox(
               width: double.infinity,
-              child:
-                  ElevatedButton(
-                onPressed:
-                    _isProcessing
-                        ? null
-                        : _processPayment,
-                child:
-                    AnimatedSwitcher(
-                  duration:
-                      const Duration(
-                    milliseconds:
-                        220,
-                  ),
+              child: ElevatedButton(
+                onPressed: _isProcessing ? null : _processPayment,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
                   child: _isProcessing
                       ? const SizedBox(
-                          key: ValueKey(
-                            'processing',
-                          ),
+                          key: ValueKey('processing'),
                           width: 22,
                           height: 22,
-                          child:
-                              CircularProgressIndicator(
-                            strokeWidth:
-                                2,
-                            color:
-                                Colors.white,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
                           ),
                         )
                       : Text(
-                          l10n
-                              .payParcelAmount(
-                            formattedAmount,
-                          ),
-                          key:
-                              const ValueKey(
-                            'pay',
-                          ),
-                          style:
-                              const TextStyle(
-                            fontSize:
-                                16,
-                            fontWeight:
-                                FontWeight
-                                    .w600,
+                          l10n.payParcelAmount(formattedAmount),
+                          key: const ValueKey('pay'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                 ),
@@ -732,8 +459,7 @@ class _ParcelPaymentScreenState
   }
 }
 
-class _PaymentMethodCard
-    extends StatelessWidget {
+class _PaymentMethodCard extends StatelessWidget {
   final String title;
   final bool selected;
   final VoidCallback? onTap;
@@ -751,26 +477,14 @@ class _PaymentMethodCard
       borderRadius: 15,
       onTap: onTap,
       child: AnimatedContainer(
-        duration:
-            const Duration(
-          milliseconds: 220,
-        ),
+        duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
-        padding:
-            const EdgeInsets.all(
-          16,
-        ),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.circular(
-            15,
-          ),
+          borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: selected
-                ? AppColors.primary
-                : Colors.transparent,
-            width:
-                selected ? 2 : 1,
+            color: selected ? AppColors.primary : Colors.transparent,
+            width: selected ? 2 : 1,
           ),
         ),
         child: Row(
@@ -778,64 +492,36 @@ class _PaymentMethodCard
             Container(
               width: 44,
               height: 44,
-              decoration:
-                  BoxDecoration(
-                color: AppColors.primary
-                    .withValues(
-                  alpha: 0.10,
-                ),
-                borderRadius:
-                    BorderRadius.circular(
-                  11,
-                ),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(11),
               ),
               child: const Icon(
-                Icons
-                    .account_balance_wallet_outlined,
+                Icons.account_balance_wallet_outlined,
                 size: 22,
-                color:
-                    AppColors.primary,
+                color: AppColors.primary,
               ),
             ),
 
-            const SizedBox(
-              width: 13,
-            ),
+            const SizedBox(width: 13),
 
             Expanded(
               child: Text(
                 title,
-                style:
-                    Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(
-                          fontWeight:
-                              FontWeight
-                                  .w600,
-                        ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
 
             AnimatedSwitcher(
-              duration:
-                  const Duration(
-                milliseconds: 200,
-              ),
+              duration: const Duration(milliseconds: 200),
               child: Icon(
-                selected
-                    ? Icons
-                        .radio_button_checked
-                    : Icons
-                        .radio_button_off,
-                key: ValueKey(
-                  selected,
-                ),
+                selected ? Icons.radio_button_checked : Icons.radio_button_off,
+                key: ValueKey(selected),
                 color: selected
                     ? AppColors.primary
-                    : Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant,
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ],

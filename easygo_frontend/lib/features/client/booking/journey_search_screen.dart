@@ -5,8 +5,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import 'trip_results_screen.dart';
 
-class JourneySearchScreen
-    extends StatefulWidget {
+class JourneySearchScreen extends StatefulWidget {
   final Map<String, dynamic> agency;
   final String bookingMode;
 
@@ -17,21 +16,15 @@ class JourneySearchScreen
   });
 
   @override
-  State<JourneySearchScreen> createState() =>
-      _JourneySearchScreenState();
+  State<JourneySearchScreen> createState() => _JourneySearchScreenState();
 }
 
-class _JourneySearchScreenState
-    extends State<JourneySearchScreen> {
-  final GlobalKey<FormState> _formKey =
-      GlobalKey<FormState>();
+class _JourneySearchScreenState extends State<JourneySearchScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController
-      _pickupController =
-      TextEditingController();
+  final TextEditingController _pickupController = TextEditingController();
 
-  final TextEditingController
-      _finalDestinationController =
+  final TextEditingController _finalDestinationController =
       TextEditingController();
 
   String? _departureCity;
@@ -51,38 +44,27 @@ class _JourneySearchScreenState
     'Limbe',
   ];
 
-  bool get _isDoorToDoor =>
-      widget.bookingMode ==
-      'door_to_door';
+  bool get _isDoorToDoor => widget.bookingMode == 'door_to_door';
 
   @override
   void dispose() {
     _pickupController.dispose();
-    _finalDestinationController
-        .dispose();
+    _finalDestinationController.dispose();
 
     super.dispose();
   }
 
   Future<void> _selectDate() async {
-    final DateTime now =
-        DateTime.now();
+    final DateTime now = DateTime.now();
 
-    final DateTime? selected =
-        await showDatePicker(
+    final DateTime? selected = await showDatePicker(
       context: context,
-      initialDate:
-          _travelDate ?? now,
+      initialDate: _travelDate ?? now,
       firstDate: now,
-      lastDate: DateTime(
-        now.year + 1,
-        now.month,
-        now.day,
-      ),
+      lastDate: DateTime(now.year + 1, now.month, now.day),
     );
 
-    if (selected == null ||
-        !mounted) {
+    if (selected == null || !mounted) {
       return;
     }
 
@@ -92,38 +74,24 @@ class _JourneySearchScreenState
   }
 
   void _searchTrips() {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    if (!_formKey.currentState!
-        .validate()) {
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
     if (_travelDate == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.travelDateRequired,
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.travelDateRequired)));
 
       return;
     }
 
-    if (_departureCity ==
-        _destinationCity) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n
-                .citiesMustBeDifferent,
-          ),
-        ),
-      );
+    if (_departureCity == _destinationCity) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.citiesMustBeDifferent)));
 
       return;
     }
@@ -131,78 +99,49 @@ class _JourneySearchScreenState
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            TripResultsScreen(
+        builder: (context) => TripResultsScreen(
           agency: widget.agency,
-          bookingMode:
-              widget.bookingMode,
-          departureCity:
-              _departureCity!,
-          destinationCity:
-              _destinationCity!,
-          pickupLocation:
-              _isDoorToDoor
-                  ? _pickupController
-                      .text
-                      .trim()
-                  : null,
-          finalDestination:
-              _isDoorToDoor
-                  ? _finalDestinationController
-                      .text
-                      .trim()
-                  : null,
-          travelDate:
-              _travelDate!,
-          passengers:
-              _passengers,
+          bookingMode: widget.bookingMode,
+          departureCity: _departureCity!,
+          destinationCity: _destinationCity!,
+          pickupLocation: _isDoorToDoor ? _pickupController.text.trim() : null,
+          finalDestination: _isDoorToDoor
+              ? _finalDestinationController.text.trim()
+              : null,
+          travelDate: _travelDate!,
+          passengers: _passengers,
           luggage: _luggage,
         ),
       ),
     );
   }
 
-  String _formatDate(
-    DateTime date,
-  ) {
-    final String day = date.day
-        .toString()
-        .padLeft(2, '0');
+  String _formatDate(DateTime date) {
+    final String day = date.day.toString().padLeft(2, '0');
 
-    final String month = date.month
-        .toString()
-        .padLeft(2, '0');
+    final String month = date.month.toString().padLeft(2, '0');
 
     return '$day/$month/${date.year}';
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _isDoorToDoor
-              ? l10n.doorToDoorJourney
-              : l10n.interurbanJourney,
+          _isDoorToDoor ? l10n.doorToDoorJourney : l10n.interurbanJourney,
         ),
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF09111F),
                     Color(0xFF0D1B2A),
@@ -210,10 +149,8 @@ class _JourneySearchScreenState
                   ],
                 )
               : const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFFF2F8FF),
                     Color(0xFFF7FBFF),
@@ -226,241 +163,129 @@ class _JourneySearchScreenState
           child: Form(
             key: _formKey,
             child: ListView(
-              padding:
-                  const EdgeInsets.all(
-                20,
-              ),
+              padding: const EdgeInsets.all(20),
               children: [
                 Center(
                   child: ConstrainedBox(
-                    constraints:
-                        const BoxConstraints(
-                      maxWidth: 760,
-                    ),
+                    constraints: const BoxConstraints(maxWidth: 760),
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment
-                              .start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildServiceHeader(
-                          l10n,
-                        ),
+                        _buildServiceHeader(l10n),
 
-                        const SizedBox(
-                          height: 26,
-                        ),
+                        const SizedBox(height: 26),
 
                         Text(
-                          l10n
-                              .journeyDetails,
-                          style:
-                              Theme.of(
-                            context,
-                          )
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    fontWeight:
-                                        FontWeight
-                                            .bold,
-                                  ),
+                          l10n.journeyDetails,
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
 
-                        const SizedBox(
-                          height: 6,
-                        ),
+                        const SizedBox(height: 6),
 
                         Text(
-                          l10n
-                              .journeyDetailsDescription,
-                          style:
-                              Theme.of(
+                          l10n.journeyDetailsDescription,
+                          style: Theme.of(
                             context,
-                          )
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    height:
-                                        1.5,
-                                  ),
+                          ).textTheme.bodyMedium?.copyWith(height: 1.5),
                         ),
 
-                        const SizedBox(
-                          height: 24,
-                        ),
+                        const SizedBox(height: 24),
 
                         GlassContainer(
-                          padding:
-                              const EdgeInsets
-                                  .all(18),
+                          padding: const EdgeInsets.all(18),
                           child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               if (_isDoorToDoor) ...[
-                                _buildLabel(
-                                  l10n
-                                      .pickupLocation,
-                                ),
+                                _buildLabel(l10n.pickupLocation),
 
-                                const SizedBox(
-                                  height: 8,
-                                ),
+                                const SizedBox(height: 8),
 
                                 TextFormField(
-                                  controller:
-                                      _pickupController,
-                                  decoration:
-                                      InputDecoration(
-                                    hintText: l10n
-                                        .pickupLocationHint,
-                                    prefixIcon:
-                                        const Icon(
-                                      Icons
-                                          .my_location_outlined,
+                                  controller: _pickupController,
+                                  decoration: InputDecoration(
+                                    hintText: l10n.pickupLocationHint,
+                                    prefixIcon: const Icon(
+                                      Icons.my_location_outlined,
                                     ),
                                   ),
-                                  validator:
-                                      (value) {
-                                    if (value ==
-                                            null ||
-                                        value
-                                            .trim()
-                                            .isEmpty) {
-                                      return l10n
-                                          .pickupLocationRequired;
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return l10n.pickupLocationRequired;
                                     }
 
                                     return null;
                                   },
                                 ),
 
-                                const SizedBox(
-                                  height: 20,
-                                ),
+                                const SizedBox(height: 20),
                               ],
 
-                              _buildLabel(
-                                l10n
-                                    .departureCity,
-                              ),
+                              _buildLabel(l10n.departureCity),
 
-                              const SizedBox(
-                                height: 8,
-                              ),
+                              const SizedBox(height: 8),
 
-                              DropdownButtonFormField<
-                                  String>(
-                                initialValue:
-                                    _departureCity,
+                              DropdownButtonFormField<String>(
+                                initialValue: _departureCity,
                                 isExpanded: true,
-                                decoration:
-                                    InputDecoration(
-                                  prefixIcon:
-                                      const Icon(
-                                    Icons
-                                        .location_city_outlined,
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(
+                                    Icons.location_city_outlined,
                                   ),
-                                  hintText: l10n
-                                      .selectDepartureCity,
+                                  hintText: l10n.selectDepartureCity,
                                 ),
                                 items: _cities
                                     .map(
-                                      (
-                                        city,
-                                      ) =>
-                                          DropdownMenuItem<
-                                              String>(
-                                        value:
-                                            city,
-                                        child:
-                                            Text(
-                                          city,
-                                        ),
+                                      (city) => DropdownMenuItem<String>(
+                                        value: city,
+                                        child: Text(city),
                                       ),
                                     )
                                     .toList(),
-                                onChanged:
-                                    (value) {
-                                  setState(
-                                    () {
-                                      _departureCity =
-                                          value;
-                                    },
-                                  );
+                                onChanged: (value) {
+                                  setState(() {
+                                    _departureCity = value;
+                                  });
                                 },
-                                validator:
-                                    (value) {
-                                  if (value ==
-                                      null) {
-                                    return l10n
-                                        .departureCityRequired;
+                                validator: (value) {
+                                  if (value == null) {
+                                    return l10n.departureCityRequired;
                                   }
 
                                   return null;
                                 },
                               ),
 
-                              const SizedBox(
-                                height: 20,
-                              ),
+                              const SizedBox(height: 20),
 
-                              _buildLabel(
-                                l10n
-                                    .destinationCity,
-                              ),
+                              _buildLabel(l10n.destinationCity),
 
-                              const SizedBox(
-                                height: 8,
-                              ),
+                              const SizedBox(height: 8),
 
-                              DropdownButtonFormField<
-                                  String>(
-                                initialValue:
-                                    _destinationCity,
+                              DropdownButtonFormField<String>(
+                                initialValue: _destinationCity,
                                 isExpanded: true,
-                                decoration:
-                                    InputDecoration(
-                                  prefixIcon:
-                                      const Icon(
-                                    Icons
-                                        .flag_outlined,
-                                  ),
-                                  hintText: l10n
-                                      .selectDestinationCity,
+                                decoration: InputDecoration(
+                                  prefixIcon: const Icon(Icons.flag_outlined),
+                                  hintText: l10n.selectDestinationCity,
                                 ),
                                 items: _cities
                                     .map(
-                                      (
-                                        city,
-                                      ) =>
-                                          DropdownMenuItem<
-                                              String>(
-                                        value:
-                                            city,
-                                        child:
-                                            Text(
-                                          city,
-                                        ),
+                                      (city) => DropdownMenuItem<String>(
+                                        value: city,
+                                        child: Text(city),
                                       ),
                                     )
                                     .toList(),
-                                onChanged:
-                                    (value) {
-                                  setState(
-                                    () {
-                                      _destinationCity =
-                                          value;
-                                    },
-                                  );
+                                onChanged: (value) {
+                                  setState(() {
+                                    _destinationCity = value;
+                                  });
                                 },
-                                validator:
-                                    (value) {
-                                  if (value ==
-                                      null) {
-                                    return l10n
-                                        .destinationCityRequired;
+                                validator: (value) {
+                                  if (value == null) {
+                                    return l10n.destinationCityRequired;
                                   }
 
                                   return null;
@@ -468,41 +293,21 @@ class _JourneySearchScreenState
                               ),
 
                               if (_isDoorToDoor) ...[
-                                const SizedBox(
-                                  height: 20,
-                                ),
+                                const SizedBox(height: 20),
 
-                                _buildLabel(
-                                  l10n
-                                      .finalDestination,
-                                ),
+                                _buildLabel(l10n.finalDestination),
 
-                                const SizedBox(
-                                  height: 8,
-                                ),
+                                const SizedBox(height: 8),
 
                                 TextFormField(
-                                  controller:
-                                      _finalDestinationController,
-                                  decoration:
-                                      InputDecoration(
-                                    hintText: l10n
-                                        .finalDestinationHint,
-                                    prefixIcon:
-                                        const Icon(
-                                      Icons
-                                          .home_outlined,
-                                    ),
+                                  controller: _finalDestinationController,
+                                  decoration: InputDecoration(
+                                    hintText: l10n.finalDestinationHint,
+                                    prefixIcon: const Icon(Icons.home_outlined),
                                   ),
-                                  validator:
-                                      (value) {
-                                    if (value ==
-                                            null ||
-                                        value
-                                            .trim()
-                                            .isEmpty) {
-                                      return l10n
-                                          .finalDestinationRequired;
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return l10n.finalDestinationRequired;
                                     }
 
                                     return null;
@@ -510,61 +315,37 @@ class _JourneySearchScreenState
                                 ),
                               ],
 
-                              const SizedBox(
-                                height: 20,
-                              ),
+                              const SizedBox(height: 20),
 
-                              _buildLabel(
-                                l10n
-                                    .travelDate,
-                              ),
+                              _buildLabel(l10n.travelDate),
 
-                              const SizedBox(
-                                height: 8,
-                              ),
+                              const SizedBox(height: 8),
 
                               InkWell(
-                                onTap:
-                                    _selectDate,
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                  12,
-                                ),
-                                child:
-                                    InputDecorator(
-                                  decoration:
-                                      const InputDecoration(
-                                    prefixIcon:
-                                        Icon(
-                                      Icons
-                                          .calendar_month_outlined,
+                                onTap: _selectDate,
+                                borderRadius: BorderRadius.circular(12),
+                                child: InputDecorator(
+                                  decoration: const InputDecoration(
+                                    prefixIcon: Icon(
+                                      Icons.calendar_month_outlined,
                                     ),
                                   ),
                                   child: Text(
-                                    _travelDate ==
-                                            null
-                                        ? l10n
-                                            .selectTravelDate
-                                        : _formatDate(
-                                            _travelDate!,
-                                          ),
-                                    style:
-                                        Theme.of(
-                                      context,
-                                    )
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: _travelDate ==
-                                                      null
-                                                  ? Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurfaceVariant
-                                                  : Theme.of(context)
-                                                      .colorScheme
-                                                      .onSurface,
-                                            ),
+                                    _travelDate == null
+                                        ? l10n.selectTravelDate
+                                        : _formatDate(_travelDate!),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: _travelDate == null
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurfaceVariant
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurface,
+                                        ),
                                   ),
                                 ),
                               ),
@@ -572,135 +353,82 @@ class _JourneySearchScreenState
                           ),
                         ),
 
-                        const SizedBox(
-                          height: 18,
-                        ),
+                        const SizedBox(height: 18),
 
                         _CounterField(
-                          title:
-                              l10n.passengers,
-                          subtitle: l10n
-                              .passengersDescription,
-                          icon: Icons
-                              .people_outline,
-                          value:
-                              _passengers,
+                          title: l10n.passengers,
+                          subtitle: l10n.passengersDescription,
+                          icon: Icons.people_outline,
+                          value: _passengers,
                           minimum: 1,
-                          onChanged:
-                              (value) {
-                            setState(
-                              () {
-                                _passengers =
-                                    value;
-                              },
-                            );
+                          onChanged: (value) {
+                            setState(() {
+                              _passengers = value;
+                            });
                           },
                         ),
 
-                        const SizedBox(
-                          height: 14,
-                        ),
+                        const SizedBox(height: 14),
 
                         _CounterField(
-                          title:
-                              l10n.luggage,
-                          subtitle: l10n
-                              .luggageDescription,
-                          icon: Icons
-                              .luggage_outlined,
+                          title: l10n.luggage,
+                          subtitle: l10n.luggageDescription,
+                          icon: Icons.luggage_outlined,
                           value: _luggage,
                           minimum: 0,
-                          onChanged:
-                              (value) {
-                            setState(
-                              () {
-                                _luggage =
-                                    value;
-                              },
-                            );
+                          onChanged: (value) {
+                            setState(() {
+                              _luggage = value;
+                            });
                           },
                         ),
 
-                        const SizedBox(
-                          height: 18,
-                        ),
+                        const SizedBox(height: 18),
 
                         GlassContainer(
-                          padding:
-                              const EdgeInsets
-                                  .all(14),
+                          padding: const EdgeInsets.all(14),
                           borderRadius: 15,
                           child: Row(
-                            crossAxisAlignment:
-                                CrossAxisAlignment
-                                    .start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Icon(
-                                Icons
-                                    .info_outline,
+                                Icons.info_outline,
                                 size: 20,
-                                color:
-                                    AppColors
-                                        .primary,
+                                color: AppColors.primary,
                               ),
 
-                              const SizedBox(
-                                width: 10,
-                              ),
+                              const SizedBox(width: 10),
 
                               Expanded(
                                 child: Text(
-                                  l10n
-                                      .journeySearchInformation,
-                                  style:
-                                      Theme.of(
+                                  l10n.journeySearchInformation,
+                                  style: Theme.of(
                                     context,
-                                  )
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                            height:
-                                                1.5,
-                                          ),
+                                  ).textTheme.bodySmall?.copyWith(height: 1.5),
                                 ),
                               ),
                             ],
                           ),
                         ),
 
-                        const SizedBox(
-                          height: 28,
-                        ),
+                        const SizedBox(height: 28),
 
                         SizedBox(
-                          width:
-                              double.infinity,
-                          child:
-                              ElevatedButton
-                                  .icon(
-                            onPressed:
-                                _searchTrips,
-                            icon:
-                                const Icon(
-                              Icons.search,
-                            ),
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _searchTrips,
+                            icon: const Icon(Icons.search),
                             label: Text(
-                              l10n
-                                  .searchAvailableTrips,
-                              style:
-                                  const TextStyle(
+                              l10n.searchAvailableTrips,
+                              style: const TextStyle(
                                 fontSize: 16,
-                                fontWeight:
-                                    FontWeight
-                                        .w600,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
                         ),
 
-                        const SizedBox(
-                          height: 24,
-                        ),
+                        const SizedBox(height: 24),
                       ],
                     ),
                   ),
@@ -713,82 +441,47 @@ class _JourneySearchScreenState
     );
   }
 
-  Widget _buildServiceHeader(
-    AppLocalizations l10n,
-  ) {
+  Widget _buildServiceHeader(AppLocalizations l10n) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           Container(
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                14,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
               _isDoorToDoor
-                  ? Icons
-                      .local_taxi_outlined
-                  : Icons
-                      .directions_bus_outlined,
-              color:
-                  AppColors.primary,
+                  ? Icons.local_taxi_outlined
+                  : Icons.directions_bus_outlined,
+              color: AppColors.primary,
             ),
           ),
 
-          const SizedBox(
-            width: 14,
-          ),
+          const SizedBox(width: 14),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.agency['name']
-                          ?.toString() ??
-                      l10n
-                          .transportAgency,
-                  style:
-                      Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
+                  widget.agency['name']?.toString() ?? l10n.transportAgency,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
 
-                const SizedBox(
-                  height: 4,
-                ),
+                const SizedBox(height: 4),
 
                 Text(
-                  _isDoorToDoor
-                      ? l10n
-                          .doorToDoorService
-                      : l10n
-                          .interurbanOnly,
-                  style:
-                      const TextStyle(
+                  _isDoorToDoor ? l10n.doorToDoorService : l10n.interurbanOnly,
+                  style: const TextStyle(
                     fontSize: 13,
-                    color:
-                        AppColors
-                            .secondary,
-                    fontWeight:
-                        FontWeight.w600,
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -799,31 +492,23 @@ class _JourneySearchScreenState
     );
   }
 
-  Widget _buildLabel(
-    String label,
-  ) {
+  Widget _buildLabel(String label) {
     return Text(
       label,
-      style: Theme.of(context)
-          .textTheme
-          .bodyMedium
-          ?.copyWith(
-            fontWeight:
-                FontWeight.w600,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 }
 
-class _CounterField
-    extends StatelessWidget {
+class _CounterField extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
   final int value;
   final int minimum;
-  final ValueChanged<int>
-      onChanged;
+  final ValueChanged<int> onChanged;
 
   const _CounterField({
     required this.title,
@@ -835,12 +520,9 @@ class _CounterField
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(15),
       borderRadius: 16,
       child: Row(
         children: [
@@ -848,113 +530,59 @@ class _CounterField
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                12,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              size: 21,
-              color:
-                  AppColors.primary,
-            ),
+            child: Icon(icon, size: 21, color: AppColors.primary),
           ),
 
-          const SizedBox(
-            width: 12,
-          ),
+          const SizedBox(width: 12),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style:
-                      Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight
-                                    .w600,
-                          ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
 
-                const SizedBox(
-                  height: 3,
-                ),
+                const SizedBox(height: 3),
 
-                Text(
-                  subtitle,
-                  style:
-                      Theme.of(context)
-                          .textTheme
-                          .bodySmall,
-                ),
+                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
 
           IconButton(
             tooltip: '-',
-            onPressed:
-                value > minimum
-                    ? () => onChanged(
-                          value - 1,
-                        )
-                    : null,
-            icon: const Icon(
-              Icons
-                  .remove_circle_outline,
-            ),
+            onPressed: value > minimum ? () => onChanged(value - 1) : null,
+            icon: const Icon(Icons.remove_circle_outline),
           ),
 
           AnimatedSwitcher(
-            duration:
-                const Duration(
-              milliseconds: 180,
-            ),
+            duration: const Duration(milliseconds: 180),
             child: SizedBox(
-              key: ValueKey<int>(
-                value,
-              ),
+              key: ValueKey<int>(value),
               width: 28,
               child: Text(
                 '$value',
-                textAlign:
-                    TextAlign.center,
-                style:
-                    Theme.of(context)
-                        .textTheme
-                        .bodyLarge
-                        ?.copyWith(
-                          fontWeight:
-                              FontWeight
-                                  .bold,
-                        ),
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
           ),
 
           IconButton(
             tooltip: '+',
-            onPressed: () =>
-                onChanged(
-              value + 1,
-            ),
+            onPressed: () => onChanged(value + 1),
             icon: const Icon(
-              Icons
-                  .add_circle_outline,
-              color:
-                  AppColors.primary,
+              Icons.add_circle_outline,
+              color: AppColors.primary,
             ),
           ),
         ],

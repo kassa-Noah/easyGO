@@ -115,7 +115,9 @@ class AdminDashboardScreen extends StatelessWidget {
                         crossAxisCount: columns,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 12,
-                        childAspectRatio: constraints.maxWidth < 500 ? 1.3 : 1.8,
+                        childAspectRatio: constraints.maxWidth < 500
+                            ? 1.3
+                            : 1.8,
                       ),
                       itemBuilder: (_, index) {
                         final item = stats[index];
@@ -260,10 +262,7 @@ class _Action extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         leading: Icon(icon, color: AppColors.primary),
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.chevron_right),
       ),
@@ -291,9 +290,9 @@ class _Status extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
               ),
               Text(label),
             ],

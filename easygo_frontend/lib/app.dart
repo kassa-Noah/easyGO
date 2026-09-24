@@ -9,20 +9,14 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/screens/splash_screen.dart';
 
 class EasyGoApp extends StatefulWidget {
-  const EasyGoApp({
-    super.key,
-  });
+  const EasyGoApp({super.key});
 
   @override
-  State<EasyGoApp> createState() =>
-      _EasyGoAppState();
+  State<EasyGoApp> createState() => _EasyGoAppState();
 }
 
-class _EasyGoAppState
-    extends State<EasyGoApp> {
-  final AppSettingsController
-      _settingsController =
-      AppSettingsController();
+class _EasyGoAppState extends State<EasyGoApp> {
+  final AppSettingsController _settingsController = AppSettingsController();
 
   @override
   void dispose() {
@@ -32,66 +26,39 @@ class _EasyGoAppState
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation:
-          _settingsController,
-      builder: (
-        context,
-        child,
-      ) {
+      animation: _settingsController,
+      builder: (context, child) {
         return AppSettingsScope(
-          controller:
-              _settingsController,
+          controller: _settingsController,
           child: MaterialApp(
-            debugShowCheckedModeBanner:
-                false,
+            debugShowCheckedModeBanner: false,
 
-            title:
-                AppStrings.appName,
+            title: AppStrings.appName,
 
-            theme:
-                AppTheme.lightTheme,
+            theme: AppTheme.lightTheme,
 
-            darkTheme:
-                AppTheme.darkTheme,
+            darkTheme: AppTheme.darkTheme,
 
-            themeMode:
-                _settingsController
-                    .themeMode,
+            themeMode: _settingsController.themeMode,
 
-            themeAnimationDuration:
-                const Duration(
-              milliseconds: 350,
-            ),
+            themeAnimationDuration: const Duration(milliseconds: 350),
 
-            themeAnimationCurve:
-                Curves.easeInOut,
+            themeAnimationCurve: Curves.easeInOut,
 
-            locale:
-                _settingsController
-                    .locale,
+            locale: _settingsController.locale,
 
-            supportedLocales:
-                AppLocalizations
-                    .supportedLocales,
+            supportedLocales: AppLocalizations.supportedLocales,
 
-            localizationsDelegates:
-                const [
-              AppLocalizations
-                  .delegate,
-              GlobalMaterialLocalizations
-                  .delegate,
-              GlobalWidgetsLocalizations
-                  .delegate,
-              GlobalCupertinoLocalizations
-                  .delegate,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
             ],
 
-            home:
-                const SplashScreen(),
+            home: const SplashScreen(),
           ),
         );
       },

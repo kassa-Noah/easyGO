@@ -5,14 +5,11 @@ class ThemeController extends ChangeNotifier {
 
   ThemeMode get themeMode => _themeMode;
 
-  bool get isSystemMode =>
-      _themeMode == ThemeMode.system;
+  bool get isSystemMode => _themeMode == ThemeMode.system;
 
-  bool get isLightMode =>
-      _themeMode == ThemeMode.light;
+  bool get isLightMode => _themeMode == ThemeMode.light;
 
-  bool get isDarkMode =>
-      _themeMode == ThemeMode.dark;
+  bool get isDarkMode => _themeMode == ThemeMode.dark;
 
   void setThemeMode(ThemeMode mode) {
     if (_themeMode == mode) {

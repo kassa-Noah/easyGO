@@ -19,11 +19,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   String _email = 'admin@easygo.cm';
   String _phone = '+237 6 00 00 00 00';
 
-  String _t(
-    AppSettingsController settings,
-    String en,
-    String fr,
-  ) =>
+  String _t(AppSettingsController settings, String en, String fr) =>
       settings.isFrench ? fr : en;
 
   Future<void> _editProfile() async {
@@ -47,29 +43,21 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     });
   }
 
-  Future<void> _selectLanguage(
-    AppSettingsController settings,
-  ) async {
+  Future<void> _selectLanguage(AppSettingsController settings) async {
     final selected = await showDialog<AppLanguage>(
       context: context,
       builder: (dialogContext) => SimpleDialog(
         title: Text(_t(settings, 'Language', 'Langue')),
         children: [
           SimpleDialogOption(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              AppLanguage.english,
-            ),
+            onPressed: () => Navigator.pop(dialogContext, AppLanguage.english),
             child: const ListTile(
               leading: Icon(Icons.language),
               title: Text('English'),
             ),
           ),
           SimpleDialogOption(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              AppLanguage.french,
-            ),
+            onPressed: () => Navigator.pop(dialogContext, AppLanguage.french),
             child: const ListTile(
               leading: Icon(Icons.language),
               title: Text('Français'),
@@ -84,45 +72,28 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     }
   }
 
-  Future<void> _selectTheme(
-    AppSettingsController settings,
-  ) async {
+  Future<void> _selectTheme(AppSettingsController settings) async {
     final selected = await showDialog<ThemeMode>(
       context: context,
       builder: (dialogContext) => SimpleDialog(
         title: Text(_t(settings, 'Appearance', 'Apparence')),
         children: [
           SimpleDialogOption(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              ThemeMode.system,
-            ),
+            onPressed: () => Navigator.pop(dialogContext, ThemeMode.system),
             child: ListTile(
               leading: const Icon(Icons.settings_suggest_outlined),
-              title: Text(
-                _t(
-                  settings,
-                  'System default',
-                  'Réglage système',
-                ),
-              ),
+              title: Text(_t(settings, 'System default', 'Réglage système')),
             ),
           ),
           SimpleDialogOption(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              ThemeMode.light,
-            ),
+            onPressed: () => Navigator.pop(dialogContext, ThemeMode.light),
             child: ListTile(
               leading: const Icon(Icons.light_mode_outlined),
               title: Text(_t(settings, 'Light', 'Clair')),
             ),
           ),
           SimpleDialogOption(
-            onPressed: () => Navigator.pop(
-              dialogContext,
-              ThemeMode.dark,
-            ),
+            onPressed: () => Navigator.pop(dialogContext, ThemeMode.dark),
             child: ListTile(
               leading: const Icon(Icons.dark_mode_outlined),
               title: Text(_t(settings, 'Dark', 'Sombre')),
@@ -148,9 +119,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     }
   }
 
-  Future<void> _logout(
-    AppSettingsController settings,
-  ) async {
+  Future<void> _logout(AppSettingsController settings) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -169,9 +138,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(
-              _t(settings, 'Log out', 'Se déconnecter'),
-            ),
+            child: Text(_t(settings, 'Log out', 'Se déconnecter')),
           ),
         ],
       ),
@@ -180,9 +147,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     if (!mounted || confirmed != true) return;
 
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const LoginScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
   }
@@ -194,13 +159,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          _t(
-            settings,
-            'Admin Profile',
-            'Profil administrateur',
-          ),
-        ),
+        title: Text(_t(settings, 'Admin Profile', 'Profil administrateur')),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
@@ -248,9 +207,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _SectionTitle(
-                    title: _t(settings, 'Account', 'Compte'),
-                  ),
+                  _SectionTitle(title: _t(settings, 'Account', 'Compte')),
                   const SizedBox(height: 10),
                   GlassContainer(
                     padding: EdgeInsets.zero,
@@ -259,11 +216,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         ListTile(
                           leading: const Icon(Icons.person_outline),
                           title: Text(
-                            _t(
-                              settings,
-                              'Edit profile',
-                              'Modifier le profil',
-                            ),
+                            _t(settings, 'Edit profile', 'Modifier le profil'),
                           ),
                           subtitle: Text(
                             _t(
@@ -350,11 +303,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   ),
                   const SizedBox(height: 20),
                   _SectionTitle(
-                    title: _t(
-                      settings,
-                      'Preferences',
-                      'Préférences',
-                    ),
+                    title: _t(settings, 'Preferences', 'Préférences'),
                   ),
                   const SizedBox(height: 10),
                   GlassContainer(
@@ -363,9 +312,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                       children: [
                         ListTile(
                           leading: const Icon(Icons.language_outlined),
-                          title: Text(
-                            _t(settings, 'Language', 'Langue'),
-                          ),
+                          title: Text(_t(settings, 'Language', 'Langue')),
                           subtitle: Text(
                             settings.isFrench ? 'Français' : 'English',
                           ),
@@ -374,12 +321,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         ),
                         const Divider(height: 1),
                         ListTile(
-                          leading: const Icon(
-                            Icons.brightness_6_outlined,
-                          ),
-                          title: Text(
-                            _t(settings, 'Appearance', 'Apparence'),
-                          ),
+                          leading: const Icon(Icons.brightness_6_outlined),
+                          title: Text(_t(settings, 'Appearance', 'Apparence')),
                           subtitle: Text(_themeLabel(settings)),
                           trailing: const Icon(Icons.chevron_right),
                           onTap: () => _selectTheme(settings),
@@ -415,13 +358,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _logout(settings),
                       icon: const Icon(Icons.logout),
-                      label: Text(
-                        _t(
-                          settings,
-                          'Log out',
-                          'Se déconnecter',
-                        ),
-                      ),
+                      label: Text(_t(settings, 'Log out', 'Se déconnecter')),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -438,9 +375,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 class _SectionTitle extends StatelessWidget {
   final String title;
 
-  const _SectionTitle({
-    required this.title,
-  });
+  const _SectionTitle({required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -448,9 +383,9 @@ class _SectionTitle extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w800,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
       ),
     );
   }
@@ -479,16 +414,11 @@ class _InfoRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text(label, style: Theme.of(context).textTheme.bodySmall),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
             ),

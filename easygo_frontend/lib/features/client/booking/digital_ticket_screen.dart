@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../trips/models/trip.dart';
 import '../home/main_screen.dart';
 
 class DigitalTicketScreen extends StatelessWidget {
   final Map<String, dynamic> agency;
-  final Map<String, dynamic> trip;
+  final Trip trip;
 
   final String bookingMode;
   final String departureCity;
@@ -23,8 +24,9 @@ class DigitalTicketScreen extends StatelessWidget {
   final int totalAmount;
   final String paymentMethod;
 
-  // Temporary demo values.
-  // Real references must come from the backend.
+  // Temporary demonstration references.
+  // These will be replaced by backend-generated
+  // references during booking/ticket integration.
   final String bookingReference;
   final String ticketReference;
 
@@ -46,13 +48,22 @@ class DigitalTicketScreen extends StatelessWidget {
     this.finalDestination,
   });
 
-  bool get isDoorToDoor =>
-      bookingMode == 'door_to_door';
+  bool get isDoorToDoor => bookingMode == 'door_to_door';
 
   String _formattedDate() {
     return '${travelDate.day.toString().padLeft(2, '0')}/'
         '${travelDate.month.toString().padLeft(2, '0')}/'
         '${travelDate.year}';
+  }
+
+  String _formatTime(DateTime value) {
+    final DateTime local = value.toLocal();
+
+    final String hour = local.hour.toString().padLeft(2, '0');
+
+    final String minute = local.minute.toString().padLeft(2, '0');
+
+    return '$hour:$minute';
   }
 
   String _formatPrice(int value) {
@@ -64,19 +75,12 @@ class DigitalTicketScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.digitalTicket,
-        ),
-      ),
+      appBar: AppBar(title: Text(l10n.digitalTicket)),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -108,108 +112,54 @@ class DigitalTicketScreen extends StatelessWidget {
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(
-                    maxWidth: 760,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 760),
                   child: Column(
                     children: [
-                      _buildTicket(
-                        context,
-                        l10n,
-                      ),
-
-                      const SizedBox(
-                        height: 20,
-                      ),
-
+                      _buildTicket(context, l10n),
+                      const SizedBox(height: 20),
                       if (isDoorToDoor)
-                        _buildDoorToDoorInformation(
-                          context,
-                          l10n,
-                        ),
-
-                      if (isDoorToDoor)
-                        const SizedBox(
-                          height: 20,
-                        ),
-
-                      _buildImportantInformation(
-                        context,
-                        l10n,
-                      ),
-
-                      const SizedBox(
-                        height: 24,
-                      ),
-
+                        _buildDoorToDoorInformation(context, l10n),
+                      if (isDoorToDoor) const SizedBox(height: 20),
+                      _buildImportantInformation(context, l10n),
+                      const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
-                        child:
-                            ElevatedButton.icon(
+                        child: ElevatedButton.icon(
                           onPressed: () {
-                            ScaffoldMessenger
-                                .of(context)
-                                .showSnackBar(
+                            ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(
-                                  l10n
-                                      .ticketDownloadPending,
-                                ),
+                                content: Text(l10n.ticketDownloadPending),
                               ),
                             );
                           },
-                          icon: const Icon(
-                            Icons
-                                .download_outlined,
-                          ),
+                          icon: const Icon(Icons.download_outlined),
                           label: Text(
-                            l10n
-                                .downloadTicket,
-                            style:
-                                const TextStyle(
+                            l10n.downloadTicket,
+                            style: const TextStyle(
                               fontSize: 16,
-                              fontWeight:
-                                  FontWeight
-                                      .w600,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                       ),
-
-                      const SizedBox(
-                        height: 10,
-                      ),
-
+                      const SizedBox(height: 10),
                       SizedBox(
                         width: double.infinity,
-                        child:
-                            OutlinedButton.icon(
+                        child: OutlinedButton.icon(
                           onPressed: () {
-                            Navigator
-                                .pushAndRemoveUntil(
+                            Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute(
-                                builder:
-                                    (context) =>
-                                        const ClientMainScreen(),
+                                builder: (context) => const ClientMainScreen(),
                               ),
-                              (route) =>
-                                  false,
+                              (route) => false,
                             );
                           },
-                          icon: const Icon(
-                            Icons.home_outlined,
-                          ),
-                          label: Text(
-                            l10n.returnToHome,
-                          ),
+                          icon: const Icon(Icons.home_outlined),
+                          label: Text(l10n.returnToHome),
                         ),
                       ),
-
-                      const SizedBox(
-                        height: 20,
-                      ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -221,216 +171,119 @@ class DigitalTicketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTicket(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+  Widget _buildTicket(BuildContext context, AppLocalizations l10n) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surface
-            .withValues(
-              alpha:
-                  isDark ? 0.90 : 0.96,
-            ),
-        borderRadius:
-            BorderRadius.circular(22),
-        border: Border.all(
-          color: Theme.of(context)
-              .dividerColor,
-        ),
+        color: Theme.of(
+          context,
+        ).colorScheme.surface.withValues(alpha: isDark ? 0.90 : 0.96),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha:
-                  isDark ? 0.22 : 0.07,
-            ),
+            color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.07),
             blurRadius: 28,
-            offset:
-                const Offset(0, 12),
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius:
-            BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(22),
         child: Column(
           children: [
-            _buildTicketHeader(
-              context,
-              l10n,
-            ),
-
+            _buildTicketHeader(context, l10n),
             Padding(
-              padding:
-                  const EdgeInsets.all(
-                20,
-              ),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  _buildRoute(
-                    context,
-                    l10n,
-                  ),
-
-                  const SizedBox(
-                    height: 24,
-                  ),
-
+                  _buildRoute(context, l10n),
+                  const SizedBox(height: 24),
                   const Divider(),
-
-                  const SizedBox(
-                    height: 18,
-                  ),
-
+                  const SizedBox(height: 18),
                   Row(
                     children: [
                       Expanded(
                         child: _TicketField(
                           label: l10n.date,
-                          value:
-                              _formattedDate(),
+                          value: _formattedDate(),
                         ),
                       ),
                       Expanded(
                         child: _TicketField(
-                          label: l10n
-                              .departure
-                              .toUpperCase(),
-                          value: trip[
-                                      'departureTime']
-                                  ?.toString() ??
-                              l10n
-                                  .notAvailable,
+                          label: l10n.departure.toUpperCase(),
+                          value: _formatTime(trip.departureTime),
                           alignEnd: true,
                         ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(
-                    height: 20,
-                  ),
-
+                  const SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
                         child: _TicketField(
-                          label: l10n
-                              .arrival
-                              .toUpperCase(),
-                          value: trip[
-                                      'arrivalTime']
-                                  ?.toString() ??
-                              l10n
-                                  .notAvailable,
+                          label: l10n.arrival.toUpperCase(),
+                          value: _formatTime(trip.arrivalTime),
                         ),
                       ),
                       Expanded(
                         child: _TicketField(
-                          label:
-                              l10n.classLabel,
-                          value: trip['class']
-                                  ?.toString() ??
-                              l10n
-                                  .notAvailable,
+                          label: 'STATUS',
+                          value: trip.status,
                           alignEnd: true,
                         ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(
-                    height: 20,
-                  ),
-
+                  const SizedBox(height: 20),
                   Row(
                     children: [
                       Expanded(
                         child: _TicketField(
-                          label: l10n
-                              .passengersLabel,
-                          value:
-                              '$passengers',
+                          label: l10n.passengersLabel,
+                          value: '$passengers',
                         ),
                       ),
                       Expanded(
                         child: _TicketField(
-                          label:
-                              l10n.luggageLabel,
+                          label: l10n.luggageLabel,
                           value: '$luggage',
                           alignEnd: true,
                         ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(
-                    height: 22,
+                  const SizedBox(height: 20),
+                  _TicketField(
+                    label: 'VEHICLE',
+                    value: trip.vehicleDescription,
                   ),
-
+                  const SizedBox(height: 22),
                   const Divider(),
-
-                  const SizedBox(
-                    height: 18,
-                  ),
-
-                  _buildReferences(
-                    context,
-                    l10n,
-                  ),
-
-                  const SizedBox(
-                    height: 22,
-                  ),
-
-                  _buildQrPlaceholder(
-                    context,
-                    l10n,
-                  ),
-
-                  const SizedBox(
-                    height: 18,
-                  ),
-
+                  const SizedBox(height: 18),
+                  _buildReferences(context, l10n),
+                  const SizedBox(height: 22),
+                  _buildQrPlaceholder(context, l10n),
+                  const SizedBox(height: 18),
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
                       '${_formatPrice(totalAmount)} FCFA',
-                      style: Theme.of(
-                        context,
-                      )
-                          .textTheme
-                          .headlineSmall
+                      style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                            color: AppColors
-                                .primary,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
                           ),
                     ),
                   ),
-
-                  const SizedBox(
-                    height: 4,
-                  ),
-
+                  const SizedBox(height: 4),
                   Text(
-                    l10n.paidVia(
-                      paymentMethod,
-                    ),
-                    textAlign:
-                        TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall,
+                    l10n.paidVia(paymentMethod),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
               ),
@@ -441,98 +294,56 @@ class DigitalTicketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTicketHeader(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildTicketHeader(BuildContext context, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(20),
-      decoration:
-          const BoxDecoration(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
+          colors: [AppColors.primary, AppColors.primaryDark],
         ),
       ),
       child: Row(
         children: [
           const Icon(
-            Icons
-                .confirmation_num_outlined,
+            Icons.confirmation_num_outlined,
             color: Colors.white,
             size: 32,
           ),
-
-          const SizedBox(
-            width: 12,
-          ),
-
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'easyGO',
                   style: TextStyle(
                     fontSize: 22,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-
-                const SizedBox(
-                  height: 3,
-                ),
-
+                const SizedBox(height: 3),
                 Text(
-                  isDoorToDoor
-                      ? l10n
-                          .doorToDoorTicket
-                      : l10n
-                          .interurbanTicket,
-                  style:
-                      const TextStyle(
-                    fontSize: 12,
-                    color:
-                        Colors.white70,
-                  ),
+                  isDoorToDoor ? l10n.doorToDoorTicket : l10n.interurbanTicket,
+                  style: const TextStyle(fontSize: 12, color: Colors.white70),
                 ),
               ],
             ),
           ),
-
           Container(
-            padding:
-                const EdgeInsets.symmetric(
-              horizontal: 11,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.white
-                  .withValues(
-                alpha: 0.18,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                20,
-              ),
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               l10n.paid,
-              style:
-                  const TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
-                fontWeight:
-                    FontWeight.bold,
+                fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
@@ -542,107 +353,57 @@ class DigitalTicketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRoute(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildRoute(BuildContext context, AppLocalizations l10n) {
     return Column(
       children: [
         Text(
-          agency['name']?.toString() ??
-              l10n.transportAgency,
+          agency['name']?.toString() ?? l10n.transportAgency,
           textAlign: TextAlign.center,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(
-                fontWeight:
-                    FontWeight.w600,
-                color:
-                    AppColors.primary,
-              ),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppColors.primary,
+          ),
         ),
-
-        const SizedBox(
-          height: 20,
-        ),
-
+        const SizedBox(height: 20),
         Row(
           children: [
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     l10n.from,
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .labelSmall,
+                    style: Theme.of(context).textTheme.labelSmall,
                   ),
-                  const SizedBox(
-                    height: 5,
-                  ),
+                  const SizedBox(height: 5),
                   Text(
                     departureCity,
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-                            ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
             ),
-
             const Padding(
-              padding:
-                  EdgeInsets.symmetric(
-                horizontal: 10,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 10),
               child: Icon(
-                Icons
-                    .arrow_forward_rounded,
-                color:
-                    AppColors.primary,
+                Icons.arrow_forward_rounded,
+                color: AppColors.primary,
               ),
             ),
-
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .end,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    l10n.to,
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .labelSmall,
-                  ),
-                  const SizedBox(
-                    height: 5,
-                  ),
+                  Text(l10n.to, style: Theme.of(context).textTheme.labelSmall),
+                  const SizedBox(height: 5),
                   Text(
                     destinationCity,
-                    textAlign:
-                        TextAlign.end,
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-                            ),
+                    textAlign: TextAlign.end,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -653,50 +414,27 @@ class DigitalTicketScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildReferences(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildReferences(BuildContext context, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest
-            .withValues(
-              alpha: 0.45,
-            ),
-        borderRadius:
-            BorderRadius.circular(12),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          _ReferenceRow(
-            label:
-                l10n.bookingReference,
-            value: bookingReference,
-          ),
-
-          const SizedBox(
-            height: 10,
-          ),
-
-          _ReferenceRow(
-            label:
-                l10n.ticketReference,
-            value: ticketReference,
-          ),
+          _ReferenceRow(label: l10n.bookingReference, value: bookingReference),
+          const SizedBox(height: 10),
+          _ReferenceRow(label: l10n.ticketReference, value: ticketReference),
         ],
       ),
     );
   }
 
-  Widget _buildQrPlaceholder(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildQrPlaceholder(BuildContext context, AppLocalizations l10n) {
     return Column(
       children: [
         Container(
@@ -704,36 +442,20 @@ class DigitalTicketScreen extends StatelessWidget {
           height: 130,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius:
-                BorderRadius.circular(
-              12,
-            ),
-            border: Border.all(
-              color: Colors.black
-                  .withValues(
-                alpha: 0.10,
-              ),
-            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.black.withValues(alpha: 0.10)),
           ),
           child: const Icon(
             Icons.qr_code_2_rounded,
             size: 105,
-            color:
-                AppColors.textPrimary,
+            color: AppColors.textPrimary,
           ),
         ),
-
-        const SizedBox(
-          height: 8,
-        ),
-
+        const SizedBox(height: 8),
         Text(
-          l10n
-              .presentTicketForVerification,
+          l10n.presentTicketForVerification,
           textAlign: TextAlign.center,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
     );
@@ -744,109 +466,59 @@ class DigitalTicketScreen extends StatelessWidget {
     AppLocalizations l10n,
   ) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(18),
       borderRadius: 17,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.doorToDoorJourney,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
-
-          const SizedBox(
-            height: 18,
-          ),
-
+          const SizedBox(height: 18),
           _JourneyLine(
             icon: Icons.home_outlined,
             title: l10n.pickup,
-            value: pickupLocation ??
-                l10n
-                    .pickupLocationFallback,
+            value: pickupLocation ?? l10n.pickupLocationFallback,
           ),
-
-          const SizedBox(
-            height: 16,
-          ),
-
+          const SizedBox(height: 16),
           _JourneyLine(
-            icon: Icons
-                .directions_bus_outlined,
+            icon: Icons.directions_bus_outlined,
             title: l10n.interurban,
             value:
-                '$departureCity → $destinationCity',
+                '$departureCity → '
+                '$destinationCity',
           ),
-
-          const SizedBox(
-            height: 16,
-          ),
-
+          const SizedBox(height: 16),
           _JourneyLine(
-            icon:
-                Icons.location_on_outlined,
-            title:
-                l10n.finalDestination,
-            value: finalDestination ??
-                l10n
-                    .finalDestinationFallback,
+            icon: Icons.location_on_outlined,
+            title: l10n.finalDestination,
+            value: finalDestination ?? l10n.finalDestinationFallback,
           ),
-
-          const SizedBox(
-            height: 16,
-          ),
-
+          const SizedBox(height: 16),
           Container(
-            padding:
-                const EdgeInsets.all(
-              12,
-            ),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                11,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(11),
             ),
             child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(
-                  Icons
-                      .local_taxi_outlined,
+                  Icons.local_taxi_outlined,
                   size: 20,
-                  color:
-                      AppColors.primary,
+                  color: AppColors.primary,
                 ),
-
-                const SizedBox(
-                  width: 9,
-                ),
-
+                const SizedBox(width: 9),
                 Expanded(
                   child: Text(
-                    l10n
-                        .taxiAssignmentInformation,
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(
-                              height: 1.5,
-                            ),
+                    l10n.taxiAssignmentInformation,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(height: 1.5),
                   ),
                 ),
               ],
@@ -862,48 +534,31 @@ class DigitalTicketScreen extends StatelessWidget {
     AppLocalizations l10n,
   ) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       borderRadius: 16,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.info_outline,
               size: 20,
-              color:
-                  AppColors.primary,
+              color: AppColors.primary,
             ),
           ),
-
-          const SizedBox(
-            width: 12,
-          ),
-
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
-              l10n
-                  .importantTicketInformation,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(
-                    height: 1.5,
-                  ),
+              l10n.importantTicketInformation,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(height: 1.5),
             ),
           ),
         ],
@@ -912,8 +567,7 @@ class DigitalTicketScreen extends StatelessWidget {
   }
 }
 
-class _TicketField
-    extends StatelessWidget {
+class _TicketField extends StatelessWidget {
   final String label;
   final String value;
   final bool alignEnd;
@@ -925,9 +579,7 @@ class _TicketField
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: alignEnd
           ? CrossAxisAlignment.end
@@ -935,82 +587,44 @@ class _TicketField
       children: [
         Text(
           label,
-          textAlign: alignEnd
-              ? TextAlign.end
-              : TextAlign.start,
-          style: Theme.of(context)
-              .textTheme
-              .labelSmall,
+          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+          style: Theme.of(context).textTheme.labelSmall,
         ),
-
-        const SizedBox(
-          height: 5,
-        ),
-
+        const SizedBox(height: 5),
         Text(
           value,
-          textAlign: alignEnd
-              ? TextAlign.end
-              : TextAlign.start,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(
-                fontWeight:
-                    FontWeight.w600,
-              ),
+          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
     );
   }
 }
 
-class _ReferenceRow
-    extends StatelessWidget {
+class _ReferenceRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ReferenceRow({
-    required this.label,
-    required this.value,
-  });
+  const _ReferenceRow({required this.label, required this.value});
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: Text(
-            label,
-            style:
-                Theme.of(context)
-                    .textTheme
-                    .bodySmall,
-          ),
+          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
         ),
-
-        const SizedBox(
-          width: 12,
-        ),
-
+        const SizedBox(width: 12),
         Flexible(
           child: SelectableText(
             value,
-            textAlign:
-                TextAlign.end,
-            style:
-                Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight
-                              .bold,
-                    ),
+            textAlign: TextAlign.end,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -1018,8 +632,7 @@ class _ReferenceRow
   }
 }
 
-class _JourneyLine
-    extends StatelessWidget {
+class _JourneyLine extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
@@ -1031,51 +644,23 @@ class _JourneyLine
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          color: AppColors.primary,
-        ),
-
-        const SizedBox(
-          width: 12,
-        ),
-
+        Icon(icon, color: AppColors.primary),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment
-                    .start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style:
-                    Theme.of(context)
-                        .textTheme
-                        .bodySmall,
-              ),
-
-              const SizedBox(
-                height: 3,
-              ),
-
+              Text(title, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 3),
               Text(
                 value,
-                style:
-                    Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(
-                          fontWeight:
-                              FontWeight
-                                  .w500,
-                        ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               ),
             ],
           ),

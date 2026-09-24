@@ -24,8 +24,7 @@ class AdminAgencyDetailsScreen extends StatefulWidget {
       _AdminAgencyDetailsScreenState();
 }
 
-class _AdminAgencyDetailsScreenState
-    extends State<AdminAgencyDetailsScreen> {
+class _AdminAgencyDetailsScreenState extends State<AdminAgencyDetailsScreen> {
   late String _status;
 
   @override
@@ -53,9 +52,9 @@ class _AdminAgencyDetailsScreenState
                 const SizedBox(height: 12),
                 Text(
                   widget.name,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 Text(widget.city),
                 const SizedBox(height: 8),
@@ -106,10 +105,7 @@ class _AdminAgencyDetailsScreenState
       child: Row(
         children: [
           Expanded(child: Text(label)),
-          Text(
-            value,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
         ],
       ),
     );

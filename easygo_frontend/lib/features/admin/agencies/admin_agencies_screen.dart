@@ -16,10 +16,34 @@ class _AdminAgenciesScreenState extends State<AdminAgenciesScreen> {
   String _filter = 'All';
 
   final List<Map<String, String>> _agencies = const [
-    {'name': 'General Express', 'city': 'Yaoundé', 'status': 'Verified', 'trips': '68', 'bookings': '426'},
-    {'name': 'Central Voyage', 'city': 'Douala', 'status': 'Pending', 'trips': '0', 'bookings': '0'},
-    {'name': 'Global Travel', 'city': 'Bafoussam', 'status': 'Verified', 'trips': '41', 'bookings': '271'},
-    {'name': 'City Transport', 'city': 'Buea', 'status': 'Suspended', 'trips': '22', 'bookings': '119'},
+    {
+      'name': 'General Express',
+      'city': 'Yaoundé',
+      'status': 'Verified',
+      'trips': '68',
+      'bookings': '426',
+    },
+    {
+      'name': 'Central Voyage',
+      'city': 'Douala',
+      'status': 'Pending',
+      'trips': '0',
+      'bookings': '0',
+    },
+    {
+      'name': 'Global Travel',
+      'city': 'Bafoussam',
+      'status': 'Verified',
+      'trips': '41',
+      'bookings': '271',
+    },
+    {
+      'name': 'City Transport',
+      'city': 'Buea',
+      'status': 'Suspended',
+      'trips': '22',
+      'bookings': '119',
+    },
   ];
 
   @override
@@ -31,8 +55,7 @@ class _AdminAgenciesScreenState extends State<AdminAgenciesScreen> {
       final matchesQuery =
           agency['name']!.toLowerCase().contains(q) ||
           agency['city']!.toLowerCase().contains(q);
-      final matchesFilter =
-          _filter == 'All' || agency['status'] == _filter;
+      final matchesFilter = _filter == 'All' || agency['status'] == _filter;
       return matchesQuery && matchesFilter;
     }).toList();
 

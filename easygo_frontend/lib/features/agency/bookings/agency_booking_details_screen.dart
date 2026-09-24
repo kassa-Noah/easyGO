@@ -5,18 +5,13 @@ import '../../../../shared/widgets/glass_container.dart';
 import 'manage_booking_status_screen.dart';
 
 class AgencyBookingDetailsScreen extends StatelessWidget {
-  const AgencyBookingDetailsScreen({
-    super.key,
-    required this.booking,
-  });
+  const AgencyBookingDetailsScreen({super.key, required this.booking});
 
   final Map<String, dynamic> booking;
 
-  bool get _isDoorToDoor =>
-      booking['bookingMode'] == 'Door-to-Door';
+  bool get _isDoorToDoor => booking['bookingMode'] == 'Door-to-Door';
 
-  bool get _canManage =>
-      booking['status'] == 'Confirmed';
+  bool get _canManage => booking['status'] == 'Confirmed';
 
   String _formatPrice(int value) {
     return value.toString().replaceAllMapped(
@@ -51,32 +46,21 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
     }
   }
 
-  void _openStatusManagement(
-    BuildContext context,
-  ) {
+  void _openStatusManagement(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            ManageBookingStatusScreen(
-          booking: booking,
-        ),
+        builder: (context) => ManageBookingStatusScreen(booking: booking),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Booking Details',
-        ),
-      ),
+      appBar: AppBar(title: const Text('Booking Details')),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -104,20 +88,12 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              34,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 34),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 850,
-                ),
+                constraints: const BoxConstraints(maxWidth: 850),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildBookingHeader(context),
                     const SizedBox(height: 18),
@@ -144,36 +120,27 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBookingHeader(
-    BuildContext context,
-  ) {
-    final String status =
-        booking['status'] as String;
+  Widget _buildBookingHeader(BuildContext context) {
+    final String status = booking['status'] as String;
 
-    final Color color =
-        _statusColor(status);
+    final Color color = _statusColor(status);
 
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 52,
                 height: 52,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(14),
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.confirmation_number_outlined,
@@ -184,26 +151,18 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
               const SizedBox(width: 13),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      booking['bookingReference']
-                          as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      booking['bookingReference'] as String,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      booking['ticketReference']
-                          as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      booking['ticketReference'] as String,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -215,20 +174,13 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
                   vertical: 7,
                 ),
                 decoration: BoxDecoration(
-                  color: color.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(18),
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      _statusIcon(status),
-                      size: 14,
-                      color: color,
-                    ),
+                    Icon(_statusIcon(status), size: 14, color: color),
                     const SizedBox(width: 5),
                     Text(
                       status,
@@ -244,9 +196,7 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Divider(
-            color: Theme.of(context).dividerColor,
-          ),
+          Divider(color: Theme.of(context).dividerColor),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -258,12 +208,9 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
               const SizedBox(width: 7),
               Text(
                 'General Express',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -272,9 +219,7 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildClientSection(
-    BuildContext context,
-  ) {
+  Widget _buildClientSection(BuildContext context) {
     return _SectionCard(
       title: 'Client Information',
       child: Column(
@@ -282,24 +227,20 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
           _DetailRow(
             icon: Icons.person_outline,
             label: 'Client Name',
-            value:
-                booking['clientName'] as String,
+            value: booking['clientName'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
             icon: Icons.phone_outlined,
             label: 'Phone Number',
-            value:
-                booking['clientPhone'] as String,
+            value: booking['clientPhone'] as String,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTripSection(
-    BuildContext context,
-  ) {
+  Widget _buildTripSection(BuildContext context) {
     return _SectionCard(
       title: 'Trip Information',
       child: Column(
@@ -315,8 +256,7 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
           _DetailRow(
             icon: Icons.directions_bus_outlined,
             label: 'Trip Reference',
-            value:
-                booking['tripId'] as String,
+            value: booking['tripId'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
@@ -336,22 +276,17 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
           _DetailRow(
             icon: Icons.event_seat_outlined,
             label: 'Travel Class',
-            value:
-                booking['travelClass'] as String,
+            value: booking['travelClass'] as String,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBookingSection(
-    BuildContext context,
-  ) {
-    final int passengers =
-        booking['passengers'] as int;
+  Widget _buildBookingSection(BuildContext context) {
+    final int passengers = booking['passengers'] as int;
 
-    final int luggage =
-        booking['luggage'] as int;
+    final int luggage = booking['luggage'] as int;
 
     return _SectionCard(
       title: 'Booking Information',
@@ -362,8 +297,7 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
                 ? Icons.home_work_outlined
                 : Icons.directions_bus_outlined,
             label: 'Booking Mode',
-            value:
-                booking['bookingMode'] as String,
+            value: booking['bookingMode'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
@@ -386,24 +320,17 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDoorToDoorSection(
-    BuildContext context,
-  ) {
+  Widget _buildDoorToDoorSection(BuildContext context) {
     final String pickup =
-        booking['pickupLocation']
-                as String? ??
-            'Not available';
+        booking['pickupLocation'] as String? ?? 'Not available';
 
     final String destination =
-        booking['finalDestination']
-                as String? ??
-            'Not available';
+        booking['finalDestination'] as String? ?? 'Not available';
 
     return _SectionCard(
       title: 'Door-to-Door Journey',
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _JourneyStage(
             icon: Icons.home_outlined,
@@ -414,8 +341,7 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
           const _JourneyStage(
             icon: Icons.local_taxi_outlined,
             title: 'Pickup Taxi',
-            value:
-                'External provider assignment',
+            value: 'External provider assignment',
           ),
           _buildJourneyConnector(),
           const _JourneyStage(
@@ -441,8 +367,7 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
           const _JourneyStage(
             icon: Icons.local_taxi_outlined,
             title: 'Destination Taxi',
-            value:
-                'External provider assignment',
+            value: 'External provider assignment',
           ),
           _buildJourneyConnector(),
           _JourneyStage(
@@ -457,47 +382,36 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
 
   Widget _buildJourneyConnector() {
     return Padding(
-      padding: const EdgeInsets.only(
-        left: 19,
-      ),
+      padding: const EdgeInsets.only(left: 19),
       child: Container(
         width: 2,
         height: 20,
-        color: AppColors.primary.withValues(
-          alpha: 0.25,
-        ),
+        color: AppColors.primary.withValues(alpha: 0.25),
       ),
     );
   }
 
-  Widget _buildPaymentSection(
-    BuildContext context,
-  ) {
-    final String paymentStatus =
-        booking['paymentStatus'] as String;
+  Widget _buildPaymentSection(BuildContext context) {
+    final String paymentStatus = booking['paymentStatus'] as String;
 
-    final Color paymentColor =
-        paymentStatus == 'Paid'
-            ? AppColors.success
-            : AppColors.warning;
+    final Color paymentColor = paymentStatus == 'Paid'
+        ? AppColors.success
+        : AppColors.warning;
 
     return _SectionCard(
       title: 'Payment Information',
       child: Column(
         children: [
           _DetailRow(
-            icon:
-                Icons.account_balance_wallet_outlined,
+            icon: Icons.account_balance_wallet_outlined,
             label: 'Payment Method',
-            value:
-                booking['paymentMethod'] as String,
+            value: booking['paymentMethod'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
             icon: Icons.payments_outlined,
             label: 'Amount Paid',
-            value:
-                '${_formatPrice(booking['amount'] as int)} FCFA',
+            value: '${_formatPrice(booking['amount'] as int)} FCFA',
           ),
           const SizedBox(height: 14),
           Row(
@@ -506,11 +420,8 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: paymentColor.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(11),
+                  color: paymentColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(11),
                 ),
                 child: Icon(
                   Icons.verified_outlined,
@@ -521,26 +432,19 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
               const SizedBox(width: 11),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Payment Status',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall,
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                     const SizedBox(height: 3),
                     Text(
                       paymentStatus,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.w600,
-                            color: paymentColor,
-                          ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: paymentColor,
+                      ),
                     ),
                   ],
                 ),
@@ -552,40 +456,30 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildManagementSection(
-    BuildContext context,
-  ) {
-    final String status =
-        booking['status'] as String;
+  Widget _buildManagementSection(BuildContext context) {
+    final String status = booking['status'] as String;
 
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Booking Management',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 7),
           Text(
             _canManage
                 ? 'This confirmed booking can be completed or cancelled according to the booking lifecycle.'
                 : 'Status management is unavailable because this booking is $status.',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(
-                  height: 1.45,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(height: 1.45),
           ),
           const SizedBox(height: 18),
           SizedBox(
@@ -593,17 +487,11 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
             child: FilledButton.icon(
               onPressed: _canManage
                   ? () {
-                      _openStatusManagement(
-                        context,
-                      );
+                      _openStatusManagement(context);
                     }
                   : null,
-              icon: const Icon(
-                Icons.manage_history_outlined,
-              ),
-              label: const Text(
-                'Manage Booking Status',
-              ),
+              icon: const Icon(Icons.manage_history_outlined),
+              label: const Text('Manage Booking Status'),
             ),
           ),
         ],
@@ -613,10 +501,7 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-  });
+  const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -628,17 +513,13 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 18),
           child,
@@ -662,47 +543,29 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(
-              alpha: 0.10,
-            ),
-            borderRadius:
-                BorderRadius.circular(11),
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(11),
           ),
-          child: Icon(
-            icon,
-            size: 19,
-            color: AppColors.primary,
-          ),
+          child: Icon(icon, size: 19, color: AppColors.primary),
         ),
         const SizedBox(width: 11),
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall,
-              ),
+              Text(label, style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 3),
               Text(
                 value,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -726,46 +589,29 @@ class _JourneyStage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(
-              alpha: 0.10,
-            ),
+            color: AppColors.primary.withValues(alpha: 0.10),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            size: 19,
-            color: AppColors.primary,
-          ),
+          child: Icon(icon, size: 19, color: AppColors.primary),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall,
-              ),
+              Text(title, style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 3),
               Text(
                 value,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),

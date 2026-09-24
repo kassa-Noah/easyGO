@@ -15,14 +15,15 @@ class AdminBookingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-
           GlassContainer(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.confirmation_number_outlined),
               title: const Text('BKG-DEMO-001'),
               subtitle: const Text('Marie N. • General Express'),
-              trailing: Chip(label: Text(l.agencyBookingStatusLabel('Confirmed'))),
+              trailing: Chip(
+                label: Text(l.agencyBookingStatusLabel('Confirmed')),
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -32,7 +33,9 @@ class AdminBookingsScreen extends StatelessWidget {
               leading: const Icon(Icons.confirmation_number_outlined),
               title: const Text('BKG-DEMO-002'),
               subtitle: const Text('Paul T. • Global Travel'),
-              trailing: Chip(label: Text(l.agencyBookingStatusLabel('Completed'))),
+              trailing: Chip(
+                label: Text(l.agencyBookingStatusLabel('Completed')),
+              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -42,7 +45,9 @@ class AdminBookingsScreen extends StatelessWidget {
               leading: const Icon(Icons.confirmation_number_outlined),
               title: const Text('BKG-DEMO-003'),
               subtitle: const Text('Kevin A. • General Express'),
-              trailing: Chip(label: Text(l.agencyBookingStatusLabel('Cancelled'))),
+              trailing: Chip(
+                label: Text(l.agencyBookingStatusLabel('Cancelled')),
+              ),
             ),
           ),
           const SizedBox(height: 12),

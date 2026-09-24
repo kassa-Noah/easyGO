@@ -31,8 +31,7 @@ class TrackingDetailsScreen extends StatelessWidget {
   ];
 
   int get _currentStatusIndex {
-    final int index =
-        _statuses.indexOf(currentStatus);
+    final int index = _statuses.indexOf(currentStatus);
 
     return index < 0 ? 0 : index;
   }
@@ -42,28 +41,19 @@ class TrackingDetailsScreen extends StatelessWidget {
       return 0;
     }
 
-    return _currentStatusIndex /
-        (_statuses.length - 1);
+    return _currentStatusIndex / (_statuses.length - 1);
   }
 
-  bool get _isParcel =>
-      itemType.toLowerCase() == 'parcel';
+  bool get _isParcel => itemType.toLowerCase() == 'parcel';
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.trackingDetails,
-        ),
-      ),
+      appBar: AppBar(title: Text(l10n.trackingDetails)),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -71,8 +61,7 @@ class TrackingDetailsScreen extends StatelessWidget {
           gradient: isDark
               ? const LinearGradient(
                   begin: Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF09111F),
                     Color(0xFF0D1B2A),
@@ -81,8 +70,7 @@ class TrackingDetailsScreen extends StatelessWidget {
                 )
               : const LinearGradient(
                   begin: Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFFF2F8FF),
                     Color(0xFFF7FBFF),
@@ -93,61 +81,32 @@ class TrackingDetailsScreen extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: ListView(
-            padding:
-                const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(
-                    maxWidth: 820,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 820),
                   child: Column(
                     children: [
-                      _buildItemHeader(
-                        context,
-                        l10n,
-                      ),
+                      _buildItemHeader(context, l10n),
 
-                      const SizedBox(
-                        height: 20,
-                      ),
+                      const SizedBox(height: 20),
 
-                      _buildProgressCard(
-                        context,
-                        l10n,
-                      ),
+                      _buildProgressCard(context, l10n),
 
-                      const SizedBox(
-                        height: 20,
-                      ),
+                      const SizedBox(height: 20),
 
-                      _buildRouteCard(
-                        context,
-                        l10n,
-                      ),
+                      _buildRouteCard(context, l10n),
 
-                      const SizedBox(
-                        height: 20,
-                      ),
+                      const SizedBox(height: 20),
 
-                      _buildTimelineCard(
-                        context,
-                        l10n,
-                      ),
+                      _buildTimelineCard(context, l10n),
 
-                      const SizedBox(
-                        height: 20,
-                      ),
+                      const SizedBox(height: 20),
 
-                      _buildTrackingNotice(
-                        context,
-                        l10n,
-                      ),
+                      _buildTrackingNotice(context, l10n),
 
-                      const SizedBox(
-                        height: 24,
-                      ),
+                      const SizedBox(height: 24),
                     ],
                   ),
                 ),
@@ -159,13 +118,9 @@ class TrackingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildItemHeader(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildItemHeader(BuildContext context, AppLocalizations l10n) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(18),
       borderRadius: 17,
       child: Row(
         children: [
@@ -173,83 +128,44 @@ class TrackingDetailsScreen extends StatelessWidget {
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                15,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Icon(
-              _isParcel
-                  ? Icons
-                      .inventory_2_outlined
-                  : Icons
-                      .luggage_outlined,
+              _isParcel ? Icons.inventory_2_outlined : Icons.luggage_outlined,
               size: 30,
-              color:
-                  AppColors.primary,
+              color: AppColors.primary,
             ),
           ),
 
-          const SizedBox(
-            width: 14,
-          ),
+          const SizedBox(width: 14),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isParcel
-                      ? l10n
-                          .independentParcel
-                      : l10n
-                          .travelerLuggage,
-                  style:
-                      Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight
-                                    .bold,
-                          ),
+                  _isParcel ? l10n.independentParcel : l10n.travelerLuggage,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
 
-                const SizedBox(
-                  height: 6,
-                ),
+                const SizedBox(height: 6),
 
                 Text(
                   l10n.trackingReference,
-                  style:
-                      Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
 
-                const SizedBox(
-                  height: 3,
-                ),
+                const SizedBox(height: 3),
 
                 SelectableText(
                   trackingReference,
-                  style:
-                      Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight
-                                    .w600,
-                            color: AppColors
-                                .primary,
-                          ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
                 ),
               ],
             ),
@@ -259,119 +175,66 @@ class TrackingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressCard(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildProgressCard(BuildContext context, AppLocalizations l10n) {
     return GlassContainer(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(22),
       borderRadius: 18,
       child: Column(
         children: [
           Text(
             l10n.journeyProgress,
-            textAlign:
-                TextAlign.center,
-            style:
-                Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(
-            height: 25,
-          ),
+          const SizedBox(height: 25),
 
           TweenAnimationBuilder<double>(
-            tween: Tween<double>(
-              begin: 0,
-              end: _progress,
-            ),
-            duration:
-                const Duration(
-              milliseconds: 850,
-            ),
+            tween: Tween<double>(begin: 0, end: _progress),
+            duration: const Duration(milliseconds: 850),
             curve: Curves.easeOutCubic,
-            builder: (
-              context,
-              animatedProgress,
-              child,
-            ) {
-              final int
-                  animatedPercentage =
-                  (animatedProgress * 100)
-                      .round();
+            builder: (context, animatedProgress, child) {
+              final int animatedPercentage = (animatedProgress * 100).round();
 
               return SizedBox(
                 width: 170,
                 height: 170,
                 child: Stack(
-                  alignment:
-                      Alignment.center,
+                  alignment: Alignment.center,
                   children: [
                     SizedBox(
                       width: 160,
                       height: 160,
-                      child:
-                          CircularProgressIndicator(
-                        value:
-                            animatedProgress,
+                      child: CircularProgressIndicator(
+                        value: animatedProgress,
                         strokeWidth: 13,
-                        backgroundColor:
-                            Theme.of(
-                          context,
-                        ).dividerColor,
-                        color: AppColors
-                            .secondary,
-                        strokeCap:
-                            StrokeCap.round,
+                        backgroundColor: Theme.of(context).dividerColor,
+                        color: AppColors.secondary,
+                        strokeCap: StrokeCap.round,
                       ),
                     ),
 
                     Column(
-                      mainAxisSize:
-                          MainAxisSize.min,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           '$animatedPercentage%',
-                          style:
-                              Theme.of(
-                            context,
-                          )
-                                  .textTheme
-                                  .headlineMedium
-                                  ?.copyWith(
-                                    fontSize:
-                                        32,
-                                    fontWeight:
-                                        FontWeight
-                                            .bold,
-                                  ),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
 
-                        const SizedBox(
-                          height: 3,
-                        ),
+                        const SizedBox(height: 3),
 
                         Text(
                           l10n.progress,
-                          style:
-                              Theme.of(
-                            context,
-                          )
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    fontWeight:
-                                        FontWeight
-                                            .w600,
-                                  ),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -381,138 +244,75 @@ class TrackingDetailsScreen extends StatelessWidget {
             },
           ),
 
-          const SizedBox(
-            height: 22,
-          ),
+          const SizedBox(height: 22),
 
           Container(
-            padding:
-                const EdgeInsets
-                    .symmetric(
-              horizontal: 16,
-              vertical: 9,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
             decoration: BoxDecoration(
-              color: AppColors.secondary
-                  .withValues(
-                alpha: 0.13,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                20,
-              ),
+              color: AppColors.secondary.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              l10n
-                  .trackingStatusLabel(
-                    currentStatus,
-                  )
-                  .toUpperCase(),
-              textAlign:
-                  TextAlign.center,
-              style:
-                  const TextStyle(
+              l10n.trackingStatusLabel(currentStatus).toUpperCase(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
                 fontSize: 12,
-                fontWeight:
-                    FontWeight.bold,
-                color: AppColors
-                    .secondaryDark,
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondaryDark,
               ),
             ),
           ),
 
-          const SizedBox(
-            height: 14,
-          ),
+          const SizedBox(height: 14),
 
           Text(
-            l10n
-                .operationalProgressDescription,
-            textAlign:
-                TextAlign.center,
-            style:
-                Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                      height: 1.4,
-                    ),
+            l10n.operationalProgressDescription,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.4),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRouteCard(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildRouteCard(BuildContext context, AppLocalizations l10n) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(18),
       borderRadius: 16,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.transportRoute,
-            style:
-                Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(
-            height: 20,
-          ),
+          const SizedBox(height: 20),
 
           Row(
             children: [
               Expanded(
-                child: _RouteLocation(
-                  label: l10n.from,
-                  city: departureCity,
-                ),
+                child: _RouteLocation(label: l10n.from, city: departureCity),
               ),
 
               Expanded(
                 child: Column(
                   children: [
                     const Icon(
-                      Icons
-                          .local_shipping_outlined,
-                      color:
-                          AppColors.primary,
+                      Icons.local_shipping_outlined,
+                      color: AppColors.primary,
                     ),
 
-                    const SizedBox(
-                      height: 5,
-                    ),
+                    const SizedBox(height: 5),
 
                     Container(
                       height: 2,
-                      margin:
-                          const EdgeInsets
-                              .symmetric(
-                        horizontal: 8,
-                      ),
-                      decoration:
-                          BoxDecoration(
-                        color: AppColors
-                            .primary
-                            .withValues(
-                          alpha: 0.55,
-                        ),
-                        borderRadius:
-                            BorderRadius
-                                .circular(
-                          20,
-                        ),
+                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                   ],
@@ -522,8 +322,7 @@ class TrackingDetailsScreen extends StatelessWidget {
               Expanded(
                 child: _RouteLocation(
                   label: l10n.to,
-                  city:
-                      destinationCity,
+                  city: destinationCity,
                   alignEnd: true,
                 ),
               ),
@@ -534,112 +333,69 @@ class TrackingDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimelineCard(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildTimelineCard(BuildContext context, AppLocalizations l10n) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(18),
       borderRadius: 16,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             l10n.trackingTimeline,
-            style:
-                Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(
-            height: 22,
-          ),
+          const SizedBox(height: 22),
 
-          ...List.generate(
-            _statuses.length,
-            (index) {
-              final bool completed =
-                  index <
-                      _currentStatusIndex;
+          ...List.generate(_statuses.length, (index) {
+            final bool completed = index < _currentStatusIndex;
 
-              final bool current =
-                  index ==
-                      _currentStatusIndex;
+            final bool current = index == _currentStatusIndex;
 
-              return _TimelineItem(
-                title: l10n
-                    .trackingStatusLabel(
-                  _statuses[index],
-                ),
-                currentStatusLabel:
-                    l10n.currentStatus,
-                completed: completed,
-                current: current,
-                showLine: index <
-                    _statuses.length - 1,
-              );
-            },
-          ),
+            return _TimelineItem(
+              title: l10n.trackingStatusLabel(_statuses[index]),
+              currentStatusLabel: l10n.currentStatus,
+              completed: completed,
+              current: current,
+              showLine: index < _statuses.length - 1,
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildTrackingNotice(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
+  Widget _buildTrackingNotice(BuildContext context, AppLocalizations l10n) {
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(15),
       borderRadius: 14,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.info_outline,
               size: 20,
-              color:
-                  AppColors.primary,
+              color: AppColors.primary,
             ),
           ),
 
-          const SizedBox(
-            width: 11,
-          ),
+          const SizedBox(width: 11),
 
           Expanded(
             child: Text(
-              l10n
-                  .trackingUpdateNotice,
-              style:
-                  Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        height: 1.5,
-                      ),
+              l10n.trackingUpdateNotice,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(height: 1.5),
             ),
           ),
         ],
@@ -648,8 +404,7 @@ class TrackingDetailsScreen extends StatelessWidget {
   }
 }
 
-class _RouteLocation
-    extends StatelessWidget {
+class _RouteLocation extends StatelessWidget {
   final String label;
   final String city;
   final bool alignEnd;
@@ -661,9 +416,7 @@ class _RouteLocation
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: alignEnd
           ? CrossAxisAlignment.end
@@ -671,40 +424,25 @@ class _RouteLocation
       children: [
         Text(
           label,
-          textAlign: alignEnd
-              ? TextAlign.end
-              : TextAlign.start,
-          style:
-              Theme.of(context)
-                  .textTheme
-                  .labelSmall,
+          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+          style: Theme.of(context).textTheme.labelSmall,
         ),
 
-        const SizedBox(
-          height: 5,
-        ),
+        const SizedBox(height: 5),
 
         Text(
           city,
-          textAlign: alignEnd
-              ? TextAlign.end
-              : TextAlign.start,
-          style:
-              Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
+          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 }
 
-class _TimelineItem
-    extends StatelessWidget {
+class _TimelineItem extends StatelessWidget {
   final String title;
   final String currentStatusLabel;
   final bool completed;
@@ -720,162 +458,97 @@ class _TimelineItem
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    final bool active =
-        completed || current;
+  Widget build(BuildContext context) {
+    final bool active = completed || current;
 
-    final Color inactiveColor =
-        Theme.of(context).dividerColor;
+    final Color inactiveColor = Theme.of(context).dividerColor;
 
     return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
             width: 36,
             child: Column(
               children: [
                 AnimatedContainer(
-                  duration:
-                      const Duration(
-                    milliseconds: 250,
-                  ),
+                  duration: const Duration(milliseconds: 250),
                   width: 26,
                   height: 26,
-                  decoration:
-                      BoxDecoration(
+                  decoration: BoxDecoration(
                     color: completed
                         ? AppColors.success
                         : current
-                            ? AppColors
-                                .primary
-                            : Theme.of(
-                                context,
-                              )
-                                .colorScheme
-                                .surface,
-                    shape:
-                        BoxShape.circle,
-                    border:
-                        Border.all(
+                        ? AppColors.primary
+                        : Theme.of(context).colorScheme.surface,
+                    shape: BoxShape.circle,
+                    border: Border.all(
                       color: active
                           ? completed
-                              ? AppColors
-                                  .success
-                              : AppColors
-                                  .primary
+                                ? AppColors.success
+                                : AppColors.primary
                           : inactiveColor,
                       width: 2,
                     ),
                   ),
                   child: completed
-                      ? const Icon(
-                          Icons.check,
-                          size: 16,
-                          color:
-                              Colors.white,
-                        )
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
                       : current
-                          ? const Center(
-                              child:
-                                  SizedBox(
-                                width: 8,
-                                height: 8,
-                                child:
-                                    DecoratedBox(
-                                  decoration:
-                                      BoxDecoration(
-                                    color: Colors
-                                        .white,
-                                    shape:
-                                        BoxShape
-                                            .circle,
-                                  ),
-                                ),
+                      ? const Center(
+                          child: SizedBox(
+                            width: 8,
+                            height: 8,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
                               ),
-                            )
-                          : null,
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
 
                 if (showLine)
                   Expanded(
-                    child:
-                        AnimatedContainer(
-                      duration:
-                          const Duration(
-                        milliseconds:
-                            250,
-                      ),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
                       width: 2,
-                      constraints:
-                          const BoxConstraints(
-                        minHeight: 35,
-                      ),
-                      color: completed
-                          ? AppColors.success
-                          : inactiveColor,
+                      constraints: const BoxConstraints(minHeight: 35),
+                      color: completed ? AppColors.success : inactiveColor,
                     ),
                   ),
               ],
             ),
           ),
 
-          const SizedBox(
-            width: 10,
-          ),
+          const SizedBox(width: 10),
 
           Expanded(
             child: Padding(
-              padding:
-                  const EdgeInsets.only(
-                bottom: 24,
-              ),
+              padding: const EdgeInsets.only(bottom: 24),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                              fontWeight:
-                                  current
-                                      ? FontWeight
-                                          .bold
-                                      : FontWeight
-                                          .w500,
-                              color: active
-                                  ? null
-                                  : Theme.of(
-                                      context,
-                                    )
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                            ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: current ? FontWeight.bold : FontWeight.w500,
+                      color: active
+                          ? null
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
 
                   if (current) ...[
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: 4),
 
                     Text(
                       currentStatusLabel,
-                      style:
-                          const TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
-                        fontWeight:
-                            FontWeight
-                                .w600,
-                        color: AppColors
-                            .primary,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],

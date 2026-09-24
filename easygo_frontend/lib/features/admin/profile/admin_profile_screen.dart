@@ -20,17 +20,14 @@ class AdminProfileScreen extends StatelessWidget {
               children: [
                 const CircleAvatar(
                   radius: 38,
-                  child: Icon(
-                    Icons.admin_panel_settings_outlined,
-                    size: 38,
-                  ),
+                  child: Icon(Icons.admin_panel_settings_outlined, size: 38),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   l.administrator,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const Text('admin@easygo.cm'),
                 const SizedBox(height: 8),

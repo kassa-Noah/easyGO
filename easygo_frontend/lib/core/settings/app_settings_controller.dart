@@ -1,23 +1,15 @@
 import 'package:flutter/material.dart';
 
-enum AppLanguage {
-  english,
-  french,
-}
+enum AppLanguage { english, french }
 
-class AppSettingsController
-    extends ChangeNotifier {
-  ThemeMode _themeMode =
-      ThemeMode.system;
+class AppSettingsController extends ChangeNotifier {
+  ThemeMode _themeMode = ThemeMode.system;
 
-  AppLanguage _language =
-      AppLanguage.english;
+  AppLanguage _language = AppLanguage.english;
 
-  ThemeMode get themeMode =>
-      _themeMode;
+  ThemeMode get themeMode => _themeMode;
 
-  AppLanguage get language =>
-      _language;
+  AppLanguage get language => _language;
 
   Locale get locale {
     switch (_language) {
@@ -29,17 +21,11 @@ class AppSettingsController
     }
   }
 
-  bool get isEnglish =>
-      _language ==
-      AppLanguage.english;
+  bool get isEnglish => _language == AppLanguage.english;
 
-  bool get isFrench =>
-      _language ==
-      AppLanguage.french;
+  bool get isFrench => _language == AppLanguage.french;
 
-  void setThemeMode(
-    ThemeMode mode,
-  ) {
+  void setThemeMode(ThemeMode mode) {
     if (_themeMode == mode) {
       return;
     }
@@ -49,9 +35,7 @@ class AppSettingsController
     notifyListeners();
   }
 
-  void setLanguage(
-    AppLanguage language,
-  ) {
+  void setLanguage(AppLanguage language) {
     if (_language == language) {
       return;
     }

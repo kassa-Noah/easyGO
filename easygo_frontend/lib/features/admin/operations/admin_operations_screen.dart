@@ -16,9 +16,17 @@ class AdminOperationsScreen extends StatelessWidget {
 
     final items = [
       (l.monitorTrips, Icons.directions_bus_outlined, const AdminTripsScreen()),
-      (l.monitorBookings, Icons.confirmation_number_outlined, const AdminBookingsScreen()),
+      (
+        l.monitorBookings,
+        Icons.confirmation_number_outlined,
+        const AdminBookingsScreen(),
+      ),
       (l.monitorLuggage, Icons.luggage_outlined, const AdminLuggageScreen()),
-      (l.monitorParcels, Icons.inventory_2_outlined, const AdminParcelsScreen()),
+      (
+        l.monitorParcels,
+        Icons.inventory_2_outlined,
+        const AdminParcelsScreen(),
+      ),
     ];
 
     return Scaffold(
@@ -47,9 +55,7 @@ class AdminOperationsScreen extends StatelessWidget {
               ),
             ),
           ),
-          GlassContainer(
-            child: Text(l.adminOperationsReadOnlyNotice),
-          ),
+          GlassContainer(child: Text(l.adminOperationsReadOnlyNotice)),
         ],
       ),
     );

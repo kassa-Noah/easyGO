@@ -4,7 +4,5 @@ import 'app.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(
-    const EasyGoApp(),
-  );
+  runApp(const EasyGoApp());
 }

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../trips/models/trip.dart';
 import 'booking_confirmation_screen.dart';
 
-class PaymentScreen
-    extends StatefulWidget {
+class PaymentScreen extends StatefulWidget {
   final Map<String, dynamic> agency;
-  final Map<String, dynamic> trip;
+  final Trip trip;
 
   final String bookingMode;
   final String departureCity;
@@ -39,62 +39,56 @@ class PaymentScreen
   });
 
   @override
-  State<PaymentScreen> createState() =>
-      _PaymentScreenState();
+  State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _PaymentScreenState
-    extends State<PaymentScreen> {
-  final GlobalKey<FormState> _formKey =
-      GlobalKey<FormState>();
+class _PaymentScreenState extends State<PaymentScreen> {
+  String? _selectedPaymentMethod;
 
-  final TextEditingController
-      _phoneController =
-      TextEditingController();
-
-  String? _selectedMethod;
   bool _isProcessing = false;
+
+  final TextEditingController _phoneController = TextEditingController();
+
+  final List<String> _paymentMethods = const [
+    'MTN Mobile Money',
+    'Orange Money',
+  ];
 
   @override
   void dispose() {
     _phoneController.dispose();
-
     super.dispose();
   }
 
-  String _formatPrice(
-    int value,
-  ) {
-    return value
-        .toString()
-        .replaceAllMapped(
-          RegExp(
-            r'(?=(\d{3})+(?!\d))',
-          ),
-          (match) => ',',
-        );
+  String _formatPrice(int value) {
+    return value.toString().replaceAllMapped(
+      RegExp(r'(?=(\d{3})+(?!\d))'),
+      (match) => ',',
+    );
   }
 
-  Future<void> _processPayment() async {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+  bool _isValidPhoneNumber(String value) {
+    final String phone = value.replaceAll(' ', '').trim();
 
-    if (_selectedMethod == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n
-                .selectPaymentMethodError,
-          ),
-        ),
+    return RegExp(r'^[0-9]{9}$').hasMatch(phone);
+  }
+
+  Future<void> _processPayment(AppLocalizations l10n) async {
+    if (_selectedPaymentMethod == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a payment method.')),
       );
 
       return;
     }
 
-    if (!_formKey.currentState!
-        .validate()) {
+    if (!_isValidPhoneNumber(_phoneController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enter a valid 9-digit mobile money number.'),
+        ),
+      );
+
       return;
     }
 
@@ -102,79 +96,60 @@ class _PaymentScreenState
       _isProcessing = true;
     });
 
-    // Frontend prototype simulation only.
-    // Production payment verification will be
-    // performed by the backend/payment provider.
-    await Future.delayed(
-      const Duration(
-        seconds: 2,
-      ),
-    );
+    try {
+      // Temporary payment simulation.
+      // Real backend payment integration
+      // will replace this later.
+      await Future<void>.delayed(const Duration(seconds: 2));
 
-    if (!mounted) {
-      return;
-    }
+      if (!mounted) {
+        return;
+      }
 
-    setState(() {
-      _isProcessing = false;
-    });
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            BookingConfirmationScreen(
-          agency: widget.agency,
-          trip: widget.trip,
-          bookingMode:
-              widget.bookingMode,
-          departureCity:
-              widget.departureCity,
-          destinationCity:
-              widget.destinationCity,
-          pickupLocation:
-              widget.pickupLocation,
-          finalDestination:
-              widget.finalDestination,
-          travelDate:
-              widget.travelDate,
-          passengers:
-              widget.passengers,
-          luggage: widget.luggage,
-          totalAmount:
-              widget.totalAmount,
-          paymentMethod:
-              _selectedMethod!,
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BookingConfirmationScreen(
+            agency: widget.agency,
+            trip: widget.trip,
+            bookingMode: widget.bookingMode,
+            departureCity: widget.departureCity,
+            destinationCity: widget.destinationCity,
+            pickupLocation: widget.pickupLocation,
+            finalDestination: widget.finalDestination,
+            travelDate: widget.travelDate,
+            passengers: widget.passengers,
+            luggage: widget.luggage,
+            totalAmount: widget.totalAmount,
+            paymentMethod: _selectedPaymentMethod!,
+          ),
         ),
-      ),
-    );
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.payment,
-        ),
-      ),
+      appBar: AppBar(title: const Text('Payment')),
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF09111F),
                     Color(0xFF0D1B2A),
@@ -182,10 +157,8 @@ class _PaymentScreenState
                   ],
                 )
               : const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFFF2F8FF),
                     Color(0xFFF7FBFF),
@@ -198,279 +171,27 @@ class _PaymentScreenState
           child: Column(
             children: [
               Expanded(
-                child:
-                    SingleChildScrollView(
-                  padding:
-                      const EdgeInsets
-                          .all(20),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
                   child: Center(
-                    child:
-                        ConstrainedBox(
-                      constraints:
-                          const BoxConstraints(
-                        maxWidth: 720,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment
-                                  .start,
-                          children: [
-                            _buildAmountCard(
-                              context,
-                              l10n,
-                            ),
-
-                            const SizedBox(
-                              height: 28,
-                            ),
-
-                            Text(
-                              l10n
-                                  .selectPaymentMethod,
-                              style:
-                                  Theme.of(
-                                context,
-                              )
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        fontWeight:
-                                            FontWeight
-                                                .bold,
-                                      ),
-                            ),
-
-                            const SizedBox(
-                              height: 6,
-                            ),
-
-                            Text(
-                              l10n
-                                  .paymentSecurityInformation,
-                              style:
-                                  Theme.of(
-                                context,
-                              )
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        height:
-                                            1.5,
-                                      ),
-                            ),
-
-                            const SizedBox(
-                              height: 18,
-                            ),
-
-                            _PaymentMethodCard(
-                              title: l10n
-                                  .mtnMobileMoney,
-                              subtitle: l10n
-                                  .mtnMobileMoneyDescription,
-                              icon: Icons
-                                  .phone_android,
-                              selected:
-                                  _selectedMethod ==
-                                      'MTN Mobile Money',
-                              onTap: () {
-                                if (_isProcessing) {
-                                  return;
-                                }
-
-                                setState(() {
-                                  _selectedMethod =
-                                      'MTN Mobile Money';
-                                });
-                              },
-                            ),
-
-                            const SizedBox(
-                              height: 12,
-                            ),
-
-                            _PaymentMethodCard(
-                              title: l10n
-                                  .orangeMoney,
-                              subtitle: l10n
-                                  .orangeMoneyDescription,
-                              icon: Icons
-                                  .account_balance_wallet_outlined,
-                              selected:
-                                  _selectedMethod ==
-                                      'Orange Money',
-                              onTap: () {
-                                if (_isProcessing) {
-                                  return;
-                                }
-
-                                setState(() {
-                                  _selectedMethod =
-                                      'Orange Money';
-                                });
-                              },
-                            ),
-
-                            const SizedBox(
-                              height: 28,
-                            ),
-
-                            Text(
-                              l10n
-                                  .paymentPhoneNumber,
-                              style:
-                                  Theme.of(
-                                context,
-                              )
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        fontWeight:
-                                            FontWeight
-                                                .w600,
-                                      ),
-                            ),
-
-                            const SizedBox(
-                              height: 8,
-                            ),
-
-                            TextFormField(
-                              controller:
-                                  _phoneController,
-                              keyboardType:
-                                  TextInputType
-                                      .phone,
-                              enabled:
-                                  !_isProcessing,
-                              decoration:
-                                  InputDecoration(
-                                hintText: l10n
-                                    .paymentPhoneHint,
-                                prefixIcon:
-                                    const Icon(
-                                  Icons
-                                      .phone_outlined,
-                                ),
-                              ),
-                              validator:
-                                  (value) {
-                                if (value ==
-                                        null ||
-                                    value
-                                        .trim()
-                                        .isEmpty) {
-                                  return l10n
-                                      .paymentPhoneRequired;
-                                }
-
-                                final String
-                                    digits =
-                                    value
-                                        .replaceAll(
-                                  RegExp(
-                                    r'\D',
-                                  ),
-                                  '',
-                                );
-
-                                if (digits
-                                        .length <
-                                    9) {
-                                  return l10n
-                                      .invalidPhoneNumber;
-                                }
-
-                                return null;
-                              },
-                            ),
-
-                            const SizedBox(
-                              height: 24,
-                            ),
-
-                            GlassContainer(
-                              padding:
-                                  const EdgeInsets
-                                      .all(
-                                15,
-                              ),
-                              borderRadius:
-                                  15,
-                              child: Row(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
-                                children: [
-                                  Container(
-                                    width: 38,
-                                    height: 38,
-                                    decoration:
-                                        BoxDecoration(
-                                      color: AppColors
-                                          .primary
-                                          .withValues(
-                                        alpha:
-                                            0.10,
-                                      ),
-                                      borderRadius:
-                                          BorderRadius
-                                              .circular(
-                                        10,
-                                      ),
-                                    ),
-                                    child:
-                                        const Icon(
-                                      Icons
-                                          .info_outline,
-                                      size: 20,
-                                      color:
-                                          AppColors
-                                              .primary,
-                                    ),
-                                  ),
-
-                                  const SizedBox(
-                                    width: 12,
-                                  ),
-
-                                  Expanded(
-                                    child: Text(
-                                      l10n
-                                          .prototypePaymentInformation,
-                                      style:
-                                          Theme.of(
-                                        context,
-                                      )
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                height:
-                                                    1.5,
-                                              ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            const SizedBox(
-                              height: 24,
-                            ),
-                          ],
-                        ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 700),
+                      child: Column(
+                        children: [
+                          _buildAmountCard(context),
+                          const SizedBox(height: 20),
+                          _buildPaymentMethodCard(context),
+                          const SizedBox(height: 20),
+                          _buildPhoneCard(context),
+                          const SizedBox(height: 20),
+                          _buildSecurityCard(context),
+                        ],
                       ),
                     ),
                   ),
                 ),
               ),
-
-              _buildBottomSection(
-                context,
-                l10n,
-              ),
+              _buildBottomSection(context, l10n),
             ],
           ),
         ),
@@ -478,104 +199,94 @@ class _PaymentScreenState
     );
   }
 
-  Widget _buildAmountCard(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding:
-          const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient:
-            const LinearGradient(
-          begin: Alignment.topLeft,
-          end:
-              Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
-        ),
-        borderRadius:
-            BorderRadius.circular(
-          22,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary
-                .withValues(
-              alpha: 0.20,
-            ),
-            blurRadius: 24,
-            offset:
-                const Offset(0, 10),
-          ),
-        ],
-      ),
+  Widget _buildAmountCard(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(22),
+      borderRadius: 20,
       child: Column(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
-              color: Colors.white
-                  .withValues(
-                alpha: 0.14,
-              ),
-              shape: BoxShape.circle,
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
-              Icons
-                  .account_balance_wallet_outlined,
-              color: Colors.white,
+              Icons.payment_outlined,
+              color: AppColors.primary,
+              size: 28,
             ),
           ),
-
-          const SizedBox(
-            height: 14,
-          ),
-
-          Text(
-            l10n.amountToPay,
-            style:
-                const TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-            ),
-          ),
-
-          const SizedBox(
-            height: 8,
-          ),
-
+          const SizedBox(height: 14),
+          Text('Amount to pay', style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 6),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               '${_formatPrice(widget.totalAmount)} FCFA',
-              style:
-                  const TextStyle(
-                fontSize: 30,
-                fontWeight:
-                    FontWeight.bold,
-                color: Colors.white,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
               ),
             ),
           ),
-
-          const SizedBox(
-            height: 10,
-          ),
-
+          const SizedBox(height: 12),
           Text(
             '${widget.departureCity} → '
             '${widget.destinationCity}',
-            textAlign:
-                TextAlign.center,
-            style:
-                const TextStyle(
-              fontSize: 13,
-              color: Colors.white70,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            widget.agency['name']?.toString() ?? 'Transport Agency',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodCard(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(18),
+      borderRadius: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Payment method',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Choose the mobile money service '
+            'you want to use.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 18),
+
+          RadioGroup<String>(
+            groupValue: _selectedPaymentMethod,
+            onChanged: (String? value) {
+              if (value == null) {
+                return;
+              }
+
+              setState(() {
+                _selectedPaymentMethod = value;
+              });
+            },
+            child: Column(
+              children: _paymentMethods
+                  .map((method) => _PaymentMethodOption(method: method))
+                  .toList(),
             ),
           ),
         ],
@@ -583,140 +294,139 @@ class _PaymentScreenState
     );
   }
 
-  Widget _buildBottomSection(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+  Widget _buildPhoneCard(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(18),
+      borderRadius: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Mobile money number',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Enter the phone number that '
+            'will be used for the payment.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _phoneController,
+            keyboardType: TextInputType.phone,
+            maxLength: 9,
+            decoration: const InputDecoration(
+              labelText: 'Phone number',
+              hintText: '6XXXXXXXX',
+              prefixIcon: Icon(Icons.phone_outlined),
+              counterText: '',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecurityCard(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(16),
+      borderRadius: 16,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: const Icon(
+              Icons.verified_user_outlined,
+              size: 21,
+              color: AppColors.secondary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'This payment is currently '
+              'simulated for the easyGO '
+              'demonstration. Real payment '
+              'processing will be handled '
+              'through the configured '
+              'payment provider.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(height: 1.5),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomSection(BuildContext context, AppLocalizations l10n) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding:
-          const EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        20,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       decoration: BoxDecoration(
-        color: Theme.of(context)
-            .colorScheme
-            .surface
-            .withValues(
-              alpha:
-                  isDark ? 0.96 : 0.94,
-            ),
-        border: Border(
-          top: BorderSide(
-            color: Theme.of(context)
-                .dividerColor,
-          ),
-        ),
+        color: Theme.of(
+          context,
+        ).colorScheme.surface.withValues(alpha: isDark ? 0.96 : 0.94),
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: SafeArea(
         top: false,
         child: Center(
           child: ConstrainedBox(
-            constraints:
-                const BoxConstraints(
-              maxWidth: 720,
-            ),
-            child: SizedBox(
-              width:
-                  double.infinity,
-              child:
-                  ElevatedButton(
-                onPressed:
-                    _isProcessing
-                        ? null
-                        : _processPayment,
-                child:
-                    AnimatedSwitcher(
-                  duration:
-                      const Duration(
-                    milliseconds: 200,
-                  ),
-                  child: _isProcessing
-                      ? Row(
-                          key: const ValueKey(
-                            'processing',
-                          ),
-                          mainAxisAlignment:
-                              MainAxisAlignment
-                                  .center,
-                          children: [
-                            const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child:
-                                  CircularProgressIndicator(
-                                strokeWidth:
-                                    2.4,
-                                color:
-                                    Colors.white,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 12,
-                            ),
-                            Flexible(
-                              child: Text(
-                                l10n
-                                    .processingPayment,
-                                style:
-                                    const TextStyle(
-                                  fontSize:
-                                      15,
-                                  fontWeight:
-                                      FontWeight
-                                          .w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          key: const ValueKey(
-                            'payment',
-                          ),
-                          mainAxisAlignment:
-                              MainAxisAlignment
-                                  .center,
-                          children: [
-                            const Icon(
-                              Icons
-                                  .lock_outline,
-                              size: 19,
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            Flexible(
-                              child: Text(
-                                l10n.payAmount(
-                                  _formatPrice(
-                                    widget
-                                        .totalAmount,
-                                  ),
-                                ),
-                                textAlign:
-                                    TextAlign
-                                        .center,
-                                style:
-                                    const TextStyle(
-                                  fontSize:
-                                      16,
-                                  fontWeight:
-                                      FontWeight
-                                          .w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+            constraints: const BoxConstraints(maxWidth: 700),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(child: Text('Total amount')),
+                    Text(
+                      '${_formatPrice(widget.totalAmount)} FCFA',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isProcessing
+                        ? null
+                        : () => _processPayment(l10n),
+                    icon: _isProcessing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.lock_outline),
+                    label: Text(
+                      _isProcessing
+                          ? 'Processing...'
+                          : 'Pay '
+                                '${_formatPrice(widget.totalAmount)} FCFA',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -725,152 +435,59 @@ class _PaymentScreenState
   }
 }
 
-class _PaymentMethodCard
-    extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
+class _PaymentMethodOption extends StatelessWidget {
+  final String method;
 
-  const _PaymentMethodCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.selected,
-    required this.onTap,
-  });
+  const _PaymentMethodOption({required this.method});
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    return GlassContainer(
-      padding: EdgeInsets.zero,
-      borderRadius: 17,
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration:
-            const Duration(
-          milliseconds: 220,
-        ),
-        curve: Curves.easeOut,
-        padding:
-            const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.circular(
-            17,
+  Widget build(BuildContext context) {
+    final bool isMtn = method == 'MTN Mobile Money';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () {
+          RadioGroup.maybeOf<String>(context)?.onChanged(method);
+        },
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            color: Theme.of(
+              context,
+            ).colorScheme.surface.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Theme.of(context).dividerColor),
           ),
-          border: Border.all(
-            color: selected
-                ? AppColors.primary
-                : Colors.transparent,
-            width:
-                selected ? 2 : 1,
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isMtn
+                      ? Icons.phone_android
+                      : Icons.account_balance_wallet_outlined,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Text(
+                  method,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+              Radio<String>(value: method),
+            ],
           ),
-          color: selected
-              ? AppColors.primary
-                  .withValues(
-                alpha: 0.06,
-              )
-              : Colors.transparent,
-        ),
-        child: Row(
-          children: [
-            AnimatedContainer(
-              duration:
-                  const Duration(
-                milliseconds: 220,
-              ),
-              width: 48,
-              height: 48,
-              decoration:
-                  BoxDecoration(
-                color: AppColors
-                    .primary
-                    .withValues(
-                  alpha: selected
-                      ? 0.16
-                      : 0.09,
-                ),
-                borderRadius:
-                    BorderRadius.circular(
-                  13,
-                ),
-              ),
-              child: Icon(
-                icon,
-                color:
-                    AppColors.primary,
-              ),
-            ),
-
-            const SizedBox(
-              width: 14,
-            ),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
-                children: [
-                  Text(
-                    title,
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(
-                              fontWeight:
-                                  FontWeight
-                                      .w600,
-                            ),
-                  ),
-
-                  const SizedBox(
-                    height: 4,
-                  ),
-
-                  Text(
-                    subtitle,
-                    style:
-                        Theme.of(context)
-                            .textTheme
-                            .bodySmall,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(
-              width: 8,
-            ),
-
-            AnimatedSwitcher(
-              duration:
-                  const Duration(
-                milliseconds: 180,
-              ),
-              child: Icon(
-                selected
-                    ? Icons
-                        .radio_button_checked
-                    : Icons
-                        .radio_button_off,
-                key:
-                    ValueKey<bool>(
-                  selected,
-                ),
-                color: selected
-                    ? AppColors.primary
-                    : Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant,
-              ),
-            ),
-          ],
         ),
       ),
     );

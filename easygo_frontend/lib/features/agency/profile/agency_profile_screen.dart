@@ -6,17 +6,13 @@ import '../../../../shared/widgets/glass_container.dart';
 import 'edit_agency_profile_screen.dart';
 
 class AgencyProfileScreen extends StatefulWidget {
-  const AgencyProfileScreen({
-    super.key,
-  });
+  const AgencyProfileScreen({super.key});
 
   @override
-  State<AgencyProfileScreen> createState() =>
-      _AgencyProfileScreenState();
+  State<AgencyProfileScreen> createState() => _AgencyProfileScreenState();
 }
 
-class _AgencyProfileScreenState
-    extends State<AgencyProfileScreen> {
+class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
   Map<String, dynamic> _agency = {
     'name': 'General Express',
     'email': 'contact@generalexpress.cm',
@@ -32,13 +28,10 @@ class _AgencyProfileScreenState
   };
 
   Future<void> _editProfile() async {
-    final result =
-        await Navigator.push<Map<String, dynamic>>(
+    final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
-        builder: (context) => EditAgencyProfileScreen(
-          agency: _agency,
-        ),
+        builder: (context) => EditAgencyProfileScreen(agency: _agency),
       ),
     );
 
@@ -55,21 +48,16 @@ class _AgencyProfileScreenState
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
 
-    final bool isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          localizations.agencyProfile,
-        ),
+        title: Text(localizations.agencyProfile),
         actions: [
           IconButton(
             tooltip: localizations.editProfile,
             onPressed: _editProfile,
-            icon: const Icon(
-              Icons.edit_outlined,
-            ),
+            icon: const Icon(Icons.edit_outlined),
           ),
         ],
       ),
@@ -100,56 +88,29 @@ class _AgencyProfileScreenState
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              34,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 34),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 850,
-                ),
+                constraints: const BoxConstraints(maxWidth: 850),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildAgencyHeader(
-                      context,
-                      localizations,
-                    ),
+                    _buildAgencyHeader(context, localizations),
                     const SizedBox(height: 18),
-                    _buildContactInformation(
-                      context,
-                      localizations,
-                    ),
+                    _buildContactInformation(context, localizations),
                     const SizedBox(height: 18),
-                    _buildLocationInformation(
-                      context,
-                      localizations,
-                    ),
+                    _buildLocationInformation(context, localizations),
                     const SizedBox(height: 18),
-                    _buildPublicInformation(
-                      context,
-                      localizations,
-                    ),
+                    _buildPublicInformation(context, localizations),
                     const SizedBox(height: 18),
-                    _buildManagementNotice(
-                      context,
-                      localizations,
-                    ),
+                    _buildManagementNotice(context, localizations),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
                         onPressed: _editProfile,
-                        icon: const Icon(
-                          Icons.edit_outlined,
-                        ),
-                        label: Text(
-                          localizations.editAgencyInformation,
-                        ),
+                        icon: const Icon(Icons.edit_outlined),
+                        label: Text(localizations.editAgencyInformation),
                       ),
                     ),
                   ],
@@ -166,8 +127,7 @@ class _AgencyProfileScreenState
     BuildContext context,
     AppLocalizations localizations,
   ) {
-    final bool verified =
-        _agency['verified'] as bool;
+    final bool verified = _agency['verified'] as bool;
 
     return GlassContainer(
       width: double.infinity,
@@ -182,13 +142,9 @@ class _AgencyProfileScreenState
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  AppColors.primary,
-                  AppColors.secondary,
-                ],
+                colors: [AppColors.primary, AppColors.secondary],
               ),
-              borderRadius:
-                  BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: const Icon(
               Icons.directions_bus_outlined,
@@ -198,30 +154,21 @@ class _AgencyProfileScreenState
           ),
           const SizedBox(height: 15),
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
               Flexible(
                 child: Text(
                   _agency['name'] as String,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineSmall
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               if (verified) ...[
                 const SizedBox(width: 7),
-                const Icon(
-                  Icons.verified,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
+                const Icon(Icons.verified, color: AppColors.primary, size: 20),
               ],
             ],
           ),
@@ -229,12 +176,9 @@ class _AgencyProfileScreenState
           Text(
             _agency['description'] as String,
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(
-                  height: 1.5,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(height: 1.5),
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -244,22 +188,18 @@ class _AgencyProfileScreenState
             children: [
               _ProfileBadge(
                 icon: Icons.star,
-                text:
-                    '${_agency['rating']} / 5',
+                text: '${_agency['rating']} / 5',
                 color: AppColors.warning,
               ),
               _ProfileBadge(
                 icon: Icons.reviews_outlined,
-                text:
-                    '${_agency['reviewCount']} ${localizations.reviews}',
+                text: '${_agency['reviewCount']} ${localizations.reviews}',
                 color: AppColors.primary,
               ),
               if (verified)
                 _ProfileBadge(
-                  icon:
-                      Icons.verified_outlined,
-                  text:
-                      localizations.verifiedAgency,
+                  icon: Icons.verified_outlined,
+                  text: localizations.verifiedAgency,
                   color: AppColors.success,
                 ),
             ],
@@ -292,8 +232,7 @@ class _AgencyProfileScreenState
           _InformationRow(
             icon: Icons.schedule_outlined,
             label: localizations.openingHours,
-            value:
-                _agency['openingHours'] as String,
+            value: _agency['openingHours'] as String,
           ),
         ],
       ),
@@ -311,15 +250,13 @@ class _AgencyProfileScreenState
           _InformationRow(
             icon: Icons.location_city_outlined,
             label: localizations.headOffice,
-            value:
-                _agency['headOffice'] as String,
+            value: _agency['headOffice'] as String,
           ),
           const SizedBox(height: 14),
           _InformationRow(
             icon: Icons.location_on_outlined,
             label: localizations.agencyAddress,
-            value:
-                _agency['address'] as String,
+            value: _agency['address'] as String,
           ),
         ],
       ),
@@ -333,47 +270,31 @@ class _AgencyProfileScreenState
     return _SectionCard(
       title: localizations.publicAgencyInformation,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             localizations.publicAgencyInformationDescription,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(
-                  height: 1.5,
-                ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.5),
           ),
           const SizedBox(height: 16),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(14),
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.public_outlined,
-                  color: AppColors.primary,
-                ),
+                const Icon(Icons.public_outlined, color: AppColors.primary),
                 const SizedBox(width: 11),
                 Expanded(
                   child: Text(
                     localizations.publicAgencyVisibilityNotice,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(
-                          height: 1.45,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(height: 1.45),
                   ),
                 ),
               ],
@@ -393,18 +314,14 @@ class _AgencyProfileScreenState
       padding: const EdgeInsets.all(17),
       borderRadius: 17,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.warning.withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(12),
+              color: AppColors.warning.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.shield_outlined,
@@ -415,28 +332,20 @@ class _AgencyProfileScreenState
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   localizations.profileManagement,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   localizations.profileManagementNotice,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        height: 1.45,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.45),
                 ),
               ],
             ),
@@ -448,10 +357,7 @@ class _AgencyProfileScreenState
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-  });
+  const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -463,18 +369,13 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 18),
           child,
@@ -498,47 +399,29 @@ class _InformationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(
-              alpha: 0.10,
-            ),
-            borderRadius:
-                BorderRadius.circular(11),
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(11),
           ),
-          child: Icon(
-            icon,
-            size: 19,
-            color: AppColors.primary,
-          ),
+          child: Icon(icon, size: 19, color: AppColors.primary),
         ),
         const SizedBox(width: 11),
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall,
-              ),
+              Text(label, style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 3),
               Text(
                 value,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -562,25 +445,15 @@ class _ProfileBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.10,
-        ),
-        borderRadius:
-            BorderRadius.circular(18),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
+          Icon(icon, size: 14, color: color),
           const SizedBox(width: 5),
           Text(
             text,

@@ -3,23 +3,17 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/glass_container.dart';
 
-class ManageParcelStatusScreen
-    extends StatefulWidget {
-  const ManageParcelStatusScreen({
-    super.key,
-    required this.parcel,
-  });
+class ManageParcelStatusScreen extends StatefulWidget {
+  const ManageParcelStatusScreen({super.key, required this.parcel});
 
   final Map<String, dynamic> parcel;
 
   @override
-  State<ManageParcelStatusScreen>
-      createState() =>
-          _ManageParcelStatusScreenState();
+  State<ManageParcelStatusScreen> createState() =>
+      _ManageParcelStatusScreenState();
 }
 
-class _ManageParcelStatusScreenState
-    extends State<ManageParcelStatusScreen> {
+class _ManageParcelStatusScreenState extends State<ManageParcelStatusScreen> {
   static const List<String> _statuses = [
     'Registered',
     'Received by Agency',
@@ -37,24 +31,19 @@ class _ManageParcelStatusScreenState
   void initState() {
     super.initState();
 
-    _currentStatus =
-        widget.parcel['status'] as String;
+    _currentStatus = widget.parcel['status'] as String;
   }
 
   int get _currentIndex {
-    return _statuses.indexOf(
-      _currentStatus,
-    );
+    return _statuses.indexOf(_currentStatus);
   }
 
-  bool get _isFinalStatus =>
-      _currentStatus == 'Delivered';
+  bool get _isFinalStatus => _currentStatus == 'Delivered';
 
   String? get _nextStatus {
     final int index = _currentIndex;
 
-    if (index < 0 ||
-        index >= _statuses.length - 1) {
+    if (index < 0 || index >= _statuses.length - 1) {
       return null;
     }
 
@@ -68,13 +57,10 @@ class _ManageParcelStatusScreenState
       return 0;
     }
 
-    return index /
-        (_statuses.length - 1);
+    return index / (_statuses.length - 1);
   }
 
-  Color _statusColor(
-    String status,
-  ) {
+  Color _statusColor(String status) {
     switch (status) {
       case 'Registered':
         return AppColors.textSecondary;
@@ -95,9 +81,7 @@ class _ManageParcelStatusScreenState
     }
   }
 
-  IconData _statusIcon(
-    String status,
-  ) {
+  IconData _statusIcon(String status) {
     switch (status) {
       case 'Registered':
         return Icons.app_registration_outlined;
@@ -118,9 +102,7 @@ class _ManageParcelStatusScreenState
     }
   }
 
-  String _statusDescription(
-    String status,
-  ) {
+  String _statusDescription(String status) {
     switch (status) {
       case 'Registered':
         return 'The parcel has been registered in the easyGO system.';
@@ -149,27 +131,18 @@ class _ManageParcelStatusScreenState
   }
 
   Future<void> _advanceStatus() async {
-    final String? next =
-        _nextStatus;
+    final String? next = _nextStatus;
 
     if (next == null) {
       return;
     }
 
-    final bool? confirmed =
-        await showDialog<bool>(
+    final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          icon: Icon(
-            _statusIcon(next),
-            color:
-                _statusColor(next),
-            size: 38,
-          ),
-          title: const Text(
-            'Confirm Parcel Update',
-          ),
+          icon: Icon(_statusIcon(next), color: _statusColor(next), size: 38),
+          title: const Text('Confirm Parcel Update'),
           content: Text(
             'Advance parcel '
             '${widget.parcel['id']} from '
@@ -180,25 +153,15 @@ class _ManageParcelStatusScreenState
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  false,
-                );
+                Navigator.pop(dialogContext, false);
               },
-              child: const Text(
-                'Keep Current Status',
-              ),
+              child: const Text('Keep Current Status'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                  true,
-                );
+                Navigator.pop(dialogContext, true);
               },
-              child: const Text(
-                'Confirm Update',
-              ),
+              child: const Text('Confirm Update'),
             ),
           ],
         );
@@ -213,11 +176,7 @@ class _ManageParcelStatusScreenState
       _isSaving = true;
     });
 
-    await Future<void>.delayed(
-      const Duration(
-        milliseconds: 900,
-      ),
-    );
+    await Future<void>.delayed(const Duration(milliseconds: 900));
 
     if (!mounted) {
       return;
@@ -231,9 +190,7 @@ class _ManageParcelStatusScreenState
     await _showDemoResult(next);
   }
 
-  Future<void> _showDemoResult(
-    String status,
-  ) async {
+  Future<void> _showDemoResult(String status) async {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -243,9 +200,7 @@ class _ManageParcelStatusScreenState
             color: AppColors.success,
             size: 38,
           ),
-          title: const Text(
-            'Parcel Status Validated',
-          ),
+          title: const Text('Parcel Status Validated'),
           content: Text(
             'The parcel status change to '
             '$status has been simulated '
@@ -257,13 +212,9 @@ class _ManageParcelStatusScreenState
           actions: [
             FilledButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                );
+                Navigator.pop(dialogContext);
               },
-              child: const Text(
-                'Continue',
-              ),
+              child: const Text('Continue'),
             ),
           ],
         );
@@ -273,26 +224,18 @@ class _ManageParcelStatusScreenState
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Update Parcel Status',
-        ),
-      ),
+      appBar: AppBar(title: const Text('Update Parcel Status')),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF09111F),
                     Color(0xFF0D1B2A),
@@ -300,10 +243,8 @@ class _ManageParcelStatusScreenState
                   ],
                 )
               : const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFFF2F8FF),
                     Color(0xFFF7FBFF),
@@ -314,47 +255,25 @@ class _ManageParcelStatusScreenState
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              34,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 34),
             child: Center(
               child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(
-                  maxWidth: 800,
-                ),
+                constraints: const BoxConstraints(maxWidth: 800),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildParcelHeader(
-                      context,
-                    ),
+                    _buildParcelHeader(context),
                     const SizedBox(height: 18),
-                    _buildCurrentStatus(
-                      context,
-                    ),
+                    _buildCurrentStatus(context),
                     const SizedBox(height: 18),
                     if (!_isFinalStatus)
-                      _buildNextStatus(
-                        context,
-                      )
+                      _buildNextStatus(context)
                     else
-                      _buildFinalState(
-                        context,
-                      ),
+                      _buildFinalState(context),
                     const SizedBox(height: 18),
-                    _buildLifecycle(
-                      context,
-                    ),
+                    _buildLifecycle(context),
                     const SizedBox(height: 18),
-                    _buildIntegrityNotice(
-                      context,
-                    ),
+                    _buildIntegrityNotice(context),
                     if (!_isFinalStatus) ...[
                       const SizedBox(height: 24),
                       _buildUpdateButton(),
@@ -369,9 +288,7 @@ class _ManageParcelStatusScreenState
     );
   }
 
-  Widget _buildParcelHeader(
-    BuildContext context,
-  ) {
+  Widget _buildParcelHeader(BuildContext context) {
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -382,12 +299,8 @@ class _ManageParcelStatusScreenState
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: AppColors.secondary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(14),
+              color: AppColors.secondary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
               Icons.inventory_2_outlined,
@@ -397,36 +310,24 @@ class _ManageParcelStatusScreenState
           const SizedBox(width: 13),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.parcel['id']
-                      as String,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                  widget.parcel['id'] as String,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.parcel[
-                          'description']
-                      as String,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  widget.parcel['description'] as String,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 3),
                 Text(
                   '${widget.parcel['departureCity']} → '
                   '${widget.parcel['destinationCity']}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
@@ -436,48 +337,30 @@ class _ManageParcelStatusScreenState
     );
   }
 
-  Widget _buildCurrentStatus(
-    BuildContext context,
-  ) {
-    final Color color =
-        _statusColor(
-      _currentStatus,
-    );
+  Widget _buildCurrentStatus(BuildContext context) {
+    final Color color = _statusColor(_currentStatus);
 
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Current Parcel Status',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 18),
           Container(
             width: double.infinity,
-            padding:
-                const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: color.withValues(
-                alpha: 0.08,
-              ),
-              borderRadius:
-                  BorderRadius.circular(14),
-              border: Border.all(
-                color: color.withValues(
-                  alpha: 0.25,
-                ),
-              ),
+              color: color.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: color.withValues(alpha: 0.25)),
             ),
             child: Row(
               children: [
@@ -485,46 +368,30 @@ class _ManageParcelStatusScreenState
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: color.withValues(
-                      alpha: 0.12,
-                    ),
+                    color: color.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    _statusIcon(
-                      _currentStatus,
-                    ),
-                    color: color,
-                  ),
+                  child: Icon(_statusIcon(_currentStatus), color: color),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         _currentStatus,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
+                        style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                               color: color,
                             ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _statusDescription(
-                          _currentStatus,
-                        ),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(
-                              height: 1.4,
-                            ),
+                        _statusDescription(_currentStatus),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(height: 1.4),
                       ),
                     ],
                   ),
@@ -538,35 +405,24 @@ class _ManageParcelStatusScreenState
               Expanded(
                 child: Text(
                   'Tracking progress',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               Text(
                 '${(_progress * 100).round()}%',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 8),
           ClipRRect(
-            borderRadius:
-                BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20),
             child: LinearProgressIndicator(
               value: _progress,
               minHeight: 7,
-              backgroundColor:
-                  AppColors.primary
-                      .withValues(
-                alpha: 0.10,
-              ),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.10),
             ),
           ),
         ],
@@ -574,78 +430,54 @@ class _ManageParcelStatusScreenState
     );
   }
 
-  Widget _buildNextStatus(
-    BuildContext context,
-  ) {
-    final String next =
-        _nextStatus!;
+  Widget _buildNextStatus(BuildContext context) {
+    final String next = _nextStatus!;
 
-    final Color color =
-        _statusColor(next);
+    final Color color = _statusColor(next);
 
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Next Valid Status',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: color.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(13),
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(13),
                 ),
-                child: Icon(
-                  _statusIcon(next),
-                  color: color,
-                ),
+                child: Icon(_statusIcon(next), color: color),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       next,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       _statusDescription(next),
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(
-                            height: 1.4,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(height: 1.4),
                     ),
                   ],
                 ),
@@ -657,58 +489,40 @@ class _ManageParcelStatusScreenState
     );
   }
 
-  Widget _buildFinalState(
-    BuildContext context,
-  ) {
+  Widget _buildFinalState(BuildContext context) {
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.success
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(12),
+              color: AppColors.success.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.lock_outline,
-              color: AppColors.success,
-            ),
+            child: const Icon(Icons.lock_outline, color: AppColors.success),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Parcel Tracking Complete',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Delivered is the final state of the parcel tracking lifecycle.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        height: 1.4,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.4),
                 ),
               ],
             ),
@@ -718,72 +532,49 @@ class _ManageParcelStatusScreenState
     );
   }
 
-  Widget _buildLifecycle(
-    BuildContext context,
-  ) {
+  Widget _buildLifecycle(BuildContext context) {
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Parcel Tracking Lifecycle',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 18),
-          ...List.generate(
-            _statuses.length,
-            (index) {
-              return _LifecycleStage(
-                status: _statuses[index],
-                completed:
-                    index < _currentIndex,
-                current:
-                    index == _currentIndex,
-                next:
-                    index ==
-                        _currentIndex + 1,
-                showConnector:
-                    index <
-                        _statuses.length - 1,
-              );
-            },
-          ),
+          ...List.generate(_statuses.length, (index) {
+            return _LifecycleStage(
+              status: _statuses[index],
+              completed: index < _currentIndex,
+              current: index == _currentIndex,
+              next: index == _currentIndex + 1,
+              showConnector: index < _statuses.length - 1,
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildIntegrityNotice(
-    BuildContext context,
-  ) {
+  Widget _buildIntegrityNotice(BuildContext context) {
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(17),
       borderRadius: 17,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.warning
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(12),
+              color: AppColors.warning.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.shield_outlined,
@@ -794,28 +585,20 @@ class _ManageParcelStatusScreenState
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Tracking Integrity',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'The backend must verify agency ownership and the authoritative parcel status before accepting an update. Each real update should also create a parcel tracking event.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        height: 1.45,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.45),
                 ),
               ],
             ),
@@ -829,26 +612,16 @@ class _ManageParcelStatusScreenState
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
-        onPressed: _isSaving
-            ? null
-            : _advanceStatus,
+        onPressed: _isSaving ? null : _advanceStatus,
         icon: _isSaving
             ? const SizedBox(
                 width: 19,
                 height: 19,
-                child:
-                    CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Icon(
-                Icons
-                    .published_with_changes_outlined,
-              ),
+            : const Icon(Icons.published_with_changes_outlined),
         label: Text(
-          _isSaving
-              ? 'Validating Update...'
-              : 'Advance to $_nextStatus',
+          _isSaving ? 'Validating Update...' : 'Advance to $_nextStatus',
         ),
       ),
     );
@@ -875,14 +648,13 @@ class _LifecycleStage extends StatelessWidget {
     final Color color = completed
         ? AppColors.success
         : current
-            ? AppColors.primary
-            : next
-                ? AppColors.warning
-                : AppColors.textLight;
+        ? AppColors.primary
+        : next
+        ? AppColors.warning
+        : AppColors.textLight;
 
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
           children: [
@@ -890,24 +662,18 @@ class _LifecycleStage extends StatelessWidget {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: color.withValues(
-                  alpha: 0.10,
-                ),
+                color: color.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: color,
-                ),
+                border: Border.all(color: color),
               ),
               child: Icon(
                 completed
                     ? Icons.check
                     : current
-                        ? Icons
-                            .radio_button_checked
-                        : next
-                            ? Icons
-                                .arrow_downward
-                            : Icons.circle_outlined,
+                    ? Icons.radio_button_checked
+                    : next
+                    ? Icons.arrow_downward
+                    : Icons.circle_outlined,
                 size: 14,
                 color: color,
               ),
@@ -917,36 +683,23 @@ class _LifecycleStage extends StatelessWidget {
                 width: 2,
                 height: 27,
                 color: completed
-                    ? AppColors.success
-                        .withValues(
-                          alpha: 0.40,
-                        )
-                    : Theme.of(context)
-                        .dividerColor,
+                    ? AppColors.success.withValues(alpha: 0.40)
+                    : Theme.of(context).dividerColor,
               ),
           ],
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Padding(
-            padding:
-                const EdgeInsets.only(
-              top: 4,
-            ),
+            padding: const EdgeInsets.only(top: 4),
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     status,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(
-                          fontWeight:
-                              current
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                        ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: current ? FontWeight.bold : FontWeight.normal,
+                    ),
                   ),
                 ),
                 if (current)
@@ -954,10 +707,8 @@ class _LifecycleStage extends StatelessWidget {
                     'Current',
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight:
-                          FontWeight.w600,
-                      color:
-                          AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
                     ),
                   )
                 else if (next)
@@ -965,10 +716,8 @@ class _LifecycleStage extends StatelessWidget {
                     'Next',
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight:
-                          FontWeight.w600,
-                      color:
-                          AppColors.warning,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.warning,
                     ),
                   ),
               ],

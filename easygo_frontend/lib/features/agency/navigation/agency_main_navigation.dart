@@ -8,17 +8,13 @@ import '../operations/agency_operations_screen.dart';
 import '../profile/agency_profile_screen.dart';
 
 class AgencyMainNavigation extends StatefulWidget {
-  const AgencyMainNavigation({
-    super.key,
-  });
+  const AgencyMainNavigation({super.key});
 
   @override
-  State<AgencyMainNavigation> createState() =>
-      _AgencyMainNavigationState();
+  State<AgencyMainNavigation> createState() => _AgencyMainNavigationState();
 }
 
-class _AgencyMainNavigationState
-    extends State<AgencyMainNavigation> {
+class _AgencyMainNavigationState extends State<AgencyMainNavigation> {
   int _selectedIndex = 0;
 
   void _selectPage(int index) {
@@ -33,8 +29,7 @@ class _AgencyMainNavigationState
 
   @override
   Widget build(BuildContext context) {
-    final localizations =
-        AppLocalizations.of(context);
+    final localizations = AppLocalizations.of(context);
 
     final List<Widget> pages = [
       AgencyDashboardScreen(
@@ -52,15 +47,11 @@ class _AgencyMainNavigationState
 
     return Scaffold(
       body: AnimatedSwitcher(
-        duration: const Duration(
-          milliseconds: 250,
-        ),
+        duration: const Duration(milliseconds: 250),
         switchInCurve: Curves.easeOut,
         switchOutCurve: Curves.easeIn,
         child: KeyedSubtree(
-          key: ValueKey<int>(
-            _selectedIndex,
-          ),
+          key: ValueKey<int>(_selectedIndex),
           child: pages[_selectedIndex],
         ),
       ),
@@ -69,20 +60,12 @@ class _AgencyMainNavigationState
         onDestinationSelected: _selectPage,
         destinations: [
           NavigationDestination(
-            icon: const Icon(
-              Icons.dashboard_outlined,
-            ),
-            selectedIcon: const Icon(
-              Icons.dashboard,
-              color: AppColors.primary,
-            ),
-            label:
-                localizations.agencyDashboard,
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: const Icon(Icons.dashboard, color: AppColors.primary),
+            label: localizations.agencyDashboard,
           ),
           NavigationDestination(
-            icon: const Icon(
-              Icons.grid_view_outlined,
-            ),
+            icon: const Icon(Icons.grid_view_outlined),
             selectedIcon: const Icon(
               Icons.grid_view_rounded,
               color: AppColors.primary,
@@ -90,9 +73,7 @@ class _AgencyMainNavigationState
             label: localizations.operations,
           ),
           NavigationDestination(
-            icon: const Icon(
-              Icons.chat_bubble_outline,
-            ),
+            icon: const Icon(Icons.chat_bubble_outline),
             selectedIcon: const Icon(
               Icons.chat_bubble,
               color: AppColors.primary,
@@ -100,13 +81,8 @@ class _AgencyMainNavigationState
             label: localizations.messages,
           ),
           NavigationDestination(
-            icon: const Icon(
-              Icons.business_outlined,
-            ),
-            selectedIcon: const Icon(
-              Icons.business,
-              color: AppColors.primary,
-            ),
+            icon: const Icon(Icons.business_outlined),
+            selectedIcon: const Icon(Icons.business, color: AppColors.primary),
             label: localizations.profile,
           ),
         ],

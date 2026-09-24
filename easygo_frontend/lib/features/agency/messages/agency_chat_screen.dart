@@ -4,25 +4,18 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/glass_container.dart';
 
 class AgencyChatScreen extends StatefulWidget {
-  const AgencyChatScreen({
-    super.key,
-    required this.conversation,
-  });
+  const AgencyChatScreen({super.key, required this.conversation});
 
   final Map<String, dynamic> conversation;
 
   @override
-  State<AgencyChatScreen> createState() =>
-      _AgencyChatScreenState();
+  State<AgencyChatScreen> createState() => _AgencyChatScreenState();
 }
 
-class _AgencyChatScreenState
-    extends State<AgencyChatScreen> {
-  final TextEditingController _messageController =
-      TextEditingController();
+class _AgencyChatScreenState extends State<AgencyChatScreen> {
+  final TextEditingController _messageController = TextEditingController();
 
-  final ScrollController _scrollController =
-      ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   late List<Map<String, dynamic>> _messages;
 
@@ -33,23 +26,15 @@ class _AgencyChatScreenState
     super.initState();
 
     final List<dynamic> sourceMessages =
-        widget.conversation['messages']
-                as List<dynamic>? ??
-            [];
+        widget.conversation['messages'] as List<dynamic>? ?? [];
 
     _messages = sourceMessages
-        .map(
-          (message) => Map<String, dynamic>.from(
-            message as Map,
-          ),
-        )
+        .map((message) => Map<String, dynamic>.from(message as Map))
         .toList();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        _scrollToBottom();
-      },
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
   }
 
   @override
@@ -59,41 +44,29 @@ class _AgencyChatScreenState
     super.dispose();
   }
 
-  String get _clientName =>
-      widget.conversation['clientName']
-          as String;
+  String get _clientName => widget.conversation['clientName'] as String;
 
-  String get _clientPhone =>
-      widget.conversation['clientPhone']
-          as String;
+  String get _clientPhone => widget.conversation['clientPhone'] as String;
 
-  String get _contextType =>
-      widget.conversation['contextType']
-          as String;
+  String get _contextType => widget.conversation['contextType'] as String;
 
   String get _contextReference =>
-      widget.conversation['contextReference']
-          as String;
+      widget.conversation['contextReference'] as String;
 
-  String get _route =>
-      widget.conversation['route']
-          as String;
+  String get _route => widget.conversation['route'] as String;
 
   String _currentTime() {
     final DateTime now = DateTime.now();
 
-    final String hour =
-        now.hour.toString().padLeft(2, '0');
+    final String hour = now.hour.toString().padLeft(2, '0');
 
-    final String minute =
-        now.minute.toString().padLeft(2, '0');
+    final String minute = now.minute.toString().padLeft(2, '0');
 
     return '$hour:$minute';
   }
 
   Future<void> _sendMessage() async {
-    final String text =
-        _messageController.text.trim();
+    final String text = _messageController.text.trim();
 
     if (text.isEmpty || _isSending) {
       return;
@@ -103,17 +76,14 @@ class _AgencyChatScreenState
       _isSending = true;
     });
 
-    await Future<void>.delayed(
-      const Duration(milliseconds: 350),
-    );
+    await Future<void>.delayed(const Duration(milliseconds: 350));
 
     if (!mounted) {
       return;
     }
 
     final Map<String, dynamic> message = {
-      'id':
-          'MSG-LOCAL-${DateTime.now().millisecondsSinceEpoch}',
+      'id': 'MSG-LOCAL-${DateTime.now().millisecondsSinceEpoch}',
       'sender': 'agency',
       'message': text,
       'time': _currentTime(),
@@ -123,25 +93,20 @@ class _AgencyChatScreenState
       _messages.add(message);
       _isSending = false;
 
-      widget.conversation['messages'] =
-          _messages;
+      widget.conversation['messages'] = _messages;
 
-      widget.conversation['lastMessage'] =
-          text;
+      widget.conversation['lastMessage'] = text;
 
-      widget.conversation[
-          'lastMessageTime'] = _currentTime();
+      widget.conversation['lastMessageTime'] = _currentTime();
 
       widget.conversation['unreadCount'] = 0;
     });
 
     _messageController.clear();
 
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        _scrollToBottom();
-      },
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
   }
 
   void _scrollToBottom() {
@@ -151,8 +116,7 @@ class _AgencyChatScreenState
 
     _scrollController.animateTo(
       _scrollController.position.maxScrollExtent,
-      duration:
-          const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
   }
@@ -161,9 +125,7 @@ class _AgencyChatScreenState
     final parts = name
         .trim()
         .split(' ')
-        .where(
-          (part) => part.isNotEmpty,
-        )
+        .where((part) => part.isNotEmpty)
         .toList();
 
     if (parts.isEmpty) {
@@ -174,8 +136,7 @@ class _AgencyChatScreenState
       return parts.first[0].toUpperCase();
     }
 
-    return '${parts.first[0]}${parts.last[0]}'
-        .toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
   IconData _contextIcon() {
@@ -202,9 +163,7 @@ class _AgencyChatScreenState
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -213,10 +172,7 @@ class _AgencyChatScreenState
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor:
-                  AppColors.primary.withValues(
-                alpha: 0.12,
-              ),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.12),
               child: Text(
                 _initials(_clientName),
                 style: const TextStyle(
@@ -229,8 +185,7 @@ class _AgencyChatScreenState
             const SizedBox(width: 10),
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     _clientName,
@@ -241,9 +196,7 @@ class _AgencyChatScreenState
                   ),
                   Text(
                     _clientPhone,
-                    style: Theme.of(context)
-                        .textTheme
-                        .labelSmall,
+                    style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ],
               ),
@@ -279,19 +232,11 @@ class _AgencyChatScreenState
           top: false,
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 900,
-              ),
+              constraints: const BoxConstraints(maxWidth: 900),
               child: Column(
                 children: [
-                  _buildConversationContext(
-                    context,
-                  ),
-                  Expanded(
-                    child: _buildMessages(
-                      context,
-                    ),
-                  ),
+                  _buildConversationContext(context),
+                  Expanded(child: _buildMessages(context)),
                   _buildComposer(context),
                 ],
               ),
@@ -302,19 +247,11 @@ class _AgencyChatScreenState
     );
   }
 
-  Widget _buildConversationContext(
-    BuildContext context,
-  ) {
-    final Color color =
-        _contextColor();
+  Widget _buildConversationContext(BuildContext context) {
+    final Color color = _contextColor();
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        12,
-        16,
-        8,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: GlassContainer(
         width: double.infinity,
         padding: const EdgeInsets.all(14),
@@ -325,54 +262,34 @@ class _AgencyChatScreenState
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withValues(
-                  alpha: 0.10,
-                ),
-                borderRadius:
-                    BorderRadius.circular(11),
+                color: color.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(11),
               ),
-              child: Icon(
-                _contextIcon(),
-                color: color,
-                size: 20,
-              ),
+              child: Icon(_contextIcon(), color: color, size: 20),
             ),
             const SizedBox(width: 11),
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     _contextType == 'General'
                         ? 'General Inquiry'
                         : '$_contextType Conversation',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(
-                          fontWeight:
-                              FontWeight.w600,
-                        ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  if (_contextReference
-                      .isNotEmpty) ...[
+                  if (_contextReference.isNotEmpty) ...[
                     const SizedBox(height: 3),
                     Text(
                       _contextReference,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                   if (_route.isNotEmpty) ...[
                     const SizedBox(height: 3),
-                    Text(
-                      _route,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
-                    ),
+                    Text(_route, style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ],
               ),
@@ -383,9 +300,7 @@ class _AgencyChatScreenState
     );
   }
 
-  Widget _buildMessages(
-    BuildContext context,
-  ) {
+  Widget _buildMessages(BuildContext context) {
     if (_messages.isEmpty) {
       return Center(
         child: Padding(
@@ -404,13 +319,9 @@ class _AgencyChatScreenState
                 const SizedBox(height: 12),
                 Text(
                   'No messages yet',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -421,22 +332,15 @@ class _AgencyChatScreenState
 
     return ListView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        12,
-        16,
-        18,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
       itemCount: _messages.length,
       itemBuilder: (context, index) {
         final message = _messages[index];
 
-        final bool fromAgency =
-            message['sender'] == 'agency';
+        final bool fromAgency = message['sender'] == 'agency';
 
         return _MessageBubble(
-          message:
-              message['message'] as String,
+          message: message['message'] as String,
           time: message['time'] as String,
           fromAgency: fromAgency,
         );
@@ -444,53 +348,34 @@ class _AgencyChatScreenState
     );
   }
 
-  Widget _buildComposer(
-    BuildContext context,
-  ) {
+  Widget _buildComposer(BuildContext context) {
     return SafeArea(
       top: false,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(
-          14,
-          10,
-          14,
-          12,
-        ),
+        padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
         decoration: BoxDecoration(
-          color: Theme.of(context)
-              .scaffoldBackgroundColor
-              .withValues(
-                alpha: 0.85,
-              ),
+          color: Theme.of(
+            context,
+          ).scaffoldBackgroundColor.withValues(alpha: 0.85),
           border: Border(
-            top: BorderSide(
-              color:
-                  Theme.of(context).dividerColor,
-            ),
+            top: BorderSide(color: Theme.of(context).dividerColor),
           ),
         ),
         child: Row(
-          crossAxisAlignment:
-              CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
               child: TextField(
-                controller:
-                    _messageController,
+                controller: _messageController,
                 minLines: 1,
                 maxLines: 5,
-                textCapitalization:
-                    TextCapitalization.sentences,
+                textCapitalization: TextCapitalization.sentences,
                 onSubmitted: (_) {
                   _sendMessage();
                 },
-                decoration:
-                    const InputDecoration(
-                  hintText:
-                      'Reply to client...',
-                  prefixIcon: Icon(
-                    Icons.chat_outlined,
-                  ),
+                decoration: const InputDecoration(
+                  hintText: 'Reply to client...',
+                  prefixIcon: Icon(Icons.chat_outlined),
                 ),
               ),
             ),
@@ -499,32 +384,23 @@ class _AgencyChatScreenState
               width: 50,
               height: 50,
               child: FilledButton(
-                onPressed: _isSending
-                    ? null
-                    : _sendMessage,
+                onPressed: _isSending ? null : _sendMessage,
                 style: FilledButton.styleFrom(
                   padding: EdgeInsets.zero,
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(
-                      14,
-                    ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: _isSending
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child:
-                            CircularProgressIndicator(
+                        child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: Colors.white,
                         ),
                       )
-                    : const Icon(
-                        Icons.send_rounded,
-                      ),
+                    : const Icon(Icons.send_rounded),
               ),
             ),
           ],
@@ -547,75 +423,44 @@ class _MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final Color agencyBackground =
-        isDark
-            ? AppColors.primaryDark
-            : AppColors.primary;
+    final Color agencyBackground = isDark
+        ? AppColors.primaryDark
+        : AppColors.primary;
 
     final Color clientBackground = isDark
         ? const Color(0xFF17263A)
-        : Colors.white.withValues(
-            alpha: 0.82,
-          );
+        : Colors.white.withValues(alpha: 0.82);
 
     return Align(
-      alignment: fromAgency
-          ? Alignment.centerRight
-          : Alignment.centerLeft,
+      alignment: fromAgency ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 620,
-        ),
-        margin: const EdgeInsets.only(
-          bottom: 10,
-        ),
-        padding: const EdgeInsets.fromLTRB(
-          14,
-          11,
-          14,
-          8,
-        ),
+        constraints: const BoxConstraints(maxWidth: 620),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.fromLTRB(14, 11, 14, 8),
         decoration: BoxDecoration(
-          color: fromAgency
-              ? agencyBackground
-              : clientBackground,
+          color: fromAgency ? agencyBackground : clientBackground,
           borderRadius: BorderRadius.only(
-            topLeft:
-                const Radius.circular(17),
-            topRight:
-                const Radius.circular(17),
-            bottomLeft: Radius.circular(
-              fromAgency ? 17 : 4,
-            ),
-            bottomRight: Radius.circular(
-              fromAgency ? 4 : 17,
-            ),
+            topLeft: const Radius.circular(17),
+            topRight: const Radius.circular(17),
+            bottomLeft: Radius.circular(fromAgency ? 17 : 4),
+            bottomRight: Radius.circular(fromAgency ? 4 : 17),
           ),
           border: fromAgency
               ? null
-              : Border.all(
-                  color: Theme.of(context)
-                      .dividerColor,
-                ),
+              : Border.all(color: Theme.of(context).dividerColor),
         ),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Align(
-              alignment:
-                  Alignment.centerLeft,
+              alignment: Alignment.centerLeft,
               child: Text(
                 message,
                 style: TextStyle(
                   height: 1.4,
-                  color: fromAgency
-                      ? Colors.white
-                      : null,
+                  color: fromAgency ? Colors.white : null,
                 ),
               ),
             ),
@@ -626,10 +471,7 @@ class _MessageBubble extends StatelessWidget {
                 fontSize: 10,
                 color: fromAgency
                     ? Colors.white70
-                    : Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.color,
+                    : Theme.of(context).textTheme.bodySmall?.color,
               ),
             ),
           ],

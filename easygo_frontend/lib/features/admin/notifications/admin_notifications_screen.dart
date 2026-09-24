@@ -11,8 +11,7 @@ class AdminNotificationsScreen extends StatefulWidget {
       _AdminNotificationsScreenState();
 }
 
-class _AdminNotificationsScreenState
-    extends State<AdminNotificationsScreen> {
+class _AdminNotificationsScreenState extends State<AdminNotificationsScreen> {
   bool _readAll = false;
 
   @override
@@ -52,11 +51,7 @@ class _AdminNotificationsScreenState
     );
   }
 
-  Widget _notification(
-    String title,
-    String subtitle,
-    IconData icon,
-  ) {
+  Widget _notification(String title, String subtitle, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GlassContainer(

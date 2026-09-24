@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class HelpSupportScreen extends StatelessWidget {
-  const HelpSupportScreen({
-    super.key,
-  });
+  const HelpSupportScreen({super.key});
 
   void _showSupportInformation(
     BuildContext context,
@@ -17,18 +15,11 @@ class HelpSupportScreen extends StatelessWidget {
       builder: (dialogContext) {
         return AlertDialog(
           title: Text(title),
-          content: Text(
-            message,
-            style: const TextStyle(
-              height: 1.5,
-            ),
-          ),
+          content: Text(message, style: const TextStyle(height: 1.5)),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                );
+                Navigator.pop(dialogContext);
               },
               child: const Text('Close'),
             ),
@@ -42,11 +33,7 @@ class HelpSupportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Help & Support',
-        ),
-      ),
+      appBar: AppBar(title: const Text('Help & Support')),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
@@ -78,50 +65,43 @@ class HelpSupportScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             const _FaqItem(
-              question:
-                  'How do I book an interurban journey?',
+              question: 'How do I book an interurban journey?',
               answer:
                   'Select a transport agency from the Home screen, choose Book a Trip, select Interurban Only or Door-to-Door, enter your journey information, choose an available trip and continue to payment.',
             ),
 
             const _FaqItem(
-              question:
-                  'How does Door-to-Door travel work?',
+              question: 'How does Door-to-Door travel work?',
               answer:
                   'Door-to-Door combines a pickup taxi, the interurban transport service and a destination taxi into one coordinated journey. Taxi assignment information is displayed when the external taxi provider assigns a driver.',
             ),
 
             const _FaqItem(
-              question:
-                  'How is my traveler luggage tracked?',
+              question: 'How is my traveler luggage tracked?',
               answer:
                   'Traveler luggage is linked to your confirmed booking. The transport agency updates its operational status as it moves through the journey. You can view the luggage associated with a booking or use the Track section.',
             ),
 
             const _FaqItem(
-              question:
-                  'Can I send a parcel without travelling?',
+              question: 'Can I send a parcel without travelling?',
               answer:
                   'Yes. Independent parcel shipment is separate from traveler luggage. Open Track, choose Independent Parcel, then create a parcel shipment and select an available transport service.',
             ),
 
             const _FaqItem(
-              question:
-                  'What do the tracking statuses mean?',
+              question: 'What do the tracking statuses mean?',
               answer:
                   'The standard workflow is Registered, Received by Agency, Loaded, In Transit, Arrived, Ready for Collection and Delivered. The progress indicator represents operational stages and not GPS distance travelled.',
             ),
 
             const _FaqItem(
-              question:
-                  'Where can I find my digital ticket?',
+              question: 'Where can I find my digital ticket?',
               answer:
                   'Open Trips, select the relevant booking and choose View Digital Ticket. Cancelled bookings do not provide an active digital ticket.',
             ),
 
             const _FaqItem(
-              question:
-                  'What happens after I pay?',
+              question: 'What happens after I pay?',
               answer:
                   'After successful payment, the booking or parcel shipment is confirmed and the corresponding reference information is created. During backend integration, payment confirmation and reference generation will be performed by the server.',
             ),
@@ -153,8 +133,7 @@ class HelpSupportScreen extends StatelessWidget {
             _SupportOption(
               icon: Icons.email_outlined,
               title: 'Email Support',
-              subtitle:
-                  'Contact the easyGO support service',
+              subtitle: 'Contact the easyGO support service',
               onTap: () {
                 _showSupportInformation(
                   context,
@@ -169,8 +148,7 @@ class HelpSupportScreen extends StatelessWidget {
             _SupportOption(
               icon: Icons.phone_outlined,
               title: 'Phone Support',
-              subtitle:
-                  'Speak with the support service',
+              subtitle: 'Speak with the support service',
               onTap: () {
                 _showSupportInformation(
                   context,
@@ -183,11 +161,9 @@ class HelpSupportScreen extends StatelessWidget {
             const SizedBox(height: 12),
 
             _SupportOption(
-              icon:
-                  Icons.chat_bubble_outline,
+              icon: Icons.chat_bubble_outline,
               title: 'Report a Problem',
-              subtitle:
-                  'Report a booking, tracking or application issue',
+              subtitle: 'Report a booking, tracking or application issue',
               onTap: () {
                 _showSupportInformation(
                   context,
@@ -214,9 +190,7 @@ class HelpSupportScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.primary,
-        borderRadius: BorderRadius.circular(
-          20,
-        ),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: const Row(
         children: [
@@ -234,8 +208,7 @@ class HelpSupportScreen extends StatelessWidget {
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'How can we help?',
@@ -268,28 +241,16 @@ class HelpSupportScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight
-            .withValues(
-          alpha: 0.08,
-        ),
-        borderRadius: BorderRadius.circular(
-          14,
-        ),
+        color: AppColors.primaryLight.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: AppColors.primaryLight
-              .withValues(
-            alpha: 0.20,
-          ),
+          color: AppColors.primaryLight.withValues(alpha: 0.20),
         ),
       ),
       child: const Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline,
-            color: AppColors.primary,
-          ),
+          Icon(Icons.info_outline, color: AppColors.primary),
 
           SizedBox(width: 11),
 
@@ -299,8 +260,7 @@ class HelpSupportScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 height: 1.5,
-                color:
-                    AppColors.textSecondary,
+                color: AppColors.textSecondary,
               ),
             ),
           ),
@@ -314,33 +274,21 @@ class _FaqItem extends StatelessWidget {
   final String question;
   final String answer;
 
-  const _FaqItem({
-    required this.question,
-    required this.answer,
-  });
+  const _FaqItem({required this.question, required this.answer});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(
-        bottom: 10,
-      ),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(
-          14,
-        ),
-        border: Border.all(
-          color: AppColors.border,
-        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
       ),
       child: ExpansionTile(
         shape: const Border(),
         collapsedShape: const Border(),
-        leading: const Icon(
-          Icons.help_outline,
-          color: AppColors.primary,
-        ),
+        leading: const Icon(Icons.help_outline, color: AppColors.primary),
         title: Text(
           question,
           style: const TextStyle(
@@ -349,13 +297,7 @@ class _FaqItem extends StatelessWidget {
             color: AppColors.textPrimary,
           ),
         ),
-        childrenPadding:
-            const EdgeInsets.fromLTRB(
-          16,
-          0,
-          16,
-          16,
-        ),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         children: [
           Text(
             answer,
@@ -371,8 +313,7 @@ class _FaqItem extends StatelessWidget {
   }
 }
 
-class _SupportOption
-    extends StatelessWidget {
+class _SupportOption extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
@@ -389,22 +330,15 @@ class _SupportOption
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.surface,
-      borderRadius: BorderRadius.circular(
-        15,
-      ),
+      borderRadius: BorderRadius.circular(15),
       child: InkWell(
-        borderRadius: BorderRadius.circular(
-          15,
-        ),
+        borderRadius: BorderRadius.circular(15),
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(15),
-            border: Border.all(
-              color: AppColors.border,
-            ),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             children: [
@@ -412,38 +346,24 @@ class _SupportOption
                 width: 45,
                 height: 45,
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(
-                    alpha: 0.08,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    12,
-                  ),
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: AppColors.primary,
-                  size: 22,
-                ),
+                child: Icon(icon, color: AppColors.primary, size: 22),
               ),
 
               const SizedBox(width: 13),
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style:
-                          const TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
-                        fontWeight:
-                            FontWeight.w600,
-                        color: AppColors
-                            .textPrimary,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
                       ),
                     ),
 
@@ -451,22 +371,16 @@ class _SupportOption
 
                     Text(
                       subtitle,
-                      style:
-                          const TextStyle(
+                      style: const TextStyle(
                         fontSize: 11,
-                        color: AppColors
-                            .textSecondary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const Icon(
-                Icons.chevron_right,
-                color:
-                    AppColors.textSecondary,
-              ),
+              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
             ],
           ),
         ),

@@ -4,12 +4,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import 'manage_parcel_status_screen.dart';
 
-class AgencyParcelDetailsScreen
-    extends StatelessWidget {
-  const AgencyParcelDetailsScreen({
-    super.key,
-    required this.parcel,
-  });
+class AgencyParcelDetailsScreen extends StatelessWidget {
+  const AgencyParcelDetailsScreen({super.key, required this.parcel});
 
   final Map<String, dynamic> parcel;
 
@@ -24,20 +20,16 @@ class AgencyParcelDetailsScreen
   ];
 
   int get _currentStatusIndex {
-    final int index = _statuses.indexOf(
-      parcel['status'] as String,
-    );
+    final int index = _statuses.indexOf(parcel['status'] as String);
 
     return index < 0 ? 0 : index;
   }
 
   double get _progress {
-    return _currentStatusIndex /
-        (_statuses.length - 1);
+    return _currentStatusIndex / (_statuses.length - 1);
   }
 
-  bool get _canManage =>
-      parcel['status'] != 'Delivered';
+  bool get _canManage => parcel['status'] != 'Delivered';
 
   String _formatPrice(int value) {
     return value.toString().replaceAllMapped(
@@ -67,35 +59,23 @@ class AgencyParcelDetailsScreen
     }
   }
 
-  void _openStatusManagement(
-    BuildContext context,
-  ) {
+  void _openStatusManagement(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            ManageParcelStatusScreen(
-          parcel: parcel,
-        ),
+        builder: (context) => ManageParcelStatusScreen(parcel: parcel),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final String status =
-        parcel['status'] as String;
+    final String status = parcel['status'] as String;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Parcel Details',
-        ),
-      ),
+      appBar: AppBar(title: const Text('Parcel Details')),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -123,53 +103,28 @@ class AgencyParcelDetailsScreen
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              34,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 34),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 850,
-                ),
+                constraints: const BoxConstraints(maxWidth: 850),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildHeader(
-                      context,
-                      status,
-                    ),
+                    _buildHeader(context, status),
                     const SizedBox(height: 18),
-                    _buildTrackingProgress(
-                      context,
-                    ),
+                    _buildTrackingProgress(context),
                     const SizedBox(height: 18),
-                    _buildParcelInformation(
-                      context,
-                    ),
+                    _buildParcelInformation(context),
                     const SizedBox(height: 18),
-                    _buildSenderInformation(
-                      context,
-                    ),
+                    _buildSenderInformation(context),
                     const SizedBox(height: 18),
-                    _buildRecipientInformation(
-                      context,
-                    ),
+                    _buildRecipientInformation(context),
                     const SizedBox(height: 18),
-                    _buildRouteInformation(
-                      context,
-                    ),
+                    _buildRouteInformation(context),
                     const SizedBox(height: 18),
-                    _buildPaymentInformation(
-                      context,
-                    ),
+                    _buildPaymentInformation(context),
                     const SizedBox(height: 18),
-                    _buildManagementSection(
-                      context,
-                    ),
+                    _buildManagementSection(context),
                   ],
                 ),
               ),
@@ -180,84 +135,56 @@ class AgencyParcelDetailsScreen
     );
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-    String status,
-  ) {
-    final Color color =
-        _statusColor(status);
+  Widget _buildHeader(BuildContext context, String status) {
+    final Color color = _statusColor(status);
 
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: color.withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(14),
+              color: color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              Icons.inventory_2_outlined,
-              color: color,
-              size: 25,
-            ),
+            child: Icon(Icons.inventory_2_outlined, color: color, size: 25),
           ),
           const SizedBox(width: 13),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   parcel['id'] as String,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  parcel['description']
-                      as String,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  parcel['description'] as String,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
           Container(
-            padding:
-                const EdgeInsets.symmetric(
-              horizontal: 9,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
             decoration: BoxDecoration(
-              color: color.withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(18),
+              color: color.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(18),
             ),
             child: Text(
               status,
               style: TextStyle(
                 fontSize: 10,
-                fontWeight:
-                    FontWeight.w600,
+                fontWeight: FontWeight.w600,
                 color: color,
               ),
             ),
@@ -267,29 +194,21 @@ class AgencyParcelDetailsScreen
     );
   }
 
-  Widget _buildTrackingProgress(
-    BuildContext context,
-  ) {
-    final String currentStatus =
-        parcel['status'] as String;
+  Widget _buildTrackingProgress(BuildContext context) {
+    final String currentStatus = parcel['status'] as String;
 
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Tracking Progress',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 18),
           Row(
@@ -297,69 +216,44 @@ class AgencyParcelDetailsScreen
               Expanded(
                 child: Text(
                   currentStatus,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
               Text(
                 '${(_progress * 100).round()}%',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.bold,
-                      color:
-                          AppColors.primary,
-                    ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 10),
           ClipRRect(
-            borderRadius:
-                BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20),
             child: LinearProgressIndicator(
               value: _progress,
               minHeight: 8,
-              backgroundColor:
-                  AppColors.primary
-                      .withValues(
-                alpha: 0.10,
-              ),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.10),
             ),
           ),
           const SizedBox(height: 22),
-          ...List.generate(
-            _statuses.length,
-            (index) {
-              return _TrackingStage(
-                status: _statuses[index],
-                completed:
-                    index <
-                        _currentStatusIndex,
-                current:
-                    index ==
-                        _currentStatusIndex,
-                showConnector:
-                    index <
-                        _statuses.length - 1,
-              );
-            },
-          ),
+          ...List.generate(_statuses.length, (index) {
+            return _TrackingStage(
+              status: _statuses[index],
+              completed: index < _currentStatusIndex,
+              current: index == _currentStatusIndex,
+              showConnector: index < _statuses.length - 1,
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildParcelInformation(
-    BuildContext context,
-  ) {
+  Widget _buildParcelInformation(BuildContext context) {
     return _SectionCard(
       title: 'Parcel Information',
       child: Column(
@@ -371,46 +265,34 @@ class AgencyParcelDetailsScreen
           ),
           const SizedBox(height: 14),
           _DetailRow(
-            icon:
-                Icons.description_outlined,
+            icon: Icons.description_outlined,
             label: 'Description',
-            value:
-                parcel['description']
-                    as String,
+            value: parcel['description'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
             icon: Icons.scale_outlined,
             label: 'Weight',
-            value:
-                '${parcel['weight']} kg',
+            value: '${parcel['weight']} kg',
           ),
           const SizedBox(height: 14),
           _DetailRow(
-            icon:
-                Icons.category_outlined,
+            icon: Icons.category_outlined,
             label: 'Service Type',
-            value:
-                parcel['serviceType']
-                    as String,
+            value: parcel['serviceType'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
-            icon:
-                Icons.calendar_today_outlined,
+            icon: Icons.calendar_today_outlined,
             label: 'Registered Date',
-            value:
-                parcel['registeredDate']
-                    as String,
+            value: parcel['registeredDate'] as String,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSenderInformation(
-    BuildContext context,
-  ) {
+  Widget _buildSenderInformation(BuildContext context) {
     return _SectionCard(
       title: 'Sender Information',
       child: Column(
@@ -418,54 +300,41 @@ class AgencyParcelDetailsScreen
           _DetailRow(
             icon: Icons.person_outline,
             label: 'Sender Name',
-            value:
-                parcel['senderName']
-                    as String,
+            value: parcel['senderName'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
             icon: Icons.phone_outlined,
             label: 'Sender Phone',
-            value:
-                parcel['senderPhone']
-                    as String,
+            value: parcel['senderPhone'] as String,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRecipientInformation(
-    BuildContext context,
-  ) {
+  Widget _buildRecipientInformation(BuildContext context) {
     return _SectionCard(
       title: 'Recipient Information',
       child: Column(
         children: [
           _DetailRow(
-            icon:
-                Icons.person_pin_outlined,
+            icon: Icons.person_pin_outlined,
             label: 'Recipient Name',
-            value:
-                parcel['recipientName']
-                    as String,
+            value: parcel['recipientName'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
             icon: Icons.phone_outlined,
             label: 'Recipient Phone',
-            value:
-                parcel['recipientPhone']
-                    as String,
+            value: parcel['recipientPhone'] as String,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRouteInformation(
-    BuildContext context,
-  ) {
+  Widget _buildRouteInformation(BuildContext context) {
     return _SectionCard(
       title: 'Transport Information',
       child: Column(
@@ -488,35 +357,27 @@ class AgencyParcelDetailsScreen
     );
   }
 
-  Widget _buildPaymentInformation(
-    BuildContext context,
-  ) {
-    final String paymentStatus =
-        parcel['paymentStatus'] as String;
+  Widget _buildPaymentInformation(BuildContext context) {
+    final String paymentStatus = parcel['paymentStatus'] as String;
 
-    final Color color =
-        paymentStatus == 'Paid'
-            ? AppColors.success
-            : AppColors.warning;
+    final Color color = paymentStatus == 'Paid'
+        ? AppColors.success
+        : AppColors.warning;
 
     return _SectionCard(
       title: 'Payment Information',
       child: Column(
         children: [
           _DetailRow(
-            icon:
-                Icons.account_balance_wallet_outlined,
+            icon: Icons.account_balance_wallet_outlined,
             label: 'Payment Method',
-            value:
-                parcel['paymentMethod']
-                    as String,
+            value: parcel['paymentMethod'] as String,
           ),
           const SizedBox(height: 14),
           _DetailRow(
             icon: Icons.payments_outlined,
             label: 'Amount',
-            value:
-                '${_formatPrice(parcel['amount'] as int)} FCFA',
+            value: '${_formatPrice(parcel['amount'] as int)} FCFA',
           ),
           const SizedBox(height: 14),
           Row(
@@ -525,41 +386,27 @@ class AgencyParcelDetailsScreen
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(11),
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(
-                  Icons.verified_outlined,
-                  color: color,
-                  size: 19,
-                ),
+                child: Icon(Icons.verified_outlined, color: color, size: 19),
               ),
               const SizedBox(width: 11),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Payment Status',
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall,
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                     const SizedBox(height: 3),
                     Text(
                       paymentStatus,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.w600,
-                            color: color,
-                          ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
                     ),
                   ],
                 ),
@@ -571,38 +418,28 @@ class AgencyParcelDetailsScreen
     );
   }
 
-  Widget _buildManagementSection(
-    BuildContext context,
-  ) {
+  Widget _buildManagementSection(BuildContext context) {
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Parcel Tracking Management',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 7),
           Text(
             _canManage
                 ? 'Advance this parcel to its next valid operational tracking status.'
                 : 'This parcel has been delivered and its tracking lifecycle is complete.',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(
-                  height: 1.45,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(height: 1.45),
           ),
           const SizedBox(height: 18),
           SizedBox(
@@ -610,18 +447,11 @@ class AgencyParcelDetailsScreen
             child: FilledButton.icon(
               onPressed: _canManage
                   ? () {
-                      _openStatusManagement(
-                        context,
-                      );
+                      _openStatusManagement(context);
                     }
                   : null,
-              icon: const Icon(
-                Icons
-                    .published_with_changes_outlined,
-              ),
-              label: const Text(
-                'Update Parcel Status',
-              ),
+              icon: const Icon(Icons.published_with_changes_outlined),
+              label: const Text('Update Parcel Status'),
             ),
           ),
         ],
@@ -648,12 +478,11 @@ class _TrackingStage extends StatelessWidget {
     final Color color = completed
         ? AppColors.success
         : current
-            ? AppColors.primary
-            : AppColors.textLight;
+        ? AppColors.primary
+        : AppColors.textLight;
 
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
           children: [
@@ -661,21 +490,16 @@ class _TrackingStage extends StatelessWidget {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: color.withValues(
-                  alpha: 0.12,
-                ),
+                color: color.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: color,
-                ),
+                border: Border.all(color: color),
               ),
               child: Icon(
                 completed
                     ? Icons.check
                     : current
-                        ? Icons
-                            .radio_button_checked
-                        : Icons.circle_outlined,
+                    ? Icons.radio_button_checked
+                    : Icons.circle_outlined,
                 size: 15,
                 color: color,
               ),
@@ -685,35 +509,21 @@ class _TrackingStage extends StatelessWidget {
                 width: 2,
                 height: 27,
                 color: completed
-                    ? AppColors.success
-                        .withValues(
-                          alpha: 0.45,
-                        )
-                    : Theme.of(context)
-                        .dividerColor,
+                    ? AppColors.success.withValues(alpha: 0.45)
+                    : Theme.of(context).dividerColor,
               ),
           ],
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Padding(
-            padding:
-                const EdgeInsets.only(
-              top: 4,
-            ),
+            padding: const EdgeInsets.only(top: 4),
             child: Text(
               status,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(
-                    fontWeight: current
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                    color: current
-                        ? AppColors.primary
-                        : null,
-                  ),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: current ? FontWeight.bold : FontWeight.normal,
+                color: current ? AppColors.primary : null,
+              ),
             ),
           ),
         ),
@@ -723,10 +533,7 @@ class _TrackingStage extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-  });
+  const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -738,18 +545,13 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 18),
           child,
@@ -773,48 +575,29 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.primary
-                .withValues(
-              alpha: 0.10,
-            ),
-            borderRadius:
-                BorderRadius.circular(11),
+            color: AppColors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(11),
           ),
-          child: Icon(
-            icon,
-            size: 19,
-            color: AppColors.primary,
-          ),
+          child: Icon(icon, size: 19, color: AppColors.primary),
         ),
         const SizedBox(width: 11),
         Expanded(
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall,
-              ),
+              Text(label, style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 3),
               Text(
                 value,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),

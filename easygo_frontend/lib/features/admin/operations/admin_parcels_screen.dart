@@ -15,7 +15,6 @@ class AdminParcelsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-
           GlassContainer(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
@@ -42,7 +41,9 @@ class AdminParcelsScreen extends StatelessWidget {
               leading: const Icon(Icons.inventory_2_outlined),
               title: const Text('PAR-DEMO-003'),
               subtitle: const Text('Alice K. • General Express'),
-              trailing: Chip(label: Text(l.trackingStatusLabel('Received by Agency'))),
+              trailing: Chip(
+                label: Text(l.trackingStatusLabel('Received by Agency')),
+              ),
             ),
           ),
           const SizedBox(height: 12),

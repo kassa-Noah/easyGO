@@ -1,38 +1,38 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../auth/models/auth_user.dart';
+import '../../auth/services/auth_service.dart';
 
-class PersonalInformationScreen
-    extends StatefulWidget {
-  final String initialFullName;
+class PersonalInformationScreen extends StatefulWidget {
+  final String initialFirstName;
+  final String initialLastName;
   final String initialEmail;
   final String initialPhone;
 
   const PersonalInformationScreen({
     super.key,
-    required this.initialFullName,
+    required this.initialFirstName,
+    required this.initialLastName,
     required this.initialEmail,
     required this.initialPhone,
   });
 
   @override
-  State<PersonalInformationScreen>
-      createState() =>
-          _PersonalInformationScreenState();
+  State<PersonalInformationScreen> createState() =>
+      _PersonalInformationScreenState();
 }
 
-class _PersonalInformationScreenState
-    extends State<PersonalInformationScreen> {
+class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  late final TextEditingController
-      _fullNameController;
+  final AuthService _authService = AuthService.instance;
 
-  late final TextEditingController
-      _emailController;
-
-  late final TextEditingController
-      _phoneController;
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
 
   bool _isSaving = false;
 
@@ -40,78 +40,57 @@ class _PersonalInformationScreenState
   void initState() {
     super.initState();
 
-    _fullNameController =
-        TextEditingController(
-      text: widget.initialFullName,
-    );
+    _firstNameController = TextEditingController(text: widget.initialFirstName);
 
-    _emailController =
-        TextEditingController(
-      text: widget.initialEmail,
-    );
+    _lastNameController = TextEditingController(text: widget.initialLastName);
 
-    _phoneController =
-        TextEditingController(
-      text: widget.initialPhone,
-    );
+    _emailController = TextEditingController(text: widget.initialEmail);
+
+    _phoneController = TextEditingController(text: widget.initialPhone);
   }
 
   @override
   void dispose() {
-    _fullNameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
 
     super.dispose();
   }
 
-  String? _validateFullName(
-    String? value,
-  ) {
-    if (value == null ||
-        value.trim().isEmpty) {
-      return 'Full name is required.';
+  String? _validateName(String? value, String fieldName) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName is required.';
     }
 
-    if (value.trim().length < 3) {
-      return 'Enter a valid full name.';
+    if (value.trim().length < 2) {
+      return 'Enter a valid $fieldName.';
     }
 
     return null;
   }
 
-  String? _validateEmail(
-    String? value,
-  ) {
-    if (value == null ||
-        value.trim().isEmpty) {
+  String? _validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
       return 'Email address is required.';
     }
 
-    final emailPattern = RegExp(
-      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-    );
+    final emailPattern = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
-    if (!emailPattern.hasMatch(
-      value.trim(),
-    )) {
+    if (!emailPattern.hasMatch(value.trim())) {
       return 'Enter a valid email address.';
     }
 
     return null;
   }
 
-  String? _validatePhone(
-    String? value,
-  ) {
-    if (value == null ||
-        value.trim().isEmpty) {
+  String? _validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
       return 'Phone number is required.';
     }
 
-    final normalized = value
-        .replaceAll(' ', '')
-        .replaceAll('-', '');
+    final String normalized = value.replaceAll(RegExp(r'[\s-]'), '');
 
     if (normalized.length < 9) {
       return 'Enter a valid phone number.';
@@ -121,69 +100,70 @@ class _PersonalInformationScreenState
   }
 
   Future<void> _saveChanges() async {
-    if (!_formKey.currentState!
-        .validate()) {
+    if (_isSaving) {
       return;
     }
+
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
 
     setState(() {
       _isSaving = true;
     });
 
-    /*
-     * FRONTEND DEMONSTRATION ONLY.
-     *
-     * Later this will become:
-     *
-     * PATCH /api/users/me
-     *
-     * or the equivalent profile endpoint
-     * implemented by the backend.
-     */
+    try {
+      final AuthUser updatedUser = await _authService.updateProfile(
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        email: _emailController.text,
+        phone: _phoneController.text,
+      );
 
-    await Future.delayed(
-      const Duration(milliseconds: 700),
-    );
+      if (!mounted) {
+        return;
+      }
 
-    if (!mounted) {
-      return;
+      Navigator.pop(context, updatedUser);
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to update your profile. Please try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
-
-    setState(() {
-      _isSaving = false;
-    });
-
-    Navigator.pop(
-      context,
-      {
-        'fullName':
-            _fullNameController.text.trim(),
-        'email':
-            _emailController.text.trim(),
-        'phone':
-            _phoneController.text.trim(),
-      },
-    );
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Personal Information',
-        ),
-      ),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(title: const Text('Personal Information')),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
-            padding:
-                const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
             children: [
               _buildProfileAvatar(),
 
@@ -193,10 +173,8 @@ class _PersonalInformationScreenState
                 'Account Information',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight:
-                      FontWeight.bold,
-                  color:
-                      AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
               ),
 
@@ -207,78 +185,72 @@ class _PersonalInformationScreenState
                 style: TextStyle(
                   fontSize: 12,
                   height: 1.5,
-                  color:
-                      AppColors.textSecondary,
+                  color: AppColors.textSecondary,
                 ),
               ),
 
               const SizedBox(height: 24),
 
               TextFormField(
-                controller:
-                    _fullNameController,
-                textInputAction:
-                    TextInputAction.next,
-                validator:
-                    _validateFullName,
-                decoration:
-                    const InputDecoration(
-                  labelText: 'Full Name',
-                  hintText:
-                      'Enter your full name',
-                  prefixIcon: Icon(
-                    Icons.person_outline,
-                  ),
+                controller: _firstNameController,
+                enabled: !_isSaving,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                validator: (value) => _validateName(value, 'First name'),
+                decoration: const InputDecoration(
+                  labelText: 'First Name',
+                  hintText: 'Enter your first name',
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
               ),
 
               const SizedBox(height: 16),
 
               TextFormField(
-                controller:
-                    _emailController,
-                keyboardType:
-                    TextInputType
-                        .emailAddress,
-                textInputAction:
-                    TextInputAction.next,
+                controller: _lastNameController,
+                enabled: !_isSaving,
+                textCapitalization: TextCapitalization.words,
+                textInputAction: TextInputAction.next,
+                validator: (value) => _validateName(value, 'Last name'),
+                decoration: const InputDecoration(
+                  labelText: 'Last Name',
+                  hintText: 'Enter your last name',
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _emailController,
+                enabled: !_isSaving,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
                 validator: _validateEmail,
-                decoration:
-                    const InputDecoration(
-                  labelText:
-                      'Email Address',
-                  hintText:
-                      'Enter your email address',
-                  prefixIcon: Icon(
-                    Icons.email_outlined,
-                  ),
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  hintText: 'Enter your email address',
+                  prefixIcon: Icon(Icons.email_outlined),
                 ),
               ),
 
               const SizedBox(height: 16),
 
               TextFormField(
-                controller:
-                    _phoneController,
-                keyboardType:
-                    TextInputType.phone,
-                textInputAction:
-                    TextInputAction.done,
+                controller: _phoneController,
+                enabled: !_isSaving,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
                 validator: _validatePhone,
                 onFieldSubmitted: (_) {
                   if (!_isSaving) {
                     _saveChanges();
                   }
                 },
-                decoration:
-                    const InputDecoration(
-                  labelText:
-                      'Phone Number',
-                  hintText:
-                      '+237 6XX XXX XXX',
-                  prefixIcon: Icon(
-                    Icons.phone_outlined,
-                  ),
+                decoration: const InputDecoration(
+                  labelText: 'Phone Number',
+                  hintText: '+237 6XX XXX XXX',
+                  prefixIcon: Icon(Icons.phone_outlined),
                 ),
               ),
 
@@ -291,21 +263,14 @@ class _PersonalInformationScreenState
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isSaving
-                      ? null
-                      : _saveChanges,
+                  onPressed: _isSaving ? null : _saveChanges,
                   child: _isSaving
                       ? const SizedBox(
                           width: 22,
                           height: 22,
-                          child:
-                              CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Text(
-                          'Save Changes',
-                        ),
+                      : const Text('Save Changes'),
                 ),
               ),
 
@@ -325,15 +290,9 @@ class _PersonalInformationScreenState
             children: [
               const CircleAvatar(
                 radius: 50,
-                backgroundColor:
-                    AppColors.primary,
-                child: Icon(
-                  Icons.person,
-                  size: 55,
-                  color: Colors.white,
-                ),
+                backgroundColor: AppColors.primary,
+                child: Icon(Icons.person, size: 55, color: Colors.white),
               ),
-
               Positioned(
                 right: 0,
                 bottom: 0,
@@ -341,13 +300,9 @@ class _PersonalInformationScreenState
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color:
-                        AppColors.secondary,
+                    color: AppColors.secondary,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 3,
-                    ),
+                    border: Border.all(color: Colors.white, width: 3),
                   ),
                   child: const Icon(
                     Icons.edit_outlined,
@@ -366,8 +321,7 @@ class _PersonalInformationScreenState
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color:
-                  AppColors.textSecondary,
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -377,42 +331,26 @@ class _PersonalInformationScreenState
 
   Widget _buildSecurityNotice() {
     return Container(
-      padding:
-          const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight
-            .withValues(
-          alpha: 0.08,
-        ),
-        borderRadius:
-            BorderRadius.circular(14),
+        color: AppColors.primaryLight.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: AppColors.primaryLight
-              .withValues(
-            alpha: 0.20,
-          ),
+          color: AppColors.primaryLight.withValues(alpha: 0.20),
         ),
       ),
       child: const Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.security_outlined,
-            size: 21,
-            color: AppColors.primary,
-          ),
-
+          Icon(Icons.security_outlined, size: 21, color: AppColors.primary),
           SizedBox(width: 10),
-
           Expanded(
             child: Text(
-              'Your profile information is associated with your easyGO account. Authentication and identity verification will be handled securely by the backend.',
+              'Your profile information is securely associated with your authenticated easyGO account.',
               style: TextStyle(
                 fontSize: 11,
                 height: 1.5,
-                color:
-                    AppColors.textSecondary,
+                color: AppColors.textSecondary,
               ),
             ),
           ),

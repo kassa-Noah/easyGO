@@ -5,17 +5,13 @@ import '../../../../shared/widgets/glass_container.dart';
 import 'agency_booking_details_screen.dart';
 
 class AgencyBookingsScreen extends StatefulWidget {
-  const AgencyBookingsScreen({
-    super.key,
-  });
+  const AgencyBookingsScreen({super.key});
 
   @override
-  State<AgencyBookingsScreen> createState() =>
-      _AgencyBookingsScreenState();
+  State<AgencyBookingsScreen> createState() => _AgencyBookingsScreenState();
 }
 
-class _AgencyBookingsScreenState
-    extends State<AgencyBookingsScreen> {
+class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
   static const String _all = 'All';
   static const String _confirmed = 'Confirmed';
   static const String _completed = 'Completed';
@@ -127,10 +123,7 @@ class _AgencyBookingsScreenState
     }
 
     return _bookings
-        .where(
-          (booking) =>
-              booking['status'] == _selectedFilter,
-        )
+        .where((booking) => booking['status'] == _selectedFilter)
         .toList();
   }
 
@@ -141,35 +134,23 @@ class _AgencyBookingsScreenState
     );
   }
 
-  void _openBookingDetails(
-    Map<String, dynamic> booking,
-  ) {
+  void _openBookingDetails(Map<String, dynamic> booking) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AgencyBookingDetailsScreen(
-          booking: booking,
-        ),
+        builder: (context) => AgencyBookingDetailsScreen(booking: booking),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final List<Map<String, dynamic>> bookings =
-        _filteredBookings;
+    final List<Map<String, dynamic>> bookings = _filteredBookings;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Agency Bookings',
-        ),
-      ),
+      appBar: AppBar(title: const Text('Agency Bookings')),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -197,55 +178,37 @@ class _AgencyBookingsScreenState
         child: SafeArea(
           top: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              32,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 900,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 900),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSummary(context),
                       const SizedBox(height: 22),
                       _buildFilters(),
                       const SizedBox(height: 20),
                       AnimatedSwitcher(
-                        duration: const Duration(
-                          milliseconds: 250,
-                        ),
+                        duration: const Duration(milliseconds: 250),
                         child: bookings.isEmpty
                             ? _buildEmptyState(context)
                             : Column(
-                                key: ValueKey(
-                                  _selectedFilter,
-                                ),
+                                key: ValueKey(_selectedFilter),
                                 children: bookings
                                     .map(
                                       (booking) => Padding(
-                                        padding:
-                                            const EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           bottom: 14,
                                         ),
-                                        child:
-                                            _AgencyBookingCard(
+                                        child: _AgencyBookingCard(
                                           booking: booking,
-                                          formattedAmount:
-                                              _formatPrice(
-                                            booking['amount']
-                                                as int,
+                                          formattedAmount: _formatPrice(
+                                            booking['amount'] as int,
                                           ),
                                           onTap: () {
-                                            _openBookingDetails(
-                                              booking,
-                                            );
+                                            _openBookingDetails(booking);
                                           },
                                         ),
                                       ),
@@ -264,28 +227,17 @@ class _AgencyBookingsScreenState
     );
   }
 
-  Widget _buildSummary(
-    BuildContext context,
-  ) {
+  Widget _buildSummary(BuildContext context) {
     final int confirmed = _bookings
-        .where(
-          (booking) =>
-              booking['status'] == _confirmed,
-        )
+        .where((booking) => booking['status'] == _confirmed)
         .length;
 
     final int completed = _bookings
-        .where(
-          (booking) =>
-              booking['status'] == _completed,
-        )
+        .where((booking) => booking['status'] == _completed)
         .length;
 
     final int cancelled = _bookings
-        .where(
-          (booking) =>
-              booking['status'] == _cancelled,
-        )
+        .where((booking) => booking['status'] == _cancelled)
         .length;
 
     return GlassContainer(
@@ -293,8 +245,7 @@ class _AgencyBookingsScreenState
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -302,11 +253,8 @@ class _AgencyBookingsScreenState
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(14),
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.confirmation_number_outlined,
@@ -316,25 +264,19 @@ class _AgencyBookingsScreenState
               const SizedBox(width: 13),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Booking Management',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'General Express • '
                       '${_bookings.length} bookings',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -372,43 +314,33 @@ class _AgencyBookingsScreenState
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: _filters.map(
-          (filter) {
-            final bool selected =
-                filter == _selectedFilter;
+        children: _filters.map((filter) {
+          final bool selected = filter == _selectedFilter;
 
-            return Padding(
-              padding: const EdgeInsets.only(
-                right: 9,
-              ),
-              child: ChoiceChip(
-                label: Text(filter),
-                selected: selected,
-                onSelected: (_) {
-                  setState(() {
-                    _selectedFilter = filter;
-                  });
-                },
-              ),
-            );
-          },
-        ).toList(),
+          return Padding(
+            padding: const EdgeInsets.only(right: 9),
+            child: ChoiceChip(
+              label: Text(filter),
+              selected: selected,
+              onSelected: (_) {
+                setState(() {
+                  _selectedFilter = filter;
+                });
+              },
+            ),
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildEmptyState(
-    BuildContext context,
-  ) {
-    final String title =
-        _selectedFilter == _all
-            ? 'No bookings'
-            : 'No $_selectedFilter bookings';
+  Widget _buildEmptyState(BuildContext context) {
+    final String title = _selectedFilter == _all
+        ? 'No bookings'
+        : 'No $_selectedFilter bookings';
 
     return GlassContainer(
-      key: ValueKey(
-        'empty-bookings-$_selectedFilter',
-      ),
+      key: ValueKey('empty-bookings-$_selectedFilter'),
       width: double.infinity,
       padding: const EdgeInsets.all(30),
       borderRadius: 18,
@@ -418,9 +350,7 @@ class _AgencyBookingsScreenState
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -433,20 +363,15 @@ class _AgencyBookingsScreenState
           Text(
             title,
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 7),
           Text(
             'There are currently no agency bookings under this status.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
@@ -499,59 +424,40 @@ class _AgencyBookingCard extends StatelessWidget {
       borderRadius: 17,
       onTap: onTap,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      booking['bookingReference']
-                          as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      booking['bookingReference'] as String,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       booking['clientName'] as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 10),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _statusColor.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(18),
+                  color: _statusColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      _statusIcon,
-                      size: 13,
-                      color: _statusColor,
-                    ),
+                    Icon(_statusIcon, size: 13, color: _statusColor),
                     const SizedBox(width: 5),
                     Text(
                       booking['status'] as String,
@@ -579,12 +485,9 @@ class _AgencyBookingCard extends StatelessWidget {
                 child: Text(
                   '${booking['departureCity']} → '
                   '${booking['destinationCity']}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -610,15 +513,12 @@ class _AgencyBookingCard extends StatelessWidget {
               ),
               _BookingInformation(
                 icon: Icons.luggage_outlined,
-                value:
-                    '${booking['luggage']} luggage',
+                value: '${booking['luggage']} luggage',
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Divider(
-            color: Theme.of(context).dividerColor,
-          ),
+          Divider(color: Theme.of(context).dividerColor),
           const SizedBox(height: 11),
           Row(
             children: [
@@ -631,12 +531,9 @@ class _AgencyBookingCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '$formattedAmount FCFA',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(
@@ -648,10 +545,7 @@ class _AgencyBookingCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 5),
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-              ),
+              const Icon(Icons.chevron_right, size: 18),
             ],
           ),
         ],
@@ -661,10 +555,7 @@ class _AgencyBookingCard extends StatelessWidget {
 }
 
 class _BookingInformation extends StatelessWidget {
-  const _BookingInformation({
-    required this.icon,
-    required this.value,
-  });
+  const _BookingInformation({required this.icon, required this.value});
 
   final IconData icon;
   final String value;
@@ -674,18 +565,9 @@ class _BookingInformation extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 15,
-          color: AppColors.primary,
-        ),
+        Icon(icon, size: 15, color: AppColors.primary),
         const SizedBox(width: 6),
-        Text(
-          value,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall,
-        ),
+        Text(value, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
@@ -705,16 +587,10 @@ class _SummaryBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.10,
-        ),
-        borderRadius:
-            BorderRadius.circular(18),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
         '$value $label',

@@ -5,17 +5,13 @@ import '../../../../shared/widgets/glass_container.dart';
 import 'agency_luggage_details_screen.dart';
 
 class AgencyLuggageScreen extends StatefulWidget {
-  const AgencyLuggageScreen({
-    super.key,
-  });
+  const AgencyLuggageScreen({super.key});
 
   @override
-  State<AgencyLuggageScreen> createState() =>
-      _AgencyLuggageScreenState();
+  State<AgencyLuggageScreen> createState() => _AgencyLuggageScreenState();
 }
 
-class _AgencyLuggageScreenState
-    extends State<AgencyLuggageScreen> {
+class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
   static const String _all = 'All';
 
   static const List<String> _filters = [
@@ -31,8 +27,7 @@ class _AgencyLuggageScreenState
 
   String _selectedFilter = _all;
 
-  static const List<Map<String, dynamic>>
-      _luggageItems = [
+  static const List<Map<String, dynamic>> _luggageItems = [
     {
       'id': 'LUG-DEMO-001',
       'bookingReference': 'DEMO-BOOKING-001',
@@ -116,23 +111,15 @@ class _AgencyLuggageScreenState
     }
 
     return _luggageItems
-        .where(
-          (item) =>
-              item['status'] == _selectedFilter,
-        )
+        .where((item) => item['status'] == _selectedFilter)
         .toList();
   }
 
-  void _openDetails(
-    Map<String, dynamic> luggage,
-  ) {
+  void _openDetails(Map<String, dynamic> luggage) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AgencyLuggageDetailsScreen(
-          luggage: luggage,
-        ),
+        builder: (context) => AgencyLuggageDetailsScreen(luggage: luggage),
       ),
     );
   }
@@ -181,18 +168,12 @@ class _AgencyLuggageScreenState
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     final items = _filteredItems;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Traveler Luggage',
-        ),
-      ),
+      appBar: AppBar(title: const Text('Traveler Luggage')),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -220,53 +201,31 @@ class _AgencyLuggageScreenState
         child: SafeArea(
           top: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              32,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(
-                    maxWidth: 900,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 900),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSummary(context),
                       const SizedBox(height: 20),
                       _buildFilters(),
                       const SizedBox(height: 20),
                       AnimatedSwitcher(
-                        duration: const Duration(
-                          milliseconds: 250,
-                        ),
+                        duration: const Duration(milliseconds: 250),
                         child: items.isEmpty
-                            ? _buildEmptyState(
-                                context,
-                              )
+                            ? _buildEmptyState(context)
                             : Column(
-                                key: ValueKey(
-                                  _selectedFilter,
-                                ),
+                                key: ValueKey(_selectedFilter),
                                 children: items
                                     .map(
-                                      (item) =>
-                                          Padding(
-                                        padding:
-                                            const EdgeInsets
-                                                .only(
+                                      (item) => Padding(
+                                        padding: const EdgeInsets.only(
                                           bottom: 14,
                                         ),
-                                        child:
-                                            _buildLuggageCard(
-                                          context,
-                                          item,
-                                        ),
+                                        child: _buildLuggageCard(context, item),
                                       ),
                                     )
                                     .toList(),
@@ -283,21 +242,13 @@ class _AgencyLuggageScreenState
     );
   }
 
-  Widget _buildSummary(
-    BuildContext context,
-  ) {
+  Widget _buildSummary(BuildContext context) {
     final int active = _luggageItems
-        .where(
-          (item) =>
-              item['status'] != 'Delivered',
-        )
+        .where((item) => item['status'] != 'Delivered')
         .length;
 
     final int delivered = _luggageItems
-        .where(
-          (item) =>
-              item['status'] == 'Delivered',
-        )
+        .where((item) => item['status'] == 'Delivered')
         .length;
 
     return GlassContainer(
@@ -305,8 +256,7 @@ class _AgencyLuggageScreenState
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -314,12 +264,8 @@ class _AgencyLuggageScreenState
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(14),
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.luggage_outlined,
@@ -329,26 +275,19 @@ class _AgencyLuggageScreenState
               const SizedBox(width: 13),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Luggage Management',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'General Express • '
                       '${_luggageItems.length} items',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -381,41 +320,28 @@ class _AgencyLuggageScreenState
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: _filters.map(
-          (filter) {
-            return Padding(
-              padding:
-                  const EdgeInsets.only(
-                right: 9,
-              ),
-              child: ChoiceChip(
-                label: Text(filter),
-                selected:
-                    _selectedFilter ==
-                        filter,
-                onSelected: (_) {
-                  setState(() {
-                    _selectedFilter =
-                        filter;
-                  });
-                },
-              ),
-            );
-          },
-        ).toList(),
+        children: _filters.map((filter) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 9),
+            child: ChoiceChip(
+              label: Text(filter),
+              selected: _selectedFilter == filter,
+              onSelected: (_) {
+                setState(() {
+                  _selectedFilter = filter;
+                });
+              },
+            ),
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildLuggageCard(
-    BuildContext context,
-    Map<String, dynamic> item,
-  ) {
-    final String status =
-        item['status'] as String;
+  Widget _buildLuggageCard(BuildContext context, Map<String, dynamic> item) {
+    final String status = item['status'] as String;
 
-    final Color color =
-        _statusColor(status);
+    final Color color = _statusColor(status);
 
     return GlassContainer(
       width: double.infinity,
@@ -425,76 +351,51 @@ class _AgencyLuggageScreenState
         _openDetails(item);
       },
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: color.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(13),
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(13),
                 ),
-                child: Icon(
-                  _statusIcon(status),
-                  color: color,
-                  size: 22,
-                ),
+                child: Icon(_statusIcon(status), color: color, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       item['id'] as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      item['description']
-                          as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      item['description'] as String,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
-                  color: color.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(18),
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
                   status,
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight:
-                        FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                     color: color,
                   ),
                 ),
@@ -512,26 +413,17 @@ class _AgencyLuggageScreenState
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
-                  item['clientName']
-                      as String,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.w600,
-                      ),
+                  item['clientName'] as String,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
               Text(
                 '${item['weight']} kg',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -548,42 +440,28 @@ class _AgencyLuggageScreenState
                 child: Text(
                   '${item['departureCity']} → '
                   '${item['destinationCity']}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Divider(
-            color:
-                Theme.of(context).dividerColor,
-          ),
+          Divider(color: Theme.of(context).dividerColor),
           const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
                 child: Text(
-                  item['bookingReference']
-                      as String,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  item['bookingReference'] as String,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               Text(
-                item['travelDate']
-                    as String,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall,
+                item['travelDate'] as String,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(width: 4),
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-              ),
+              const Icon(Icons.chevron_right, size: 18),
             ],
           ),
         ],
@@ -591,13 +469,9 @@ class _AgencyLuggageScreenState
     );
   }
 
-  Widget _buildEmptyState(
-    BuildContext context,
-  ) {
+  Widget _buildEmptyState(BuildContext context) {
     return GlassContainer(
-      key: ValueKey(
-        'empty-$_selectedFilter',
-      ),
+      key: ValueKey('empty-$_selectedFilter'),
       width: double.infinity,
       padding: const EdgeInsets.all(30),
       borderRadius: 18,
@@ -607,10 +481,7 @@ class _AgencyLuggageScreenState
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -625,21 +496,15 @@ class _AgencyLuggageScreenState
                 ? 'No luggage items'
                 : 'No $_selectedFilter luggage',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 7),
           Text(
             'There are currently no traveler luggage items under this status.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
@@ -647,8 +512,7 @@ class _AgencyLuggageScreenState
   }
 }
 
-class _SummaryBadge
-    extends StatelessWidget {
+class _SummaryBadge extends StatelessWidget {
   const _SummaryBadge({
     required this.label,
     required this.value,
@@ -662,17 +526,10 @@ class _SummaryBadge
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.10,
-        ),
-        borderRadius:
-            BorderRadius.circular(18),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
         '$value $label',

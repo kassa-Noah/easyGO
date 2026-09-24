@@ -5,40 +5,25 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import 'journey_search_screen.dart';
 
-class BookingModeScreen
-    extends StatelessWidget {
+class BookingModeScreen extends StatelessWidget {
   final Map<String, dynamic> agency;
 
-  const BookingModeScreen({
-    super.key,
-    required this.agency,
-  });
+  const BookingModeScreen({super.key, required this.agency});
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.bookTrip,
-        ),
-      ),
+      appBar: AppBar(title: Text(l10n.bookTrip)),
       body: Container(
         decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF09111F),
                     Color(0xFF0D1B2A),
@@ -46,10 +31,8 @@ class BookingModeScreen
                   ],
                 )
               : const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end: Alignment
-                      .bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFFF2F8FF),
                     Color(0xFFF7FBFF),
@@ -59,64 +42,39 @@ class BookingModeScreen
         ),
         child: SafeArea(
           top: false,
-          child:
-              SingleChildScrollView(
-            padding:
-                const EdgeInsets.all(
-              20,
-            ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
             child: Center(
               child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(
-                  maxWidth: 760,
-                ),
+                constraints: const BoxConstraints(maxWidth: 760),
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GlassContainer(
-                      padding:
-                          const EdgeInsets
-                              .symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 9,
                       ),
                       borderRadius: 16,
                       child: Row(
-                        mainAxisSize:
-                            MainAxisSize
-                                .min,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons
-                                .directions_bus_outlined,
+                            Icons.directions_bus_outlined,
                             size: 18,
-                            color:
-                                AppColors
-                                    .primary,
+                            color: AppColors.primary,
                           ),
 
-                          const SizedBox(
-                            width: 8,
-                          ),
+                          const SizedBox(width: 8),
 
                           Flexible(
                             child: Text(
-                              agency['name']
-                                      ?.toString() ??
-                                  l10n
-                                      .transportAgency,
-                              style:
-                                  const TextStyle(
+                              agency['name']?.toString() ??
+                                  l10n.transportAgency,
+                              style: const TextStyle(
                                 fontSize: 13,
-                                color:
-                                    AppColors
-                                        .primary,
-                                fontWeight:
-                                    FontWeight
-                                        .w600,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -124,166 +82,100 @@ class BookingModeScreen
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 22,
-                    ),
+                    const SizedBox(height: 22),
 
                     Text(
-                      l10n
-                          .howWouldYouLikeToTravel,
-                      style:
-                          Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                fontWeight:
-                                    FontWeight
-                                        .bold,
-                              ),
+                      l10n.howWouldYouLikeToTravel,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
 
-                    const SizedBox(
-                      height: 10,
-                    ),
+                    const SizedBox(height: 10),
 
                     Text(
-                      l10n
-                          .chooseTravelService,
-                      style:
-                          Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(
-                                height: 1.5,
-                              ),
+                      l10n.chooseTravelService,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(height: 1.5),
                     ),
 
-                    const SizedBox(
-                      height: 30,
-                    ),
+                    const SizedBox(height: 30),
 
                     _BookingModeCard(
-                      icon: Icons
-                          .home_work_outlined,
-                      title:
-                          l10n.doorToDoor,
-                      description: l10n
-                          .doorToDoorDescription,
-                      badge: l10n
-                          .completeJourney,
+                      icon: Icons.home_work_outlined,
+                      title: l10n.doorToDoor,
+                      description: l10n.doorToDoorDescription,
+                      badge: l10n.completeJourney,
                       features: [
                         l10n.pickupTaxi,
-                        l10n
-                            .interurbanTransport,
-                        l10n
-                            .destinationTaxi,
+                        l10n.interurbanTransport,
+                        l10n.destinationTaxi,
                       ],
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder:
-                                (context) =>
-                                    JourneySearchScreen(
-                              agency:
-                                  agency,
-                              bookingMode:
-                                  'door_to_door',
+                            builder: (context) => JourneySearchScreen(
+                              agency: agency,
+                              bookingMode: 'door_to_door',
                             ),
                           ),
                         );
                       },
                     ),
 
-                    const SizedBox(
-                      height: 18,
-                    ),
+                    const SizedBox(height: 18),
 
                     _BookingModeCard(
-                      icon: Icons
-                          .directions_bus_outlined,
-                      title: l10n
-                          .interurbanOnly,
-                      description: l10n
-                          .interurbanOnlyDescription,
-                      badge:
-                          l10n.busOnly,
+                      icon: Icons.directions_bus_outlined,
+                      title: l10n.interurbanOnly,
+                      description: l10n.interurbanOnlyDescription,
+                      badge: l10n.busOnly,
                       features: [
-                        l10n
-                            .departureAgency,
-                        l10n
-                            .interurbanTransport,
-                        l10n
-                            .arrivalAgency,
+                        l10n.departureAgency,
+                        l10n.interurbanTransport,
+                        l10n.arrivalAgency,
                       ],
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder:
-                                (context) =>
-                                    JourneySearchScreen(
-                              agency:
-                                  agency,
-                              bookingMode:
-                                  'interurban_only',
+                            builder: (context) => JourneySearchScreen(
+                              agency: agency,
+                              bookingMode: 'interurban_only',
                             ),
                           ),
                         );
                       },
                     ),
 
-                    const SizedBox(
-                      height: 28,
-                    ),
+                    const SizedBox(height: 28),
 
                     GlassContainer(
-                      padding:
-                          const EdgeInsets
-                              .all(16),
+                      padding: const EdgeInsets.all(16),
                       borderRadius: 16,
                       child: Row(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Icon(
-                            Icons
-                                .info_outline,
-                            color:
-                                AppColors
-                                    .primary,
+                            Icons.info_outline,
+                            color: AppColors.primary,
                           ),
 
-                          const SizedBox(
-                            width: 12,
-                          ),
+                          const SizedBox(width: 12),
 
                           Expanded(
                             child: Text(
-                              l10n
-                                  .taxiDoorToDoorInformation,
-                              style:
-                                  Theme.of(
-                                context,
-                              )
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        fontSize:
-                                            13,
-                                        height:
-                                            1.5,
-                                      ),
+                              l10n.taxiDoorToDoorInformation,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(fontSize: 13, height: 1.5),
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 20,
-                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -295,8 +187,7 @@ class BookingModeScreen
   }
 }
 
-class _BookingModeCard
-    extends StatelessWidget {
+class _BookingModeCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String description;
@@ -314,103 +205,57 @@ class _BookingModeCard
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+  Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GlassContainer(
       padding: EdgeInsets.zero,
       borderRadius: 20,
       onTap: onTap,
       child: AnimatedContainer(
-        duration:
-            const Duration(
-          milliseconds: 250,
-        ),
+        duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
         width: double.infinity,
-        padding:
-            const EdgeInsets.all(
-          18,
-        ),
+        padding: const EdgeInsets.all(18),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   width: 58,
                   height: 58,
-                  decoration:
-                      BoxDecoration(
-                    color: AppColors
-                        .primary
-                        .withValues(
-                      alpha: isDark
-                          ? 0.20
-                          : 0.10,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(
+                      alpha: isDark ? 0.20 : 0.10,
                     ),
-                    borderRadius:
-                        BorderRadius
-                            .circular(
-                      15,
-                    ),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  child: Icon(
-                    icon,
-                    size: 30,
-                    color:
-                        AppColors.primary,
-                  ),
+                  child: Icon(icon, size: 30, color: AppColors.primary),
                 ),
 
-                const SizedBox(
-                  width: 14,
-                ),
+                const SizedBox(width: 14),
 
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style:
-                            Theme.of(
-                          context,
-                        )
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  fontWeight:
-                                      FontWeight
-                                          .bold,
-                                ),
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
 
-                      const SizedBox(
-                        height: 5,
-                      ),
+                      const SizedBox(height: 5),
 
                       Text(
                         badge,
-                        style:
-                            const TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          fontWeight:
-                              FontWeight
-                                  .w600,
-                          color:
-                              AppColors
-                                  .secondary,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.secondary,
                         ),
                       ),
                     ],
@@ -419,77 +264,45 @@ class _BookingModeCard
 
                 Icon(
                   Icons.chevron_right,
-                  color:
-                      Theme.of(context)
-                          .colorScheme
-                          .onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
 
-            const SizedBox(
-              height: 16,
-            ),
+            const SizedBox(height: 16),
 
             Text(
               description,
-              style:
-                  Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        height: 1.5,
-                      ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(height: 1.5),
             ),
 
-            const SizedBox(
-              height: 16,
-            ),
+            const SizedBox(height: 16),
 
             ...features.map(
               (feature) => Padding(
-                padding:
-                    const EdgeInsets
-                        .only(
-                  bottom: 8,
-                ),
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Padding(
-                      padding:
-                          EdgeInsets.only(
-                        top: 1,
-                      ),
+                      padding: EdgeInsets.only(top: 1),
                       child: Icon(
-                        Icons
-                            .check_circle_outline,
+                        Icons.check_circle_outline,
                         size: 18,
-                        color:
-                            AppColors
-                                .secondary,
+                        color: AppColors.secondary,
                       ),
                     ),
 
-                    const SizedBox(
-                      width: 9,
-                    ),
+                    const SizedBox(width: 9),
 
                     Expanded(
                       child: Text(
                         feature,
-                        style:
-                            Theme.of(
+                        style: Theme.of(
                           context,
-                        )
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  fontSize:
-                                      13,
-                                ),
+                        ).textTheme.bodySmall?.copyWith(fontSize: 13),
                       ),
                     ),
                   ],

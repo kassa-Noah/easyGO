@@ -6,17 +6,13 @@ import 'agency_trip_details_screen.dart';
 import 'create_trip_screen.dart';
 
 class AgencyTripsScreen extends StatefulWidget {
-  const AgencyTripsScreen({
-    super.key,
-  });
+  const AgencyTripsScreen({super.key});
 
   @override
-  State<AgencyTripsScreen> createState() =>
-      _AgencyTripsScreenState();
+  State<AgencyTripsScreen> createState() => _AgencyTripsScreenState();
 }
 
-class _AgencyTripsScreenState
-    extends State<AgencyTripsScreen> {
+class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
   static const String _all = 'All';
   static const String _scheduled = 'Scheduled';
   static const String _completed = 'Completed';
@@ -91,12 +87,7 @@ class _AgencyTripsScreenState
       return _trips;
     }
 
-    return _trips
-        .where(
-          (trip) =>
-              trip['status'] == _selectedFilter,
-        )
-        .toList();
+    return _trips.where((trip) => trip['status'] == _selectedFilter).toList();
   }
 
   String _formatPrice(int value) {
@@ -106,16 +97,11 @@ class _AgencyTripsScreenState
     );
   }
 
-  void _openTripDetails(
-    Map<String, dynamic> trip,
-  ) {
+  void _openTripDetails(Map<String, dynamic> trip) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AgencyTripDetailsScreen(
-          trip: trip,
-        ),
+        builder: (context) => AgencyTripDetailsScreen(trip: trip),
       ),
     );
   }
@@ -123,34 +109,24 @@ class _AgencyTripsScreenState
   void _openCreateTrip() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) =>
-            const CreateTripScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CreateTripScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final List<Map<String, dynamic>> trips =
-        _filteredTrips;
+    final List<Map<String, dynamic>> trips = _filteredTrips;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Agency Trips',
-        ),
+        title: const Text('Agency Trips'),
         actions: [
           IconButton(
             tooltip: 'Create Trip',
             onPressed: _openCreateTrip,
-            icon: const Icon(
-              Icons.add,
-            ),
+            icon: const Icon(Icons.add),
           ),
         ],
       ),
@@ -181,22 +157,13 @@ class _AgencyTripsScreenState
         child: SafeArea(
           top: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              30,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(
-                    maxWidth: 900,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 900),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSummary(context),
                       const SizedBox(height: 22),
@@ -205,38 +172,24 @@ class _AgencyTripsScreenState
                       _buildFilters(context),
                       const SizedBox(height: 20),
                       AnimatedSwitcher(
-                        duration: const Duration(
-                          milliseconds: 250,
-                        ),
+                        duration: const Duration(milliseconds: 250),
                         child: trips.isEmpty
-                            ? _buildEmptyState(
-                                context,
-                              )
+                            ? _buildEmptyState(context)
                             : Column(
-                                key: ValueKey(
-                                  _selectedFilter,
-                                ),
+                                key: ValueKey(_selectedFilter),
                                 children: trips
                                     .map(
-                                      (trip) =>
-                                          Padding(
-                                        padding:
-                                            const EdgeInsets
-                                                .only(
+                                      (trip) => Padding(
+                                        padding: const EdgeInsets.only(
                                           bottom: 14,
                                         ),
-                                        child:
-                                            _AgencyTripCard(
+                                        child: _AgencyTripCard(
                                           trip: trip,
-                                          formattedPrice:
-                                              _formatPrice(
-                                            trip['price']
-                                                as int,
+                                          formattedPrice: _formatPrice(
+                                            trip['price'] as int,
                                           ),
                                           onTap: () {
-                                            _openTripDetails(
-                                              trip,
-                                            );
+                                            _openTripDetails(trip);
                                           },
                                         ),
                                       ),
@@ -255,28 +208,17 @@ class _AgencyTripsScreenState
     );
   }
 
-  Widget _buildSummary(
-    BuildContext context,
-  ) {
+  Widget _buildSummary(BuildContext context) {
     final int scheduled = _trips
-        .where(
-          (trip) =>
-              trip['status'] == _scheduled,
-        )
+        .where((trip) => trip['status'] == _scheduled)
         .length;
 
     final int completed = _trips
-        .where(
-          (trip) =>
-              trip['status'] == _completed,
-        )
+        .where((trip) => trip['status'] == _completed)
         .length;
 
     final int cancelled = _trips
-        .where(
-          (trip) =>
-              trip['status'] == _cancelled,
-        )
+        .where((trip) => trip['status'] == _cancelled)
         .length;
 
     return GlassContainer(
@@ -284,8 +226,7 @@ class _AgencyTripsScreenState
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -293,14 +234,8 @@ class _AgencyTripsScreenState
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    13,
-                  ),
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(13),
                 ),
                 child: const Icon(
                   Icons.directions_bus_outlined,
@@ -310,25 +245,18 @@ class _AgencyTripsScreenState
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'General Express',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       '${_trips.length} demo trips',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -362,66 +290,48 @@ class _AgencyTripsScreenState
     );
   }
 
-  Widget _buildCreateAction(
-    BuildContext context,
-  ) {
+  Widget _buildCreateAction(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
         onPressed: _openCreateTrip,
-        icon: const Icon(
-          Icons.add_road_outlined,
-        ),
-        label: const Text(
-          'Create New Trip',
-        ),
+        icon: const Icon(Icons.add_road_outlined),
+        label: const Text('Create New Trip'),
       ),
     );
   }
 
-  Widget _buildFilters(
-    BuildContext context,
-  ) {
+  Widget _buildFilters(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: _filters.map(
-          (filter) {
-            final bool selected =
-                filter == _selectedFilter;
+        children: _filters.map((filter) {
+          final bool selected = filter == _selectedFilter;
 
-            return Padding(
-              padding: const EdgeInsets.only(
-                right: 9,
-              ),
-              child: ChoiceChip(
-                label: Text(filter),
-                selected: selected,
-                onSelected: (_) {
-                  setState(() {
-                    _selectedFilter = filter;
-                  });
-                },
-              ),
-            );
-          },
-        ).toList(),
+          return Padding(
+            padding: const EdgeInsets.only(right: 9),
+            child: ChoiceChip(
+              label: Text(filter),
+              selected: selected,
+              onSelected: (_) {
+                setState(() {
+                  _selectedFilter = filter;
+                });
+              },
+            ),
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildEmptyState(
-    BuildContext context,
-  ) {
-    final String title =
-        _selectedFilter == _all
-            ? 'No trips'
-            : 'No $_selectedFilter trips';
+  Widget _buildEmptyState(BuildContext context) {
+    final String title = _selectedFilter == _all
+        ? 'No trips'
+        : 'No $_selectedFilter trips';
 
     return GlassContainer(
-      key: ValueKey(
-        'empty-$_selectedFilter',
-      ),
+      key: ValueKey('empty-$_selectedFilter'),
       width: double.infinity,
       padding: const EdgeInsets.all(30),
       borderRadius: 18,
@@ -431,10 +341,7 @@ class _AgencyTripsScreenState
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -447,21 +354,15 @@ class _AgencyTripsScreenState
           Text(
             title,
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 7),
           Text(
             'There are currently no trips under this status.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
@@ -469,8 +370,7 @@ class _AgencyTripsScreenState
   }
 }
 
-class _AgencyTripCard
-    extends StatelessWidget {
+class _AgencyTripCard extends StatelessWidget {
   const _AgencyTripCard({
     required this.trip,
     required this.formattedPrice,
@@ -509,16 +409,11 @@ class _AgencyTripCard
 
   @override
   Widget build(BuildContext context) {
-    final int bookedSeats =
-        trip['bookedSeats'] as int;
+    final int bookedSeats = trip['bookedSeats'] as int;
 
-    final int totalSeats =
-        trip['totalSeats'] as int;
+    final int totalSeats = trip['totalSeats'] as int;
 
-    final double occupancy =
-        totalSeats == 0
-            ? 0
-            : bookedSeats / totalSeats;
+    final double occupancy = totalSeats == 0 ? 0 : bookedSeats / totalSeats;
 
     return GlassContainer(
       width: double.infinity,
@@ -526,72 +421,47 @@ class _AgencyTripCard
       borderRadius: 17,
       onTap: onTap,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '${trip['departureCity']} → '
                       '${trip['destinationCity']}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       trip['id'] as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall,
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 10),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _statusColor
-                      .withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    18,
-                  ),
+                  color: _statusColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Row(
-                  mainAxisSize:
-                      MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      _statusIcon,
-                      size: 13,
-                      color: _statusColor,
-                    ),
+                    Icon(_statusIcon, size: 13, color: _statusColor),
                     const SizedBox(width: 5),
                     Text(
                       trip['status'] as String,
                       style: TextStyle(
                         fontSize: 10,
-                        fontWeight:
-                            FontWeight.w600,
+                        fontWeight: FontWeight.w600,
                         color: _statusColor,
                       ),
                     ),
@@ -606,77 +476,53 @@ class _AgencyTripCard
             runSpacing: 10,
             children: [
               _TripInformation(
-                icon: Icons
-                    .calendar_today_outlined,
-                value:
-                    trip['date'] as String,
+                icon: Icons.calendar_today_outlined,
+                value: trip['date'] as String,
               ),
               _TripInformation(
-                icon:
-                    Icons.schedule_outlined,
+                icon: Icons.schedule_outlined,
                 value:
                     '${trip['departureTime']} – '
                     '${trip['arrivalTime']}',
               ),
               _TripInformation(
-                icon:
-                    Icons.event_seat_outlined,
-                value: trip['travelClass']
-                    as String,
+                icon: Icons.event_seat_outlined,
+                value: trip['travelClass'] as String,
               ),
               _TripInformation(
-                icon:
-                    Icons.payments_outlined,
-                value:
-                    '$formattedPrice FCFA',
+                icon: Icons.payments_outlined,
+                value: '$formattedPrice FCFA',
               ),
             ],
           ),
           const SizedBox(height: 17),
-          Divider(
-            color:
-                Theme.of(context).dividerColor,
-          ),
+          Divider(color: Theme.of(context).dividerColor),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
                 child: Text(
                   'Seat occupancy',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               Text(
                 '$bookedSeats / $totalSeats',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 6),
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-              ),
+              const Icon(Icons.chevron_right, size: 18),
             ],
           ),
           const SizedBox(height: 8),
           ClipRRect(
-            borderRadius:
-                BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20),
             child: LinearProgressIndicator(
               value: occupancy,
               minHeight: 6,
-              backgroundColor:
-                  AppColors.primary
-                      .withValues(
-                alpha: 0.10,
-              ),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.10),
             ),
           ),
         ],
@@ -685,12 +531,8 @@ class _AgencyTripCard
   }
 }
 
-class _TripInformation
-    extends StatelessWidget {
-  const _TripInformation({
-    required this.icon,
-    required this.value,
-  });
+class _TripInformation extends StatelessWidget {
+  const _TripInformation({required this.icon, required this.value});
 
   final IconData icon;
   final String value;
@@ -700,25 +542,15 @@ class _TripInformation
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: AppColors.primary,
-        ),
+        Icon(icon, size: 16, color: AppColors.primary),
         const SizedBox(width: 6),
-        Text(
-          value,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall,
-        ),
+        Text(value, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
 }
 
-class _SummaryBadge
-    extends StatelessWidget {
+class _SummaryBadge extends StatelessWidget {
   const _SummaryBadge({
     required this.label,
     required this.value,
@@ -732,17 +564,10 @@ class _SummaryBadge
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.10,
-        ),
-        borderRadius:
-            BorderRadius.circular(18),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
         '$value $label',

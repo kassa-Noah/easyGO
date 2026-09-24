@@ -14,26 +14,14 @@ class AgencyDashboardScreen extends StatelessWidget {
   final VoidCallback? onOpenMessages;
 
   static const List<Map<String, dynamic>> _statistics = [
-    {
-      'label': 'Trips',
-      'value': 6,
-      'icon': Icons.directions_bus_outlined,
-    },
+    {'label': 'Trips', 'value': 6, 'icon': Icons.directions_bus_outlined},
     {
       'label': 'Bookings',
       'value': 24,
       'icon': Icons.confirmation_number_outlined,
     },
-    {
-      'label': 'Luggage',
-      'value': 12,
-      'icon': Icons.luggage_outlined,
-    },
-    {
-      'label': 'Parcels',
-      'value': 8,
-      'icon': Icons.inventory_2_outlined,
-    },
+    {'label': 'Luggage', 'value': 12, 'icon': Icons.luggage_outlined},
+    {'label': 'Parcels', 'value': 8, 'icon': Icons.inventory_2_outlined},
   ];
 
   static const List<Map<String, dynamic>> _upcomingTrips = [
@@ -80,8 +68,7 @@ class AgencyDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
@@ -111,34 +98,21 @@ class AgencyDashboardScreen extends StatelessWidget {
         child: CustomScrollView(
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                20,
-                18,
-                20,
-                30,
-              ),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 30),
               sliver: SliverToBoxAdapter(
                 child: Center(
                   child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 1000,
-                    ),
+                    constraints: const BoxConstraints(maxWidth: 1000),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildHeader(context),
                         const SizedBox(height: 26),
-                        _buildSectionTitle(
-                          context,
-                          'Today',
-                        ),
+                        _buildSectionTitle(context, 'Today'),
                         const SizedBox(height: 14),
                         _buildStatistics(context),
                         const SizedBox(height: 28),
-                        _buildSectionTitle(
-                          context,
-                          'Quick Actions',
-                        ),
+                        _buildSectionTitle(context, 'Quick Actions'),
                         const SizedBox(height: 14),
                         _buildQuickActions(context),
                         const SizedBox(height: 28),
@@ -151,19 +125,12 @@ class AgencyDashboardScreen extends StatelessWidget {
                         const SizedBox(height: 14),
                         ..._upcomingTrips.map(
                           (trip) => Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: 14,
-                            ),
-                            child: _UpcomingTripCard(
-                              trip: trip,
-                            ),
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: _UpcomingTripCard(trip: trip),
                           ),
                         ),
                         const SizedBox(height: 14),
-                        _buildSectionTitle(
-                          context,
-                          'Recent Activity',
-                        ),
+                        _buildSectionTitle(context, 'Recent Activity'),
                         const SizedBox(height: 14),
                         _buildRecentActivity(context),
                       ],
@@ -189,10 +156,7 @@ class AgencyDashboardScreen extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                AppColors.primary,
-                AppColors.primaryDark,
-              ],
+              colors: [AppColors.primary, AppColors.primaryDark],
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -209,23 +173,17 @@ class AgencyDashboardScreen extends StatelessWidget {
             children: [
               Text(
                 'Agency Dashboard',
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineSmall
-                    ?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 3),
               Text(
                 'General Express',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -235,17 +193,13 @@ class AgencyDashboardScreen extends StatelessWidget {
           onPressed: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text(
-                  'Agency notifications will be connected later.',
-                ),
+                content: Text('Agency notifications will be connected later.'),
               ),
             );
           },
           icon: const Badge(
             smallSize: 8,
-            child: Icon(
-              Icons.notifications_outlined,
-            ),
+            child: Icon(Icons.notifications_outlined),
           ),
         ),
       ],
@@ -266,24 +220,21 @@ class AgencyDashboardScreen extends StatelessWidget {
         const double spacing = 12;
 
         final double itemWidth =
-            (constraints.maxWidth - (spacing * (columns - 1))) /
-                columns;
+            (constraints.maxWidth - (spacing * (columns - 1))) / columns;
 
         return Wrap(
           spacing: spacing,
           runSpacing: spacing,
-          children: _statistics.map(
-            (statistic) {
-              return SizedBox(
-                width: itemWidth,
-                child: _StatisticCard(
-                  label: statistic['label'] as String,
-                  value: statistic['value'] as int,
-                  icon: statistic['icon'] as IconData,
-                ),
-              );
-            },
-          ).toList(),
+          children: _statistics.map((statistic) {
+            return SizedBox(
+              width: itemWidth,
+              child: _StatisticCard(
+                label: statistic['label'] as String,
+                value: statistic['value'] as int,
+                icon: statistic['icon'] as IconData,
+              ),
+            );
+          }).toList(),
         );
       },
     );
@@ -292,8 +243,7 @@ class AgencyDashboardScreen extends StatelessWidget {
   Widget _buildQuickActions(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool wide =
-            constraints.maxWidth >= 650;
+        final bool wide = constraints.maxWidth >= 650;
 
         final double itemWidth = wide
             ? (constraints.maxWidth - 12) / 2
@@ -307,8 +257,7 @@ class AgencyDashboardScreen extends StatelessWidget {
               width: itemWidth,
               child: _QuickActionCard(
                 title: 'Create Trip',
-                description:
-                    'Add a new interurban trip schedule.',
+                description: 'Add a new interurban trip schedule.',
                 icon: Icons.add_road_outlined,
                 onTap: onOpenOperations,
               ),
@@ -317,8 +266,7 @@ class AgencyDashboardScreen extends StatelessWidget {
               width: itemWidth,
               child: _QuickActionCard(
                 title: 'View Bookings',
-                description:
-                    'Review bookings made with your agency.',
+                description: 'Review bookings made with your agency.',
                 icon: Icons.confirmation_number_outlined,
                 onTap: onOpenOperations,
               ),
@@ -327,8 +275,7 @@ class AgencyDashboardScreen extends StatelessWidget {
               width: itemWidth,
               child: _QuickActionCard(
                 title: 'Manage Luggage',
-                description:
-                    'View and update traveler luggage status.',
+                description: 'View and update traveler luggage status.',
                 icon: Icons.luggage_outlined,
                 onTap: onOpenOperations,
               ),
@@ -337,8 +284,7 @@ class AgencyDashboardScreen extends StatelessWidget {
               width: itemWidth,
               child: _QuickActionCard(
                 title: 'Client Messages',
-                description:
-                    'Open conversations with your clients.',
+                description: 'Open conversations with your clients.',
                 icon: Icons.chat_bubble_outline,
                 onTap: onOpenMessages,
               ),
@@ -355,46 +301,32 @@ class AgencyDashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       borderRadius: 18,
       child: Column(
-        children: List.generate(
-          _recentActivity.length,
-          (index) {
-            final Map<String, dynamic> activity =
-                _recentActivity[index];
+        children: List.generate(_recentActivity.length, (index) {
+          final Map<String, dynamic> activity = _recentActivity[index];
 
-            return Column(
-              children: [
-                _ActivityRow(
-                  title: activity['title'] as String,
-                  description:
-                      activity['description'] as String,
-                  time: activity['time'] as String,
-                  icon: activity['icon'] as IconData,
-                ),
-                if (index != _recentActivity.length - 1)
-                  Divider(
-                    height: 1,
-                    color: Theme.of(context).dividerColor,
-                  ),
-              ],
-            );
-          },
-        ),
+          return Column(
+            children: [
+              _ActivityRow(
+                title: activity['title'] as String,
+                description: activity['description'] as String,
+                time: activity['time'] as String,
+                icon: activity['icon'] as IconData,
+              ),
+              if (index != _recentActivity.length - 1)
+                Divider(height: 1, color: Theme.of(context).dividerColor),
+            ],
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildSectionTitle(
-    BuildContext context,
-    String title,
-  ) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title,
-      style: Theme.of(context)
-          .textTheme
-          .titleLarge
-          ?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 
@@ -406,17 +338,9 @@ class AgencyDashboardScreen extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Expanded(
-          child: _buildSectionTitle(
-            context,
-            title,
-          ),
-        ),
+        Expanded(child: _buildSectionTitle(context, title)),
         if (onPressed != null)
-          TextButton(
-            onPressed: onPressed,
-            child: Text(actionLabel),
-          ),
+          TextButton(onPressed: onPressed, child: Text(actionLabel)),
       ],
     );
   }
@@ -446,34 +370,20 @@ class _StatisticCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primary,
-              size: 21,
-            ),
+            child: Icon(icon, color: AppColors.primary, size: 21),
           ),
           const SizedBox(height: 16),
           Text(
             '$value',
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 3),
-          Text(
-            label,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall,
-          ),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );
@@ -506,15 +416,10 @@ class _QuickActionCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.secondary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(13),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.secondary,
-            ),
+            child: Icon(icon, color: AppColors.secondary),
           ),
           const SizedBox(width: 13),
           Expanded(
@@ -523,28 +428,17 @@ class _QuickActionCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyLarge
-                      ?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  description,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
-                ),
+                Text(description, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          const Icon(
-            Icons.chevron_right,
-            size: 20,
-          ),
+          const Icon(Icons.chevron_right, size: 20),
         ],
       ),
     );
@@ -552,23 +446,16 @@ class _QuickActionCard extends StatelessWidget {
 }
 
 class _UpcomingTripCard extends StatelessWidget {
-  const _UpcomingTripCard({
-    required this.trip,
-  });
+  const _UpcomingTripCard({required this.trip});
 
   final Map<String, dynamic> trip;
 
   @override
   Widget build(BuildContext context) {
-    final int bookedSeats =
-        trip['bookedSeats'] as int;
-    final int totalSeats =
-        trip['totalSeats'] as int;
+    final int bookedSeats = trip['bookedSeats'] as int;
+    final int totalSeats = trip['totalSeats'] as int;
 
-    final double occupancy =
-        totalSeats == 0
-            ? 0
-            : bookedSeats / totalSeats;
+    final double occupancy = totalSeats == 0 ? 0 : bookedSeats / totalSeats;
 
     return GlassContainer(
       width: double.infinity,
@@ -583,23 +470,15 @@ class _UpcomingTripCard extends StatelessWidget {
                 child: Text(
                   '${trip['departureCity']} → '
                   '${trip['destinationCity']}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 5,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(
-                    alpha: 0.10,
-                  ),
+                  color: AppColors.primary.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -625,8 +504,7 @@ class _UpcomingTripCard extends StatelessWidget {
               Text(
                 '${trip['departureTime']} – '
                 '${trip['arrivalTime']}',
-                style:
-                    Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
             ],
           ),
@@ -636,18 +514,14 @@ class _UpcomingTripCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '$bookedSeats / $totalSeats seats',
-                  style:
-                      Theme.of(context).textTheme.bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
               Text(
                 '${(occupancy * 100).round()}%',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -657,10 +531,7 @@ class _UpcomingTripCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: occupancy,
               minHeight: 6,
-              backgroundColor:
-                  AppColors.primary.withValues(
-                alpha: 0.10,
-              ),
+              backgroundColor: AppColors.primary.withValues(alpha: 0.10),
             ),
           ),
         ],
@@ -693,16 +564,10 @@ class _ActivityRow extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(
-              icon,
-              size: 19,
-              color: AppColors.primary,
-            ),
+            child: Icon(icon, size: 19, color: AppColors.primary),
           ),
           const SizedBox(width: 11),
           Expanded(
@@ -711,29 +576,17 @@ class _ActivityRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  description,
-                  style:
-                      Theme.of(context).textTheme.bodySmall,
-                ),
+                Text(description, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            time,
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall,
-          ),
+          Text(time, style: Theme.of(context).textTheme.labelSmall),
         ],
       ),
     );

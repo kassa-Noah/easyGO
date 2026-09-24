@@ -6,9 +6,7 @@ import '../../../../shared/widgets/glass_container.dart';
 import 'tracking_details_screen.dart';
 
 class MyParcelsScreen extends StatelessWidget {
-  const MyParcelsScreen({
-    super.key,
-  });
+  const MyParcelsScreen({super.key});
 
   /*
    * FRONTEND DEMONSTRATION DATA ONLY.
@@ -21,170 +19,99 @@ class MyParcelsScreen extends StatelessWidget {
    * does not persist a new record into this
    * demonstration list.
    */
-  List<Map<String, dynamic>>
-      get _parcels => [
-        {
-          'trackingReference':
-              'PAR-DEMO-001',
-          'recipientName':
-              'John Doe',
-          'recipientPhone':
-              '677123456',
-          'agency':
-              'General Express',
-          'departureCity':
-              'Yaoundé',
-          'destinationCity':
-              'Douala',
-          'description':
-              'Clothes in a medium box',
-          'weight':
-              '8.5 kg',
-          'status':
-              'In Transit',
-        },
-        {
-          'trackingReference':
-              'PAR-DEMO-002',
-          'recipientName':
-              'Mary Example',
-          'recipientPhone':
-              '699123456',
-          'agency':
-              'Finexs Voyage',
-          'departureCity':
-              'Yaoundé',
-          'destinationCity':
-              'Bafoussam',
-          'description':
-              'Personal items',
-          'weight':
-              '5.0 kg',
-          'status':
-              'Received by Agency',
-        },
-      ];
+  List<Map<String, dynamic>> get _parcels => [
+    {
+      'trackingReference': 'PAR-DEMO-001',
+      'recipientName': 'John Doe',
+      'recipientPhone': '677123456',
+      'agency': 'General Express',
+      'departureCity': 'Yaoundé',
+      'destinationCity': 'Douala',
+      'description': 'Clothes in a medium box',
+      'weight': '8.5 kg',
+      'status': 'In Transit',
+    },
+    {
+      'trackingReference': 'PAR-DEMO-002',
+      'recipientName': 'Mary Example',
+      'recipientPhone': '699123456',
+      'agency': 'Finexs Voyage',
+      'departureCity': 'Yaoundé',
+      'destinationCity': 'Bafoussam',
+      'description': 'Personal items',
+      'weight': '5.0 kg',
+      'status': 'Received by Agency',
+    },
+  ];
 
-  bool _isFrench(
-    BuildContext context,
-  ) {
-    return Localizations.localeOf(
-      context,
-    ).languageCode == 'fr';
+  bool _isFrench(BuildContext context) {
+    return Localizations.localeOf(context).languageCode == 'fr';
   }
 
-  String _myParcels(
-    BuildContext context,
-  ) {
-    return _isFrench(context)
-        ? 'Mes colis'
-        : 'My Parcels';
+  String _myParcels(BuildContext context) {
+    return _isFrench(context) ? 'Mes colis' : 'My Parcels';
   }
 
-  String _myParcelShipments(
-    BuildContext context,
-  ) {
+  String _myParcelShipments(BuildContext context) {
     return _isFrench(context)
         ? 'Mes expéditions de colis'
         : 'My Parcel Shipments';
   }
 
-  String _headerDescription(
-    BuildContext context,
-  ) {
+  String _headerDescription(BuildContext context) {
     return _isFrench(context)
         ? 'Consultez vos expéditions interurbaines de colis et leur état de suivi actuel.'
         : 'View your interurban parcel shipments and their current tracking status.';
   }
 
-  String _parcelShipments(
-    BuildContext context,
-  ) {
-    return _isFrench(context)
-        ? 'Expéditions de colis'
-        : 'Parcel Shipments';
+  String _parcelShipments(BuildContext context) {
+    return _isFrench(context) ? 'Expéditions de colis' : 'Parcel Shipments';
   }
 
-  String _parcelCount(
-    BuildContext context,
-    int count,
-  ) {
+  String _parcelCount(BuildContext context, int count) {
     if (_isFrench(context)) {
-      return count > 1
-          ? '$count colis'
-          : '$count colis';
+      return count > 1 ? '$count colis' : '$count colis';
     }
 
-    return count == 1
-        ? '1 parcel'
-        : '$count parcels';
+    return count == 1 ? '1 parcel' : '$count parcels';
   }
 
-  String _agency(
-    BuildContext context,
-  ) {
-    return _isFrench(context)
-        ? 'Agence'
-        : 'Agency';
+  String _agency(BuildContext context) {
+    return _isFrench(context) ? 'Agence' : 'Agency';
   }
 
-  String _route(
-    BuildContext context,
-  ) {
-    return _isFrench(context)
-        ? 'Itinéraire'
-        : 'Route';
+  String _route(BuildContext context) {
+    return _isFrench(context) ? 'Itinéraire' : 'Route';
   }
 
-  String _recipient(
-    BuildContext context,
-  ) {
-    return _isFrench(context)
-        ? 'Destinataire'
-        : 'Recipient';
+  String _recipient(BuildContext context) {
+    return _isFrench(context) ? 'Destinataire' : 'Recipient';
   }
 
-  String _weight(
-    BuildContext context,
-  ) {
-    return _isFrench(context)
-        ? 'Poids'
-        : 'Weight';
+  String _weight(BuildContext context) {
+    return _isFrench(context) ? 'Poids' : 'Weight';
   }
 
-  String _trackParcel(
-    BuildContext context,
-  ) {
-    return _isFrench(context)
-        ? 'Suivre le colis'
-        : 'Track Parcel';
+  String _trackParcel(BuildContext context) {
+    return _isFrench(context) ? 'Suivre le colis' : 'Track Parcel';
   }
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n =
-        AppLocalizations.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _myParcels(context),
-        ),
-      ),
+      appBar: AppBar(title: Text(_myParcels(context))),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF09111F),
                     Color(0xFF0D1B2A),
@@ -192,10 +119,8 @@ class MyParcelsScreen extends StatelessWidget {
                   ],
                 )
               : const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFFF2F8FF),
                     Color(0xFFF7FBFF),
@@ -206,168 +131,78 @@ class MyParcelsScreen extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: ListView(
-            padding:
-                const EdgeInsets.all(
-              20,
-            ),
+            padding: const EdgeInsets.all(20),
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(
-                    maxWidth: 820,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 820),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment
-                            .stretch,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _buildHeader(
-                        context,
-                      ),
+                      _buildHeader(context),
 
-                      const SizedBox(
-                        height: 24,
-                      ),
+                      const SizedBox(height: 24),
 
                       Row(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
                             child: Text(
-                              _parcelShipments(
-                                context,
-                              ),
-                              style:
-                                  Theme.of(
-                                context,
-                              )
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        fontWeight:
-                                            FontWeight
-                                                .bold,
-                                      ),
+                              _parcelShipments(context),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ),
 
-                          const SizedBox(
-                            width: 12,
-                          ),
+                          const SizedBox(width: 12),
 
                           Container(
-                            padding:
-                                const EdgeInsets
-                                    .symmetric(
-                              horizontal:
-                                  11,
-                              vertical:
-                                  6,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 11,
+                              vertical: 6,
                             ),
-                            decoration:
-                                BoxDecoration(
-                              color: AppColors
-                                  .primary
-                                  .withValues(
-                                alpha:
-                                    0.10,
-                              ),
-                              borderRadius:
-                                  BorderRadius
-                                      .circular(
-                                18,
-                              ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(18),
                             ),
                             child: Text(
-                              _parcelCount(
-                                context,
-                                _parcels
-                                    .length,
-                              ),
-                              style:
-                                  const TextStyle(
-                                fontSize:
-                                    11,
-                                fontWeight:
-                                    FontWeight
-                                        .w600,
-                                color:
-                                    AppColors
-                                        .primary,
+                              _parcelCount(context, _parcels.length),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
                               ),
                             ),
                           ),
                         ],
                       ),
 
-                      const SizedBox(
-                        height: 16,
-                      ),
+                      const SizedBox(height: 16),
 
                       ..._parcels.map(
-                        (parcel) =>
-                            Padding(
-                          padding:
-                              const EdgeInsets
-                                  .only(
-                            bottom: 16,
-                          ),
-                          child:
-                              _ParcelCard(
-                            parcel:
-                                parcel,
-                            agencyLabel:
-                                _agency(
-                              context,
+                        (parcel) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: _ParcelCard(
+                            parcel: parcel,
+                            agencyLabel: _agency(context),
+                            routeLabel: _route(context),
+                            recipientLabel: _recipient(context),
+                            weightLabel: _weight(context),
+                            trackLabel: _trackParcel(context),
+                            localizedStatus: l10n.trackingStatusLabel(
+                              parcel['status'],
                             ),
-                            routeLabel:
-                                _route(
-                              context,
-                            ),
-                            recipientLabel:
-                                _recipient(
-                              context,
-                            ),
-                            weightLabel:
-                                _weight(
-                              context,
-                            ),
-                            trackLabel:
-                                _trackParcel(
-                              context,
-                            ),
-                            localizedStatus:
-                                l10n
-                                    .trackingStatusLabel(
-                              parcel[
-                                  'status'],
-                            ),
-                            onTrack:
-                                () {
-                              Navigator
-                                  .push(
+                            onTrack: () {
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder:
-                                      (context) =>
-                                          TrackingDetailsScreen(
+                                  builder: (context) => TrackingDetailsScreen(
                                     trackingReference:
-                                        parcel[
-                                            'trackingReference'],
-                                    itemType:
-                                        'parcel',
-                                    departureCity:
-                                        parcel[
-                                            'departureCity'],
-                                    destinationCity:
-                                        parcel[
-                                            'destinationCity'],
-                                    currentStatus:
-                                        parcel[
-                                            'status'],
+                                        parcel['trackingReference'],
+                                    itemType: 'parcel',
+                                    departureCity: parcel['departureCity'],
+                                    destinationCity: parcel['destinationCity'],
+                                    currentStatus: parcel['status'],
                                   ),
                                 ),
                               );
@@ -376,9 +211,7 @@ class MyParcelsScreen extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(
-                        height: 8,
-                      ),
+                      const SizedBox(height: 8),
                     ],
                   ),
                 ),
@@ -390,109 +223,65 @@ class MyParcelsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(
-    BuildContext context,
-  ) {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient:
-            const LinearGradient(
-          begin:
-              Alignment.topLeft,
-          end:
-              Alignment.bottomRight,
-          colors: [
-            AppColors.primary,
-            AppColors.primaryDark,
-          ],
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDark],
         ),
-        borderRadius:
-            BorderRadius.circular(
-          20,
-        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary
-                .withValues(
-              alpha: 0.20,
-            ),
+            color: AppColors.primary.withValues(alpha: 0.20),
             blurRadius: 24,
-            offset:
-                const Offset(
-              0,
-              10,
-            ),
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 60,
             height: 60,
-            decoration:
-                BoxDecoration(
-              color: Colors.white
-                  .withValues(
-                alpha: 0.95,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                16,
-              ),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(
-              Icons
-                  .inventory_2_outlined,
+              Icons.inventory_2_outlined,
               size: 31,
-              color:
-                  AppColors.primary,
+              color: AppColors.primary,
             ),
           ),
 
-          const SizedBox(
-            width: 15,
-          ),
+          const SizedBox(width: 15),
 
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment
-                      .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _myParcelShipments(
-                    context,
-                  ),
-                  style:
-                      const TextStyle(
+                  _myParcelShipments(context),
+                  style: const TextStyle(
                     fontSize: 20,
-                    fontWeight:
-                        FontWeight.bold,
-                    color:
-                        Colors.white,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
 
-                const SizedBox(
-                  height: 6,
-                ),
+                const SizedBox(height: 6),
 
                 Text(
-                  _headerDescription(
-                    context,
-                  ),
-                  style:
-                      const TextStyle(
+                  _headerDescription(context),
+                  style: const TextStyle(
                     fontSize: 12,
                     height: 1.5,
-                    color:
-                        Colors.white70,
+                    color: Colors.white70,
                   ),
                 ),
               ],
@@ -504,10 +293,8 @@ class MyParcelsScreen extends StatelessWidget {
   }
 }
 
-class _ParcelCard
-    extends StatelessWidget {
-  final Map<String, dynamic>
-      parcel;
+class _ParcelCard extends StatelessWidget {
+  final Map<String, dynamic> parcel;
 
   final String agencyLabel;
   final String routeLabel;
@@ -546,164 +333,94 @@ class _ParcelCard
       case 'Registered':
       case 'Received by Agency':
       default:
-        return AppColors
-            .textSecondary;
+        return AppColors.textSecondary;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final Color statusColor =
-        _statusColor();
+    final Color statusColor = _statusColor();
 
     return GlassContainer(
-      padding:
-          const EdgeInsets.all(
-        18,
-      ),
+      padding: const EdgeInsets.all(18),
       borderRadius: 17,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment
-                    .start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 50,
                 height: 50,
-                decoration:
-                    BoxDecoration(
-                  color: AppColors
-                      .primary
-                      .withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius
-                          .circular(
-                    13,
-                  ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(13),
                 ),
                 child: const Icon(
-                  Icons
-                      .inventory_2_outlined,
-                  color:
-                      AppColors.primary,
+                  Icons.inventory_2_outlined,
+                  color: AppColors.primary,
                 ),
               ),
 
-              const SizedBox(
-                width: 13,
-              ),
+              const SizedBox(width: 13),
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment
-                          .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SelectableText(
-                      parcel[
-                          'trackingReference'],
-                      style:
-                          const TextStyle(
+                      parcel['trackingReference'],
+                      style: const TextStyle(
                         fontSize: 15,
-                        fontWeight:
-                            FontWeight
-                                .bold,
-                        color:
-                            AppColors
-                                .primary,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: 4),
 
                     Text(
-                      parcel[
-                          'description'],
+                      parcel['description'],
                       maxLines: 2,
-                      overflow:
-                          TextOverflow
-                              .ellipsis,
-                      style:
-                          Theme.of(
-                        context,
-                      )
-                              .textTheme
-                              .bodySmall,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(
-                width: 8,
-              ),
+              const SizedBox(width: 8),
 
               Container(
-                constraints:
-                    const BoxConstraints(
-                  maxWidth: 130,
-                ),
-                padding:
-                    const EdgeInsets
-                        .symmetric(
-                  horizontal: 9,
-                  vertical: 6,
-                ),
-                decoration:
-                    BoxDecoration(
-                  color: statusColor
-                      .withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius
-                          .circular(
-                    18,
-                  ),
+                constraints: const BoxConstraints(maxWidth: 130),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
                   localizedStatus,
-                  textAlign:
-                      TextAlign.center,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight:
-                        FontWeight.w600,
-                    color:
-                        statusColor,
+                    fontWeight: FontWeight.w600,
+                    color: statusColor,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(
-            height: 16,
-          ),
+          const SizedBox(height: 16),
 
           const Divider(),
 
-          const SizedBox(
-            height: 12,
-          ),
+          const SizedBox(height: 12),
 
-          _InformationRow(
-            label: agencyLabel,
-            value:
-                parcel['agency'],
-          ),
+          _InformationRow(label: agencyLabel, value: parcel['agency']),
 
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
 
           _InformationRow(
             label: routeLabel,
@@ -712,43 +429,25 @@ class _ParcelCard
                 '${parcel['destinationCity']}',
           ),
 
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
 
           _InformationRow(
-            label:
-                recipientLabel,
-            value: parcel[
-                'recipientName'],
+            label: recipientLabel,
+            value: parcel['recipientName'],
           ),
 
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
 
-          _InformationRow(
-            label: weightLabel,
-            value:
-                parcel['weight'],
-          ),
+          _InformationRow(label: weightLabel, value: parcel['weight']),
 
-          const SizedBox(
-            height: 18,
-          ),
+          const SizedBox(height: 18),
 
           SizedBox(
             width: double.infinity,
-            child:
-                OutlinedButton.icon(
+            child: OutlinedButton.icon(
               onPressed: onTrack,
-              icon: const Icon(
-                Icons
-                    .location_searching,
-              ),
-              label: Text(
-                trackLabel,
-              ),
+              icon: const Icon(Icons.location_searching),
+              label: Text(trackLabel),
             ),
           ),
         ],
@@ -757,55 +456,37 @@ class _ParcelCard
   }
 }
 
-class _InformationRow
-    extends StatelessWidget {
+class _InformationRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _InformationRow({
-    required this.label,
-    required this.value,
-  });
+  const _InformationRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
           width: 85,
           child: Text(
             label,
-            style:
-                Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(
-                      fontSize: 11,
-                    ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontSize: 11),
           ),
         ),
 
-        const SizedBox(
-          width: 10,
-        ),
+        const SizedBox(width: 10),
 
         Expanded(
           child: Text(
             value,
-            textAlign:
-                TextAlign.end,
-            style:
-                Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontSize: 12,
-                      fontWeight:
-                          FontWeight
-                              .w500,
-                    ),
+            textAlign: TextAlign.end,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],

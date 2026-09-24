@@ -15,7 +15,6 @@ class AdminLuggageScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-
           GlassContainer(
             child: ListTile(
               contentPadding: EdgeInsets.zero,

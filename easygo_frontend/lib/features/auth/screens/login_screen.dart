@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/network/api_exception.dart';
 import '../../admin/navigation/admin_main_navigation.dart';
 import '../../agency/navigation/agency_main_navigation.dart';
 import '../../client/home/main_screen.dart';
+import '../services/auth_service.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 
@@ -19,9 +21,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _emailController = TextEditingController();
+
   final _passwordController = TextEditingController();
 
+  final AuthService _authService = AuthService.instance;
+
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -30,38 +36,84 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
+    if (_isLoading) {
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ClientMainScreen(),
-      ),
-      (route) => false,
-    );
-  }
+    FocusScope.of(context).unfocus();
 
-  void _openAgencyPortal() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AgencyMainNavigation(),
-      ),
-      (route) => false,
-    );
-  }
+    setState(() {
+      _isLoading = true;
+    });
 
-  void _openAdminPortal() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AdminMainNavigation(),
-      ),
-      (route) => false,
-    );
+    try {
+      final user = await _authService.login(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      Widget destination;
+
+      switch (user.role) {
+        case 'ADMIN':
+          destination = const AdminMainNavigation();
+          break;
+
+        case 'AGENCY_STAFF':
+          destination = const AgencyMainNavigation();
+          break;
+
+        case 'CUSTOMER':
+          destination = const ClientMainScreen();
+          break;
+
+        default:
+          await _authService.logout();
+
+          if (!mounted) {
+            return;
+          }
+
+          throw ApiException(message: 'Unsupported account role: ${user.role}');
+      }
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => destination),
+        (route) => false,
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to sign in. Please try again.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -70,16 +122,14 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 32,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
+
                 Center(
                   child: RichText(
                     text: const TextSpan(
@@ -104,7 +154,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 12),
+
                 const Center(
                   child: Text(
                     AppStrings.tagline,
@@ -114,7 +166,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 48),
+
                 const Text(
                   'Welcome back',
                   style: TextStyle(
@@ -123,7 +177,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: AppColors.textPrimary,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
                 const Text(
                   'Sign in to continue your journey.',
                   style: TextStyle(
@@ -131,10 +187,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: AppColors.textSecondary,
                   ),
                 ),
+
                 const SizedBox(height: 32),
+
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  enabled: !_isLoading,
                   decoration: const InputDecoration(
                     labelText: 'Email address',
                     prefixIcon: Icon(Icons.email_outlined),
@@ -144,8 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       return 'Please enter your email address.';
                     }
 
-                    final emailRegex =
-                        RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
+                    final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
 
                     if (!emailRegex.hasMatch(value.trim())) {
                       return 'Please enter a valid email address.';
@@ -154,19 +212,24 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 18),
+
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  enabled: !_isLoading,
                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
                       icon: Icon(
                         _obscurePassword
                             ? Icons.visibility_outlined
@@ -186,98 +249,69 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                 ),
+
                 const SizedBox(height: 12),
+
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const ForgotPasswordScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
                     child: const Text('Forgot Password?'),
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _login,
-                    child: const Text(
-                      'Login',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    onPressed: _isLoading ? null : _login,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text(
+                            'Login',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
-                const SizedBox(height: 22),
-                const Row(
-                  children: [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('Development Access'),
-                    ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _openAgencyPortal,
-                    icon: const Icon(Icons.business_outlined),
-                    label: const Text('Open Agency Portal'),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _openAdminPortal,
-                    icon: const Icon(
-                      Icons.admin_panel_settings_outlined,
-                    ),
-                    label: const Text('Open Admin Portal'),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Center(
-                  child: Text(
-                    'Temporary access for frontend development only.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
+
                 const SizedBox(height: 24),
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
                       "Don't have an account?",
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                      ),
+                      style: TextStyle(color: AppColors.textSecondary),
                     ),
                     TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const RegisterScreen(),
-                          ),
-                        );
-                      },
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const RegisterScreen(),
+                                ),
+                              );
+                            },
                       child: const Text('Create Account'),
                     ),
                   ],

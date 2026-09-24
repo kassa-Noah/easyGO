@@ -13,12 +13,7 @@ class OnboardingScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            24,
-            30,
-            24,
-            24,
-          ),
+          padding: const EdgeInsets.fromLTRB(24, 30, 24, 24),
           child: Column(
             children: [
               // easyGO brand
@@ -55,9 +50,7 @@ class OnboardingScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(
-                        alpha: 0.05,
-                      ),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -124,8 +117,7 @@ class OnboardingScreen extends StatelessWidget {
 
               // Feature indicators
               const Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _FeatureItem(
                     icon: Icons.directions_bus_outlined,
@@ -135,10 +127,7 @@ class OnboardingScreen extends StatelessWidget {
                     icon: Icons.local_taxi_outlined,
                     label: 'Door-to-Door',
                   ),
-                  _FeatureItem(
-                    icon: Icons.luggage_outlined,
-                    label: 'Track',
-                  ),
+                  _FeatureItem(icon: Icons.luggage_outlined, label: 'Track'),
                 ],
               ),
 
@@ -146,23 +135,19 @@ class OnboardingScreen extends StatelessWidget {
 
               // Get Started
               ElevatedButton(
-                  // Login navigation will be connected
-                  // in the next step.
+                // Login navigation will be connected
+                // in the next step.
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                      const LoginScreen(),
+                      builder: (context) => const LoginScreen(),
                     ),
                   );
                 },
                 child: const Text(
                   'Get Started',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
 
@@ -171,10 +156,7 @@ class OnboardingScreen extends StatelessWidget {
               const Text(
                 AppStrings.tagline,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -188,10 +170,7 @@ class _FeatureItem extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _FeatureItem({
-    required this.icon,
-    required this.label,
-  });
+  const _FeatureItem({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -203,15 +182,9 @@ class _FeatureItem extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: AppColors.border,
-            ),
+            border: Border.all(color: AppColors.border),
           ),
-          child: Icon(
-            icon,
-            color: AppColors.primary,
-            size: 27,
-          ),
+          child: Icon(icon, color: AppColors.primary, size: 27),
         ),
         const SizedBox(height: 8),
         Text(

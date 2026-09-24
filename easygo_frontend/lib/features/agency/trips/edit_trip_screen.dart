@@ -4,25 +4,18 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/glass_container.dart';
 
 class EditTripScreen extends StatefulWidget {
-  const EditTripScreen({
-    super.key,
-    required this.trip,
-  });
+  const EditTripScreen({super.key, required this.trip});
 
   final Map<String, dynamic> trip;
 
   @override
-  State<EditTripScreen> createState() =>
-      _EditTripScreenState();
+  State<EditTripScreen> createState() => _EditTripScreenState();
 }
 
-class _EditTripScreenState
-    extends State<EditTripScreen> {
-  final GlobalKey<FormState> _formKey =
-      GlobalKey<FormState>();
+class _EditTripScreenState extends State<EditTripScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  late final TextEditingController
-      _priceController;
+  late final TextEditingController _priceController;
 
   static const List<String> _cities = [
     'Yaoundé',
@@ -33,10 +26,7 @@ class _EditTripScreenState
     'Limbe',
   ];
 
-  static const List<String> _travelClasses = [
-    'Classic',
-    'VIP',
-  ];
+  static const List<String> _travelClasses = ['Classic', 'VIP'];
 
   late String _departureCity;
   late String _destinationCity;
@@ -52,32 +42,21 @@ class _EditTripScreenState
   void initState() {
     super.initState();
 
-    _departureCity =
-        widget.trip['departureCity'] as String;
+    _departureCity = widget.trip['departureCity'] as String;
 
-    _destinationCity =
-        widget.trip['destinationCity'] as String;
+    _destinationCity = widget.trip['destinationCity'] as String;
 
-    _travelClass =
-        widget.trip['travelClass'] as String;
+    _travelClass = widget.trip['travelClass'] as String;
 
-    _priceController =
-        TextEditingController(
-      text:
-          (widget.trip['price'] as int).toString(),
+    _priceController = TextEditingController(
+      text: (widget.trip['price'] as int).toString(),
     );
 
-    _travelDate = _parseTripDate(
-      widget.trip['date'] as String,
-    );
+    _travelDate = _parseTripDate(widget.trip['date'] as String);
 
-    _departureTime = _parseTripTime(
-      widget.trip['departureTime'] as String,
-    );
+    _departureTime = _parseTripTime(widget.trip['departureTime'] as String);
 
-    _arrivalTime = _parseTripTime(
-      widget.trip['arrivalTime'] as String,
-    );
+    _arrivalTime = _parseTripTime(widget.trip['arrivalTime'] as String);
   }
 
   @override
@@ -86,11 +65,8 @@ class _EditTripScreenState
     super.dispose();
   }
 
-  DateTime _parseTripDate(
-    String value,
-  ) {
-    final List<String> parts =
-        value.trim().split(' ');
+  DateTime _parseTripDate(String value) {
+    final List<String> parts = value.trim().split(' ');
 
     if (parts.length != 3) {
       return DateTime.now();
@@ -111,46 +87,29 @@ class _EditTripScreenState
       'Dec': 12,
     };
 
-    final int? day =
-        int.tryParse(parts[0]);
+    final int? day = int.tryParse(parts[0]);
 
-    final int? month =
-        months[parts[1]];
+    final int? month = months[parts[1]];
 
-    final int? year =
-        int.tryParse(parts[2]);
+    final int? year = int.tryParse(parts[2]);
 
-    if (day == null ||
-        month == null ||
-        year == null) {
+    if (day == null || month == null || year == null) {
       return DateTime.now();
     }
 
-    return DateTime(
-      year,
-      month,
-      day,
-    );
+    return DateTime(year, month, day);
   }
 
-  TimeOfDay _parseTripTime(
-    String value,
-  ) {
-    final List<String> parts =
-        value.trim().split(':');
+  TimeOfDay _parseTripTime(String value) {
+    final List<String> parts = value.trim().split(':');
 
     if (parts.length != 2) {
-      return const TimeOfDay(
-        hour: 7,
-        minute: 0,
-      );
+      return const TimeOfDay(hour: 7, minute: 0);
     }
 
-    final int? hour =
-        int.tryParse(parts[0]);
+    final int? hour = int.tryParse(parts[0]);
 
-    final int? minute =
-        int.tryParse(parts[1]);
+    final int? minute = int.tryParse(parts[1]);
 
     if (hour == null ||
         minute == null ||
@@ -158,21 +117,13 @@ class _EditTripScreenState
         hour > 23 ||
         minute < 0 ||
         minute > 59) {
-      return const TimeOfDay(
-        hour: 7,
-        minute: 0,
-      );
+      return const TimeOfDay(hour: 7, minute: 0);
     }
 
-    return TimeOfDay(
-      hour: hour,
-      minute: minute,
-    );
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
-  String _formatDate(
-    DateTime date,
-  ) {
+  String _formatDate(DateTime date) {
     const List<String> months = [
       'Jan',
       'Feb',
@@ -188,63 +139,39 @@ class _EditTripScreenState
       'Dec',
     ];
 
-    final String day =
-        date.day.toString().padLeft(
-          2,
-          '0',
-        );
+    final String day = date.day.toString().padLeft(2, '0');
 
     return '$day '
         '${months[date.month - 1]} '
         '${date.year}';
   }
 
-  String _formatTime(
-    TimeOfDay time,
-  ) {
-    final String hour =
-        time.hour.toString().padLeft(
-          2,
-          '0',
-        );
+  String _formatTime(TimeOfDay time) {
+    final String hour = time.hour.toString().padLeft(2, '0');
 
-    final String minute =
-        time.minute.toString().padLeft(
-          2,
-          '0',
-        );
+    final String minute = time.minute.toString().padLeft(2, '0');
 
     return '$hour:$minute';
   }
 
-  int _minutesFromMidnight(
-    TimeOfDay time,
-  ) {
-    return (time.hour * 60) +
-        time.minute;
+  int _minutesFromMidnight(TimeOfDay time) {
+    return (time.hour * 60) + time.minute;
   }
 
   Future<void> _selectTravelDate() async {
-    final DateTime now =
-        DateTime.now();
+    final DateTime now = DateTime.now();
 
-    DateTime initialDate =
-        _travelDate;
+    DateTime initialDate = _travelDate;
 
     if (initialDate.isBefore(now)) {
       initialDate = now;
     }
 
-    final DateTime? selectedDate =
-        await showDatePicker(
+    final DateTime? selectedDate = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: now,
-      lastDate: DateTime(
-        now.year + 2,
-        12,
-        31,
-      ),
+      lastDate: DateTime(now.year + 2, 12, 31),
     );
 
     if (selectedDate == null) {
@@ -256,10 +183,8 @@ class _EditTripScreenState
     });
   }
 
-  Future<void>
-      _selectDepartureTime() async {
-    final TimeOfDay? selectedTime =
-        await showTimePicker(
+  Future<void> _selectDepartureTime() async {
+    final TimeOfDay? selectedTime = await showTimePicker(
       context: context,
       initialTime: _departureTime,
     );
@@ -269,15 +194,12 @@ class _EditTripScreenState
     }
 
     setState(() {
-      _departureTime =
-          selectedTime;
+      _departureTime = selectedTime;
     });
   }
 
-  Future<void>
-      _selectArrivalTime() async {
-    final TimeOfDay? selectedTime =
-        await showTimePicker(
+  Future<void> _selectArrivalTime() async {
+    final TimeOfDay? selectedTime = await showTimePicker(
       context: context,
       initialTime: _arrivalTime,
     );
@@ -287,26 +209,18 @@ class _EditTripScreenState
     }
 
     setState(() {
-      _arrivalTime =
-          selectedTime;
+      _arrivalTime = selectedTime;
     });
   }
 
-  String? _validateFare(
-    String? value,
-  ) {
-    if (value == null ||
-        value.trim().isEmpty) {
+  String? _validateFare(String? value) {
+    if (value == null || value.trim().isEmpty) {
       return 'Passenger fare is required.';
     }
 
-    final int? fare =
-        int.tryParse(
-      value.trim(),
-    );
+    final int? fare = int.tryParse(value.trim());
 
-    if (fare == null ||
-        fare <= 0) {
+    if (fare == null || fare <= 0) {
       return 'Enter a valid passenger fare.';
     }
 
@@ -314,27 +228,17 @@ class _EditTripScreenState
   }
 
   bool _validateSchedule() {
-    if (_departureCity ==
-        _destinationCity) {
-      _showMessage(
-        'Departure and destination cities must be different.',
-      );
+    if (_departureCity == _destinationCity) {
+      _showMessage('Departure and destination cities must be different.');
 
       return false;
     }
 
-    final int departureMinutes =
-        _minutesFromMidnight(
-      _departureTime,
-    );
+    final int departureMinutes = _minutesFromMidnight(_departureTime);
 
-    final int arrivalMinutes =
-        _minutesFromMidnight(
-      _arrivalTime,
-    );
+    final int arrivalMinutes = _minutesFromMidnight(_arrivalTime);
 
-    if (arrivalMinutes <=
-        departureMinutes) {
+    if (arrivalMinutes <= departureMinutes) {
       _showMessage(
         'Arrival time must be after departure time for this prototype trip schedule.',
       );
@@ -348,10 +252,7 @@ class _EditTripScreenState
   Future<void> _saveChanges() async {
     FocusScope.of(context).unfocus();
 
-    final bool formValid =
-        _formKey.currentState
-                ?.validate() ??
-            false;
+    final bool formValid = _formKey.currentState?.validate() ?? false;
 
     if (!formValid) {
       return;
@@ -365,11 +266,7 @@ class _EditTripScreenState
       _isSaving = true;
     });
 
-    await Future<void>.delayed(
-      const Duration(
-        milliseconds: 900,
-      ),
-    );
+    await Future<void>.delayed(const Duration(milliseconds: 900));
 
     if (!mounted) {
       return;
@@ -382,12 +279,8 @@ class _EditTripScreenState
     await _showDemoConfirmation();
   }
 
-  Future<void>
-      _showDemoConfirmation() async {
-    final int fare =
-        int.parse(
-      _priceController.text.trim(),
-    );
+  Future<void> _showDemoConfirmation() async {
+    final int fare = int.parse(_priceController.text.trim());
 
     await showDialog<void>(
       context: context,
@@ -398,9 +291,7 @@ class _EditTripScreenState
             color: AppColors.success,
             size: 38,
           ),
-          title: const Text(
-            'Changes Validated',
-          ),
+          title: const Text('Changes Validated'),
           content: Text(
             'The changes for '
             '${widget.trip['id']} have passed '
@@ -419,13 +310,9 @@ class _EditTripScreenState
           actions: [
             FilledButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                );
+                Navigator.pop(dialogContext);
               },
-              child: const Text(
-                'Continue',
-              ),
+              child: const Text('Continue'),
             ),
           ],
         );
@@ -433,39 +320,26 @@ class _EditTripScreenState
     );
   }
 
-  void _showMessage(
-    String message,
-  ) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Edit Trip',
-        ),
-      ),
+      appBar: AppBar(title: const Text('Edit Trip')),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFF09111F),
                     Color(0xFF0D1B2A),
@@ -473,10 +347,8 @@ class _EditTripScreenState
                   ],
                 )
               : const LinearGradient(
-                  begin:
-                      Alignment.topLeft,
-                  end:
-                      Alignment.bottomRight,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [
                     Color(0xFFF2F8FF),
                     Color(0xFFF7FBFF),
@@ -487,49 +359,25 @@ class _EditTripScreenState
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
-            padding:
-                const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              34,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 34),
             child: Center(
               child: ConstrainedBox(
-                constraints:
-                    const BoxConstraints(
-                  maxWidth: 800,
-                ),
+                constraints: const BoxConstraints(maxWidth: 800),
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTripIdentity(
-                        context,
-                      ),
-                      const SizedBox(
-                        height: 18,
-                      ),
+                      _buildTripIdentity(context),
+                      const SizedBox(height: 18),
                       _buildRouteSection(),
-                      const SizedBox(
-                        height: 18,
-                      ),
+                      const SizedBox(height: 18),
                       _buildScheduleSection(),
-                      const SizedBox(
-                        height: 18,
-                      ),
+                      const SizedBox(height: 18),
                       _buildServiceSection(),
-                      const SizedBox(
-                        height: 18,
-                      ),
-                      _buildCapacityNotice(
-                        context,
-                      ),
-                      const SizedBox(
-                        height: 24,
-                      ),
+                      const SizedBox(height: 18),
+                      _buildCapacityNotice(context),
+                      const SizedBox(height: 24),
                       _buildSaveButton(),
                     ],
                   ),
@@ -542,13 +390,10 @@ class _EditTripScreenState
     );
   }
 
-  Widget _buildTripIdentity(
-    BuildContext context,
-  ) {
+  Widget _buildTripIdentity(BuildContext context) {
     return GlassContainer(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(17),
+      padding: const EdgeInsets.all(17),
       borderRadius: 17,
       child: Row(
         children: [
@@ -556,14 +401,8 @@ class _EditTripScreenState
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                13,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(13),
             ),
             child: const Icon(
               Icons.edit_road_outlined,
@@ -573,54 +412,34 @@ class _EditTripScreenState
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.trip['id']
-                      as String,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                  widget.trip['id'] as String,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   'General Express • Scheduled Trip',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(
-              horizontal: 9,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                18,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(18),
             ),
             child: const Text(
               'Scheduled',
               style: TextStyle(
                 fontSize: 10,
-                fontWeight:
-                    FontWeight.w600,
-                color:
-                    AppColors.primary,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
               ),
             ),
           ),
@@ -632,33 +451,18 @@ class _EditTripScreenState
   Widget _buildRouteSection() {
     return _FormSection(
       title: 'Route',
-      description:
-          'Update the departure and destination cities.',
+      description: 'Update the departure and destination cities.',
       child: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final bool wide =
-              constraints.maxWidth >=
-                  580;
+        builder: (context, constraints) {
+          final bool wide = constraints.maxWidth >= 580;
 
           if (wide) {
             return Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child:
-                      _departureField(),
-                ),
-                const SizedBox(
-                  width: 14,
-                ),
-                Expanded(
-                  child:
-                      _destinationField(),
-                ),
+                Expanded(child: _departureField()),
+                const SizedBox(width: 14),
+                Expanded(child: _destinationField()),
               ],
             );
           }
@@ -680,17 +484,11 @@ class _EditTripScreenState
       initialValue: _departureCity,
       decoration: const InputDecoration(
         labelText: 'Departure City',
-        prefixIcon: Icon(
-          Icons.trip_origin,
-        ),
+        prefixIcon: Icon(Icons.trip_origin),
       ),
       items: _cities
           .map(
-            (city) =>
-                DropdownMenuItem<String>(
-              value: city,
-              child: Text(city),
-            ),
+            (city) => DropdownMenuItem<String>(value: city, child: Text(city)),
           )
           .toList(),
       onChanged: (value) {
@@ -701,13 +499,8 @@ class _EditTripScreenState
         setState(() {
           _departureCity = value;
 
-          if (_destinationCity ==
-              value) {
-            _destinationCity =
-                _cities.firstWhere(
-              (city) =>
-                  city != value,
-            );
+          if (_destinationCity == value) {
+            _destinationCity = _cities.firstWhere((city) => city != value);
           }
         });
       },
@@ -722,39 +515,22 @@ class _EditTripScreenState
   }
 
   Widget _destinationField() {
-    final List<String>
-        availableDestinations =
-        _cities
-            .where(
-              (city) =>
-                  city !=
-                  _departureCity,
-            )
-            .toList();
+    final List<String> availableDestinations = _cities
+        .where((city) => city != _departureCity)
+        .toList();
 
     return DropdownButtonFormField<String>(
-      key: ValueKey(
-        'destination-$_departureCity-$_destinationCity',
-      ),
-      initialValue:
-          availableDestinations.contains(
-            _destinationCity,
-          )
+      key: ValueKey('destination-$_departureCity-$_destinationCity'),
+      initialValue: availableDestinations.contains(_destinationCity)
           ? _destinationCity
           : availableDestinations.first,
       decoration: const InputDecoration(
         labelText: 'Destination City',
-        prefixIcon: Icon(
-          Icons.location_on_outlined,
-        ),
+        prefixIcon: Icon(Icons.location_on_outlined),
       ),
       items: availableDestinations
           .map(
-            (city) =>
-                DropdownMenuItem<String>(
-              value: city,
-              child: Text(city),
-            ),
+            (city) => DropdownMenuItem<String>(value: city, child: Text(city)),
           )
           .toList(),
       onChanged: (value) {
@@ -779,79 +555,46 @@ class _EditTripScreenState
   Widget _buildScheduleSection() {
     return _FormSection(
       title: 'Schedule',
-      description:
-          'Update the travel date and planned times.',
+      description: 'Update the travel date and planned times.',
       child: Column(
         children: [
           _SelectionField(
             label: 'Travel Date',
-            value:
-                _formatDate(
-              _travelDate,
-            ),
-            icon: Icons
-                .calendar_today_outlined,
+            value: _formatDate(_travelDate),
+            icon: Icons.calendar_today_outlined,
             onTap: _selectTravelDate,
           ),
           const SizedBox(height: 14),
           LayoutBuilder(
-            builder: (
-              context,
-              constraints,
-            ) {
-              final bool wide =
-                  constraints.maxWidth >=
-                      580;
+            builder: (context, constraints) {
+              final bool wide = constraints.maxWidth >= 580;
 
-              final Widget departure =
-                  _SelectionField(
-                label:
-                    'Departure Time',
-                value: _formatTime(
-                  _departureTime,
-                ),
-                icon:
-                    Icons.schedule_outlined,
-                onTap:
-                    _selectDepartureTime,
+              final Widget departure = _SelectionField(
+                label: 'Departure Time',
+                value: _formatTime(_departureTime),
+                icon: Icons.schedule_outlined,
+                onTap: _selectDepartureTime,
               );
 
-              final Widget arrival =
-                  _SelectionField(
+              final Widget arrival = _SelectionField(
                 label: 'Arrival Time',
-                value: _formatTime(
-                  _arrivalTime,
-                ),
-                icon: Icons
-                    .access_time_outlined,
-                onTap:
-                    _selectArrivalTime,
+                value: _formatTime(_arrivalTime),
+                icon: Icons.access_time_outlined,
+                onTap: _selectArrivalTime,
               );
 
               if (wide) {
                 return Row(
                   children: [
-                    Expanded(
-                      child: departure,
-                    ),
-                    const SizedBox(
-                      width: 14,
-                    ),
-                    Expanded(
-                      child: arrival,
-                    ),
+                    Expanded(child: departure),
+                    const SizedBox(width: 14),
+                    Expanded(child: arrival),
                   ],
                 );
               }
 
               return Column(
-                children: [
-                  departure,
-                  const SizedBox(
-                    height: 14,
-                  ),
-                  arrival,
-                ],
+                children: [departure, const SizedBox(height: 14), arrival],
               );
             },
           ),
@@ -863,41 +606,22 @@ class _EditTripScreenState
   Widget _buildServiceSection() {
     return _FormSection(
       title: 'Service Information',
-      description:
-          'Update the travel class and passenger fare.',
+      description: 'Update the travel class and passenger fare.',
       child: LayoutBuilder(
-        builder: (
-          context,
-          constraints,
-        ) {
-          final bool wide =
-              constraints.maxWidth >=
-                  580;
+        builder: (context, constraints) {
+          final bool wide = constraints.maxWidth >= 580;
 
-          final Widget classField =
-              DropdownButtonFormField<
-                  String>(
-            initialValue:
-                _travelClass,
-            decoration:
-                const InputDecoration(
-              labelText:
-                  'Travel Class',
-              prefixIcon: Icon(
-                Icons
-                    .event_seat_outlined,
-              ),
+          final Widget classField = DropdownButtonFormField<String>(
+            initialValue: _travelClass,
+            decoration: const InputDecoration(
+              labelText: 'Travel Class',
+              prefixIcon: Icon(Icons.event_seat_outlined),
             ),
             items: _travelClasses
                 .map(
-                  (travelClass) =>
-                      DropdownMenuItem<
-                          String>(
-                    value:
-                        travelClass,
-                    child: Text(
-                      travelClass,
-                    ),
+                  (travelClass) => DropdownMenuItem<String>(
+                    value: travelClass,
+                    child: Text(travelClass),
                   ),
                 )
                 .toList(),
@@ -907,8 +631,7 @@ class _EditTripScreenState
               }
 
               setState(() {
-                _travelClass =
-                    value;
+                _travelClass = value;
               });
             },
             validator: (value) {
@@ -920,128 +643,83 @@ class _EditTripScreenState
             },
           );
 
-          final Widget fareField =
-              TextFormField(
-            controller:
-                _priceController,
-            keyboardType:
-                TextInputType.number,
-            decoration:
-                const InputDecoration(
-              labelText:
-                  'Passenger Fare',
-              prefixIcon: Icon(
-                Icons.payments_outlined,
-              ),
+          final Widget fareField = TextFormField(
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Passenger Fare',
+              prefixIcon: Icon(Icons.payments_outlined),
               suffixText: 'FCFA',
             ),
-            validator:
-                _validateFare,
+            validator: _validateFare,
           );
 
           if (wide) {
             return Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: classField,
-                ),
-                const SizedBox(
-                  width: 14,
-                ),
-                Expanded(
-                  child: fareField,
-                ),
+                Expanded(child: classField),
+                const SizedBox(width: 14),
+                Expanded(child: fareField),
               ],
             );
           }
 
           return Column(
-            children: [
-              classField,
-              const SizedBox(height: 14),
-              fareField,
-            ],
+            children: [classField, const SizedBox(height: 14), fareField],
           );
         },
       ),
     );
   }
 
-  Widget _buildCapacityNotice(
-    BuildContext context,
-  ) {
-    final int totalSeats =
-        widget.trip['totalSeats']
-            as int;
+  Widget _buildCapacityNotice(BuildContext context) {
+    final int totalSeats = widget.trip['totalSeats'] as int;
 
-    final int bookedSeats =
-        widget.trip['bookedSeats']
-            as int;
+    final int bookedSeats = widget.trip['bookedSeats'] as int;
 
     return GlassContainer(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(17),
+      padding: const EdgeInsets.all(17),
       borderRadius: 17,
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.warning
-                  .withValues(
-                alpha: 0.10,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                12,
-              ),
+              color: AppColors.warning.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
-              Icons
-                  .event_seat_outlined,
-              color:
-                  AppColors.warning,
+              Icons.event_seat_outlined,
+              color: AppColors.warning,
               size: 21,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Seat Capacity',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   '$bookedSeats of $totalSeats seats are currently booked.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Capacity and seat availability are managed separately to protect existing bookings.',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        height: 1.4,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.4),
                 ),
               ],
             ),
@@ -1055,34 +733,21 @@ class _EditTripScreenState
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
-        onPressed:
-            _isSaving
-                ? null
-                : _saveChanges,
+        onPressed: _isSaving ? null : _saveChanges,
         icon: _isSaving
             ? const SizedBox(
                 width: 19,
                 height: 19,
-                child:
-                    CircularProgressIndicator(
-                  strokeWidth: 2,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Icon(
-                Icons.save_outlined,
-              ),
-        label: Text(
-          _isSaving
-              ? 'Validating Changes...'
-              : 'Save Changes',
-        ),
+            : const Icon(Icons.save_outlined),
+        label: Text(_isSaving ? 'Validating Changes...' : 'Save Changes'),
       ),
     );
   }
 }
 
-class _FormSection
-    extends StatelessWidget {
+class _FormSection extends StatelessWidget {
   const _FormSection({
     required this.title,
     required this.description,
@@ -1097,32 +762,21 @@ class _FormSection
   Widget build(BuildContext context) {
     return GlassContainer(
       width: double.infinity,
-      padding:
-          const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 5),
           Text(
             description,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(
-                  height: 1.4,
-                ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.4),
           ),
           const SizedBox(height: 18),
           child,
@@ -1132,8 +786,7 @@ class _FormSection
   }
 }
 
-class _SelectionField
-    extends StatelessWidget {
+class _SelectionField extends StatelessWidget {
   const _SelectionField({
     required this.label,
     required this.value,
@@ -1150,22 +803,14 @@ class _SelectionField
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius:
-          BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(14),
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon),
-          suffixIcon: const Icon(
-            Icons.chevron_right,
-          ),
+          suffixIcon: const Icon(Icons.chevron_right),
         ),
-        child: Text(
-          value,
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium,
-        ),
+        child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
       ),
     );
   }

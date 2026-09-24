@@ -5,17 +5,13 @@ import '../../../../shared/widgets/glass_container.dart';
 import 'agency_parcel_details_screen.dart';
 
 class AgencyParcelsScreen extends StatefulWidget {
-  const AgencyParcelsScreen({
-    super.key,
-  });
+  const AgencyParcelsScreen({super.key});
 
   @override
-  State<AgencyParcelsScreen> createState() =>
-      _AgencyParcelsScreenState();
+  State<AgencyParcelsScreen> createState() => _AgencyParcelsScreenState();
 }
 
-class _AgencyParcelsScreenState
-    extends State<AgencyParcelsScreen> {
+class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
   static const String _all = 'All';
 
   static const List<String> _filters = [
@@ -125,10 +121,7 @@ class _AgencyParcelsScreenState
     }
 
     return _parcels
-        .where(
-          (parcel) =>
-              parcel['status'] == _selectedFilter,
-        )
+        .where((parcel) => parcel['status'] == _selectedFilter)
         .toList();
   }
 
@@ -181,34 +174,23 @@ class _AgencyParcelsScreenState
     }
   }
 
-  void _openParcelDetails(
-    Map<String, dynamic> parcel,
-  ) {
+  void _openParcelDetails(Map<String, dynamic> parcel) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AgencyParcelDetailsScreen(
-          parcel: parcel,
-        ),
+        builder: (context) => AgencyParcelDetailsScreen(parcel: parcel),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     final parcels = _filteredParcels;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Agency Parcels',
-        ),
-      ),
+      appBar: AppBar(title: const Text('Agency Parcels')),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -236,45 +218,31 @@ class _AgencyParcelsScreenState
         child: SafeArea(
           top: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              32,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 900,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 900),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildSummary(context),
                       const SizedBox(height: 20),
                       _buildFilters(),
                       const SizedBox(height: 20),
                       AnimatedSwitcher(
-                        duration: const Duration(
-                          milliseconds: 250,
-                        ),
+                        duration: const Duration(milliseconds: 250),
                         child: parcels.isEmpty
                             ? _buildEmptyState(context)
                             : Column(
-                                key: ValueKey(
-                                  _selectedFilter,
-                                ),
+                                key: ValueKey(_selectedFilter),
                                 children: parcels
                                     .map(
                                       (parcel) => Padding(
-                                        padding:
-                                            const EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           bottom: 14,
                                         ),
-                                        child:
-                                            _buildParcelCard(
+                                        child: _buildParcelCard(
                                           context,
                                           parcel,
                                         ),
@@ -294,21 +262,13 @@ class _AgencyParcelsScreenState
     );
   }
 
-  Widget _buildSummary(
-    BuildContext context,
-  ) {
+  Widget _buildSummary(BuildContext context) {
     final int active = _parcels
-        .where(
-          (parcel) =>
-              parcel['status'] != 'Delivered',
-        )
+        .where((parcel) => parcel['status'] != 'Delivered')
         .length;
 
     final int delivered = _parcels
-        .where(
-          (parcel) =>
-              parcel['status'] == 'Delivered',
-        )
+        .where((parcel) => parcel['status'] == 'Delivered')
         .length;
 
     return GlassContainer(
@@ -316,8 +276,7 @@ class _AgencyParcelsScreenState
       padding: const EdgeInsets.all(18),
       borderRadius: 18,
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -325,12 +284,8 @@ class _AgencyParcelsScreenState
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: AppColors.secondary
-                      .withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(14),
+                  color: AppColors.secondary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.inventory_2_outlined,
@@ -340,26 +295,19 @@ class _AgencyParcelsScreenState
               const SizedBox(width: 13),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Parcel Management',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'General Express • '
                       '${_parcels.length} parcels',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -392,38 +340,28 @@ class _AgencyParcelsScreenState
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: _filters.map(
-          (filter) {
-            return Padding(
-              padding: const EdgeInsets.only(
-                right: 9,
-              ),
-              child: ChoiceChip(
-                label: Text(filter),
-                selected:
-                    _selectedFilter == filter,
-                onSelected: (_) {
-                  setState(() {
-                    _selectedFilter = filter;
-                  });
-                },
-              ),
-            );
-          },
-        ).toList(),
+        children: _filters.map((filter) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 9),
+            child: ChoiceChip(
+              label: Text(filter),
+              selected: _selectedFilter == filter,
+              onSelected: (_) {
+                setState(() {
+                  _selectedFilter = filter;
+                });
+              },
+            ),
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildParcelCard(
-    BuildContext context,
-    Map<String, dynamic> parcel,
-  ) {
-    final String status =
-        parcel['status'] as String;
+  Widget _buildParcelCard(BuildContext context, Map<String, dynamic> parcel) {
+    final String status = parcel['status'] as String;
 
-    final Color color =
-        _statusColor(status);
+    final Color color = _statusColor(status);
 
     return GlassContainer(
       width: double.infinity,
@@ -433,79 +371,53 @@ class _AgencyParcelsScreenState
         _openParcelDetails(parcel);
       },
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: color.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(13),
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(13),
                 ),
-                child: Icon(
-                  _statusIcon(status),
-                  color: color,
-                  size: 22,
-                ),
+                child: Icon(_statusIcon(status), color: color, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       parcel['id'] as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      parcel['description']
-                          as String,
+                      parcel['description'] as String,
                       maxLines: 2,
-                      overflow:
-                          TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 9,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                 decoration: BoxDecoration(
-                  color: color.withValues(
-                    alpha: 0.10,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(18),
+                  color: color.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
                   status,
                   style: TextStyle(
                     fontSize: 10,
-                    fontWeight:
-                        FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                     color: color,
                   ),
                 ),
@@ -524,24 +436,16 @@ class _AgencyParcelsScreenState
               Expanded(
                 child: Text(
                   'Sender: ${parcel['senderName']}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.w600,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
               Text(
                 '${parcel['weight']} kg',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -558,9 +462,7 @@ class _AgencyParcelsScreenState
                 child: Text(
                   '${parcel['departureCity']} → '
                   '${parcel['destinationCity']}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
             ],
@@ -578,45 +480,30 @@ class _AgencyParcelsScreenState
                 child: Text(
                   'Recipient: '
                   '${parcel['recipientName']}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 14),
-          Divider(
-            color:
-                Theme.of(context).dividerColor,
-          ),
+          Divider(color: Theme.of(context).dividerColor),
           const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
                 child: Text(
                   '${_formatPrice(parcel['amount'] as int)} FCFA',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               Text(
-                parcel['registeredDate']
-                    as String,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall,
+                parcel['registeredDate'] as String,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(width: 4),
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-              ),
+              const Icon(Icons.chevron_right, size: 18),
             ],
           ),
         ],
@@ -624,13 +511,9 @@ class _AgencyParcelsScreenState
     );
   }
 
-  Widget _buildEmptyState(
-    BuildContext context,
-  ) {
+  Widget _buildEmptyState(BuildContext context) {
     return GlassContainer(
-      key: ValueKey(
-        'empty-parcels-$_selectedFilter',
-      ),
+      key: ValueKey('empty-parcels-$_selectedFilter'),
       width: double.infinity,
       padding: const EdgeInsets.all(30),
       borderRadius: 18,
@@ -640,10 +523,7 @@ class _AgencyParcelsScreenState
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: AppColors.secondary
-                  .withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.secondary.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -658,21 +538,15 @@ class _AgencyParcelsScreenState
                 ? 'No parcels'
                 : 'No $_selectedFilter parcels',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight:
-                      FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 7),
           Text(
             'There are currently no agency parcels under this tracking status.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
@@ -694,16 +568,10 @@ class _SummaryBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
       decoration: BoxDecoration(
-        color: color.withValues(
-          alpha: 0.10,
-        ),
-        borderRadius:
-            BorderRadius.circular(18),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Text(
         '$value $label',

@@ -1,6 +1,5 @@
 class AppAssets {
   AppAssets._();
 
-  static const String logo =
-      'assets/images/easygo_logo.png';
+  static const String logo = 'assets/images/easygo_logo.png';
 }

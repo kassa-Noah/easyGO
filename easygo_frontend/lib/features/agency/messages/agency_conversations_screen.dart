@@ -5,19 +5,15 @@ import '../../../../shared/widgets/glass_container.dart';
 import 'agency_chat_screen.dart';
 
 class AgencyConversationsScreen extends StatefulWidget {
-  const AgencyConversationsScreen({
-    super.key,
-  });
+  const AgencyConversationsScreen({super.key});
 
   @override
   State<AgencyConversationsScreen> createState() =>
       _AgencyConversationsScreenState();
 }
 
-class _AgencyConversationsScreenState
-    extends State<AgencyConversationsScreen> {
-  final TextEditingController _searchController =
-      TextEditingController();
+class _AgencyConversationsScreenState extends State<AgencyConversationsScreen> {
+  final TextEditingController _searchController = TextEditingController();
 
   String _searchQuery = '';
 
@@ -29,8 +25,7 @@ class _AgencyConversationsScreenState
       'contextType': 'Booking',
       'contextReference': 'DEMO-BOOKING-001',
       'route': 'Yaoundé → Douala',
-      'lastMessage':
-          'Please, has my luggage already arrived in Douala?',
+      'lastMessage': 'Please, has my luggage already arrived in Douala?',
       'lastMessageTime': '10:42',
       'unreadCount': 2,
       'messages': [
@@ -44,22 +39,19 @@ class _AgencyConversationsScreenState
         {
           'id': 'MSG-002',
           'sender': 'agency',
-          'message':
-              'Good morning. Please provide your booking reference.',
+          'message': 'Good morning. Please provide your booking reference.',
           'time': '10:37',
         },
         {
           'id': 'MSG-003',
           'sender': 'client',
-          'message':
-              'My booking reference is DEMO-BOOKING-001.',
+          'message': 'My booking reference is DEMO-BOOKING-001.',
           'time': '10:39',
         },
         {
           'id': 'MSG-004',
           'sender': 'client',
-          'message':
-              'Please, has my luggage already arrived in Douala?',
+          'message': 'Please, has my luggage already arrived in Douala?',
           'time': '10:42',
         },
       ],
@@ -71,16 +63,14 @@ class _AgencyConversationsScreenState
       'contextType': 'Booking',
       'contextReference': 'DEMO-BOOKING-002',
       'route': 'Yaoundé → Bafoussam',
-      'lastMessage':
-          'Thank you. I will arrive at the agency before departure.',
+      'lastMessage': 'Thank you. I will arrive at the agency before departure.',
       'lastMessageTime': '09:18',
       'unreadCount': 0,
       'messages': [
         {
           'id': 'MSG-005',
           'sender': 'client',
-          'message':
-              'Hello. What time should I arrive before my trip?',
+          'message': 'Hello. What time should I arrive before my trip?',
           'time': '09:10',
         },
         {
@@ -93,8 +83,7 @@ class _AgencyConversationsScreenState
         {
           'id': 'MSG-007',
           'sender': 'client',
-          'message':
-              'Thank you. I will arrive at the agency before departure.',
+          'message': 'Thank you. I will arrive at the agency before departure.',
           'time': '09:18',
         },
       ],
@@ -114,8 +103,7 @@ class _AgencyConversationsScreenState
         {
           'id': 'MSG-008',
           'sender': 'client',
-          'message':
-              'Hello. I sent parcel PAR-DEMO-003 to Buea.',
+          'message': 'Hello. I sent parcel PAR-DEMO-003 to Buea.',
           'time': '16:20',
         },
         {
@@ -141,8 +129,7 @@ class _AgencyConversationsScreenState
       'contextType': 'General',
       'contextReference': '',
       'route': '',
-      'lastMessage':
-          'Do you have VIP trips from Douala to Yaoundé?',
+      'lastMessage': 'Do you have VIP trips from Douala to Yaoundé?',
       'lastMessageTime': 'Mon',
       'unreadCount': 0,
       'messages': [
@@ -171,23 +158,21 @@ class _AgencyConversationsScreenState
   }
 
   List<Map<String, dynamic>> get _filteredConversations {
-    final String query =
-        _searchQuery.trim().toLowerCase();
+    final String query = _searchQuery.trim().toLowerCase();
 
     if (query.isEmpty) {
       return _conversations;
     }
 
     return _conversations.where((conversation) {
-      final String clientName =
-          (conversation['clientName'] as String).toLowerCase();
+      final String clientName = (conversation['clientName'] as String)
+          .toLowerCase();
 
       final String contextReference =
-          (conversation['contextReference'] as String)
-              .toLowerCase();
+          (conversation['contextReference'] as String).toLowerCase();
 
-      final String lastMessage =
-          (conversation['lastMessage'] as String).toLowerCase();
+      final String lastMessage = (conversation['lastMessage'] as String)
+          .toLowerCase();
 
       return clientName.contains(query) ||
           contextReference.contains(query) ||
@@ -198,14 +183,11 @@ class _AgencyConversationsScreenState
   int get _totalUnread {
     return _conversations.fold<int>(
       0,
-      (total, conversation) =>
-          total + (conversation['unreadCount'] as int),
+      (total, conversation) => total + (conversation['unreadCount'] as int),
     );
   }
 
-  Future<void> _openConversation(
-    Map<String, dynamic> conversation,
-  ) async {
+  Future<void> _openConversation(Map<String, dynamic> conversation) async {
     setState(() {
       conversation['unreadCount'] = 0;
     });
@@ -213,9 +195,7 @@ class _AgencyConversationsScreenState
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AgencyChatScreen(
-          conversation: conversation,
-        ),
+        builder: (context) => AgencyChatScreen(conversation: conversation),
       ),
     );
 
@@ -250,15 +230,12 @@ class _AgencyConversationsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark =
-        Theme.of(context).brightness == Brightness.dark;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     final conversations = _filteredConversations;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Messages'),
-      ),
+      appBar: AppBar(title: const Text('Messages')),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -286,29 +263,20 @@ class _AgencyConversationsScreenState
         child: SafeArea(
           top: false,
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              18,
-              20,
-              32,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
             children: [
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 900,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 900),
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildHeader(context),
                       const SizedBox(height: 18),
                       _buildSearchField(),
                       const SizedBox(height: 20),
                       AnimatedSwitcher(
-                        duration:
-                            const Duration(milliseconds: 250),
+                        duration: const Duration(milliseconds: 250),
                         child: conversations.isEmpty
                             ? _buildEmptyState(context)
                             : Column(
@@ -316,12 +284,10 @@ class _AgencyConversationsScreenState
                                 children: conversations
                                     .map(
                                       (conversation) => Padding(
-                                        padding:
-                                            const EdgeInsets.only(
+                                        padding: const EdgeInsets.only(
                                           bottom: 13,
                                         ),
-                                        child:
-                                            _buildConversationCard(
+                                        child: _buildConversationCard(
                                           context,
                                           conversation,
                                         ),
@@ -352,52 +318,36 @@ class _AgencyConversationsScreenState
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(
-              Icons.forum_outlined,
-              color: AppColors.primary,
-            ),
+            child: const Icon(Icons.forum_outlined, color: AppColors.primary),
           ),
           const SizedBox(width: 13),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Client Conversations',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'General Express • '
                   '${_conversations.length} conversations',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall,
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
           ),
           if (_totalUnread > 0)
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 11,
-                vertical: 7,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(
-                  alpha: 0.10,
-                ),
+                color: AppColors.error.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -423,11 +373,8 @@ class _AgencyConversationsScreenState
         });
       },
       decoration: InputDecoration(
-        hintText:
-            'Search client, booking or parcel reference',
-        prefixIcon: const Icon(
-          Icons.search,
-        ),
+        hintText: 'Search client, booking or parcel reference',
+        prefixIcon: const Icon(Icons.search),
         suffixIcon: _searchQuery.isNotEmpty
             ? IconButton(
                 onPressed: () {
@@ -437,9 +384,7 @@ class _AgencyConversationsScreenState
                     _searchQuery = '';
                   });
                 },
-                icon: const Icon(
-                  Icons.close,
-                ),
+                icon: const Icon(Icons.close),
               )
             : null,
       ),
@@ -450,16 +395,13 @@ class _AgencyConversationsScreenState
     BuildContext context,
     Map<String, dynamic> conversation,
   ) {
-    final int unreadCount =
-        conversation['unreadCount'] as int;
+    final int unreadCount = conversation['unreadCount'] as int;
 
     final bool unread = unreadCount > 0;
 
-    final String contextType =
-        conversation['contextType'] as String;
+    final String contextType = conversation['contextType'] as String;
 
-    final Color contextColor =
-        _contextColor(contextType);
+    final Color contextColor = _contextColor(contextType);
 
     return GlassContainer(
       width: double.infinity,
@@ -469,23 +411,16 @@ class _AgencyConversationsScreenState
         _openConversation(conversation);
       },
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Stack(
             clipBehavior: Clip.none,
             children: [
               CircleAvatar(
                 radius: 25,
-                backgroundColor:
-                    AppColors.primary.withValues(
-                  alpha: 0.12,
-                ),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                 child: Text(
-                  _initials(
-                    conversation['clientName']
-                        as String,
-                  ),
+                  _initials(conversation['clientName'] as String),
                   style: const TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
@@ -503,8 +438,7 @@ class _AgencyConversationsScreenState
                       color: AppColors.error,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Theme.of(context)
-                            .scaffoldBackgroundColor,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         width: 2,
                       ),
                     ),
@@ -515,36 +449,27 @@ class _AgencyConversationsScreenState
           const SizedBox(width: 13),
           Expanded(
             child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     Expanded(
                       child: Text(
-                        conversation['clientName']
-                            as String,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(
-                              fontWeight: unread
-                                  ? FontWeight.bold
-                                  : FontWeight.w600,
-                            ),
+                        conversation['clientName'] as String,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: unread
+                              ? FontWeight.bold
+                              : FontWeight.w600,
+                        ),
                       ),
                     ),
                     Text(
-                      conversation['lastMessageTime']
-                          as String,
-                      style: Theme.of(context)
-                          .textTheme
-                          .labelSmall
-                          ?.copyWith(
-                            fontWeight: unread
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
+                      conversation['lastMessageTime'] as String,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: unread
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
                     ),
                   ],
                 ),
@@ -565,19 +490,14 @@ class _AgencyConversationsScreenState
                         color: contextColor,
                       ),
                     ),
-                    if ((conversation[
-                                'contextReference']
-                            as String)
+                    if ((conversation['contextReference'] as String)
                         .isNotEmpty) ...[
                       const SizedBox(width: 5),
                       Expanded(
                         child: Text(
                           '• ${conversation['contextReference']}',
-                          overflow:
-                              TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelSmall,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall,
                         ),
                       ),
                     ],
@@ -585,22 +505,14 @@ class _AgencyConversationsScreenState
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  conversation['lastMessage']
-                      as String,
+                  conversation['lastMessage'] as String,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        fontWeight: unread
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: unread ? FontWeight.w600 : FontWeight.normal,
+                  ),
                 ),
-                if ((conversation['route']
-                        as String)
-                    .isNotEmpty) ...[
+                if ((conversation['route'] as String).isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -612,11 +524,8 @@ class _AgencyConversationsScreenState
                       const SizedBox(width: 5),
                       Expanded(
                         child: Text(
-                          conversation['route']
-                              as String,
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelSmall,
+                          conversation['route'] as String,
+                          style: Theme.of(context).textTheme.labelSmall,
                         ),
                       ),
                     ],
@@ -628,14 +537,8 @@ class _AgencyConversationsScreenState
           if (unread) ...[
             const SizedBox(width: 8),
             Container(
-              constraints: const BoxConstraints(
-                minWidth: 24,
-                minHeight: 24,
-              ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 7,
-                vertical: 4,
-              ),
+              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
               decoration: const BoxDecoration(
                 color: AppColors.primary,
                 shape: BoxShape.circle,
@@ -656,13 +559,9 @@ class _AgencyConversationsScreenState
     );
   }
 
-  Widget _buildEmptyState(
-    BuildContext context,
-  ) {
+  Widget _buildEmptyState(BuildContext context) {
     return GlassContainer(
-      key: const ValueKey(
-        'empty-conversations',
-      ),
+      key: const ValueKey('empty-conversations'),
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       borderRadius: 18,
@@ -672,9 +571,7 @@ class _AgencyConversationsScreenState
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(
-                alpha: 0.10,
-              ),
+              color: AppColors.primary.withValues(alpha: 0.10),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -686,20 +583,15 @@ class _AgencyConversationsScreenState
           const SizedBox(height: 16),
           Text(
             'No conversations found',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 7),
           Text(
             'No client conversation matches your current search.',
             textAlign: TextAlign.center,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
       ),
@@ -710,9 +602,7 @@ class _AgencyConversationsScreenState
     final parts = name
         .trim()
         .split(' ')
-        .where(
-          (part) => part.isNotEmpty,
-        )
+        .where((part) => part.isNotEmpty)
         .toList();
 
     if (parts.isEmpty) {
@@ -723,7 +613,6 @@ class _AgencyConversationsScreenState
       return parts.first[0].toUpperCase();
     }
 
-    return '${parts.first[0]}${parts.last[0]}'
-        .toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 }

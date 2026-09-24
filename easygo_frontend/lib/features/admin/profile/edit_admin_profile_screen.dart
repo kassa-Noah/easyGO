@@ -29,23 +29,17 @@ class EditAdminProfileScreen extends StatefulWidget {
   });
 
   @override
-  State<EditAdminProfileScreen> createState() =>
-      _EditAdminProfileScreenState();
+  State<EditAdminProfileScreen> createState() => _EditAdminProfileScreenState();
 }
 
-class _EditAdminProfileScreenState
-    extends State<EditAdminProfileScreen> {
+class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
 
-  String _t(
-    AppSettingsController settings,
-    String en,
-    String fr,
-  ) =>
+  String _t(AppSettingsController settings, String en, String fr) =>
       settings.isFrench ? fr : en;
 
   @override
@@ -106,18 +100,11 @@ class _EditAdminProfileScreenState
                         TextFormField(
                           controller: _nameController,
                           decoration: InputDecoration(
-                            labelText: _t(
-                              settings,
-                              'Full name',
-                              'Nom complet',
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.person_outline,
-                            ),
+                            labelText: _t(settings, 'Full name', 'Nom complet'),
+                            prefixIcon: const Icon(Icons.person_outline),
                           ),
                           validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return _t(
                                 settings,
                                 'Please enter the administrator name.',
@@ -136,17 +123,14 @@ class _EditAdminProfileScreenState
                             prefixIcon: Icon(Icons.email_outlined),
                           ),
                           validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return _t(
                                 settings,
                                 'Please enter an email address.',
                                 'Veuillez saisir une adresse e-mail.',
                               );
                             }
-                            final regex = RegExp(
-                              r'^[\w\.-]+@[\w\.-]+\.\w+$',
-                            );
+                            final regex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
                             if (!regex.hasMatch(value.trim())) {
                               return _t(
                                 settings,
@@ -167,13 +151,10 @@ class _EditAdminProfileScreenState
                               'Phone number',
                               'Numéro de téléphone',
                             ),
-                            prefixIcon: const Icon(
-                              Icons.phone_outlined,
-                            ),
+                            prefixIcon: const Icon(Icons.phone_outlined),
                           ),
                           validator: (value) {
-                            if (value == null ||
-                                value.trim().isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return _t(
                                 settings,
                                 'Please enter a phone number.',

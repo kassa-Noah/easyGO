@@ -12,8 +12,7 @@ class AdminChangePasswordScreen extends StatefulWidget {
       _AdminChangePasswordScreenState();
 }
 
-class _AdminChangePasswordScreenState
-    extends State<AdminChangePasswordScreen> {
+class _AdminChangePasswordScreenState extends State<AdminChangePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _currentController = TextEditingController();
   final _newController = TextEditingController();
@@ -23,11 +22,7 @@ class _AdminChangePasswordScreenState
   bool _obscureNew = true;
   bool _obscureConfirm = true;
 
-  String _t(
-    AppSettingsController settings,
-    String en,
-    String fr,
-  ) =>
+  String _t(AppSettingsController settings, String en, String fr) =>
       settings.isFrench ? fr : en;
 
   @override
@@ -38,9 +33,7 @@ class _AdminChangePasswordScreenState
     super.dispose();
   }
 
-  Future<void> _submit(
-    AppSettingsController settings,
-  ) async {
+  Future<void> _submit(AppSettingsController settings) async {
     if (!_formKey.currentState!.validate()) return;
 
     await showDialog<void>(
@@ -84,11 +77,7 @@ class _AdminChangePasswordScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _t(
-            settings,
-            'Change Password',
-            'Modifier le mot de passe',
-          ),
+          _t(settings, 'Change Password', 'Modifier le mot de passe'),
         ),
       ),
       body: SingleChildScrollView(
@@ -115,8 +104,7 @@ class _AdminChangePasswordScreenState
                             prefixIcon: const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
                               onPressed: () => setState(
-                                () => _obscureCurrent =
-                                    !_obscureCurrent,
+                                () => _obscureCurrent = !_obscureCurrent,
                               ),
                               icon: Icon(
                                 _obscureCurrent
@@ -146,13 +134,10 @@ class _AdminChangePasswordScreenState
                               'New password',
                               'Nouveau mot de passe',
                             ),
-                            prefixIcon: const Icon(
-                              Icons.password_outlined,
-                            ),
+                            prefixIcon: const Icon(Icons.password_outlined),
                             suffixIcon: IconButton(
-                              onPressed: () => setState(
-                                () => _obscureNew = !_obscureNew,
-                              ),
+                              onPressed: () =>
+                                  setState(() => _obscureNew = !_obscureNew),
                               icon: Icon(
                                 _obscureNew
                                     ? Icons.visibility_outlined
@@ -195,13 +180,10 @@ class _AdminChangePasswordScreenState
                               'Confirm new password',
                               'Confirmer le nouveau mot de passe',
                             ),
-                            prefixIcon: const Icon(
-                              Icons.password_outlined,
-                            ),
+                            prefixIcon: const Icon(Icons.password_outlined),
                             suffixIcon: IconButton(
                               onPressed: () => setState(
-                                () => _obscureConfirm =
-                                    !_obscureConfirm,
+                                () => _obscureConfirm = !_obscureConfirm,
                               ),
                               icon: Icon(
                                 _obscureConfirm
