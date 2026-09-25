@@ -98,11 +98,11 @@ class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
           : parcel.description,
       'weight': dashIfNull(parcel.weightKg),
       // Shipments are neither categorised nor priced nor billed by the platform
-      // yet, so nothing is invented for these fields.
+      // yet, so nothing is invented for these fields. There is deliberately no
+      // payment status: nothing can set one, and anything shown here would be a
+      // claim that a payment is owed.
       'serviceType': '—',
-      'amount': parcel.shipmentPrice?.round() ?? 0,
-      'paymentMethod': '—',
-      'paymentStatus': 'Unpaid',
+      'amount': parcel.shipmentPrice,
       'registeredDate': registered == null
           ? '—'
           : formatConsoleDate(registered),
@@ -533,8 +533,9 @@ class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
             children: [
               Expanded(
                 child: Text(
-                  (parcel['amount'] as int) > 0
-                      ? '${_formatPrice(parcel['amount'] as int)} FCFA'
+                  (parcel['amount'] as double?) != null
+                      ? '${_formatPrice((parcel['amount'] as double).round())} '
+                            'FCFA'
                       : 'Price not set',
                   style: Theme.of(
                     context,

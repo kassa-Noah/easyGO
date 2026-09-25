@@ -212,7 +212,7 @@ class AgencyDetailsScreen extends StatelessWidget {
         Expanded(
           child: _ActionButton(
             icon: Icons.directions_outlined,
-            label: l10n.directions,
+            label: l10n.branchLocations,
             enabled: agency.activeBranches.isNotEmpty,
             onTap: () {
               _showDirections(context);

@@ -357,58 +357,52 @@ class AgencyParcelDetailsScreen extends StatelessWidget {
     );
   }
 
+  /// Shipments are not billed by the platform, so this reports what the record
+  /// actually holds rather than a payment status.
+  ///
+  /// It used to show "Payment Method: —", "Amount: 0 FCFA" and a warning-coloured
+  /// "Unpaid", which reads as an outstanding balance a staff member should chase.
+  /// Nothing can set a shipment's price or settle one, so no payment is owed.
   Widget _buildPaymentInformation(BuildContext context) {
-    final String paymentStatus = parcel['paymentStatus'] as String;
-
-    final Color color = paymentStatus == 'Paid'
-        ? AppColors.success
-        : AppColors.warning;
+    final double? price = parcel['amount'] as double?;
 
     return _SectionCard(
-      title: 'Payment Information',
+      title: 'Billing',
       child: Column(
         children: [
           _DetailRow(
-            icon: Icons.account_balance_wallet_outlined,
-            label: 'Payment Method',
-            value: parcel['paymentMethod'] as String,
-          ),
-          const SizedBox(height: 14),
-          _DetailRow(
             icon: Icons.payments_outlined,
-            label: 'Amount',
-            value: '${_formatPrice(parcel['amount'] as int)} FCFA',
+            label: 'Shipment price',
+            value: price == null
+                ? 'Not set'
+                : '${_formatPrice(price.round())} FCFA',
           ),
           const SizedBox(height: 14),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.10),
+                  color: AppColors.primary.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(11),
                 ),
-                child: Icon(Icons.verified_outlined, color: color, size: 19),
+                child: const Icon(
+                  Icons.info_outline,
+                  color: AppColors.primary,
+                  size: 19,
+                ),
               ),
               const SizedBox(width: 11),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Payment Status',
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      paymentStatus,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: color,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'easyGO does not charge for a parcel shipment, so no payment '
+                  'is collected and no balance is outstanding. Arrange the '
+                  'carriage fee directly with the sender.',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.45),
                 ),
               ),
             ],

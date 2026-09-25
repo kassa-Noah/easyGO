@@ -141,7 +141,12 @@ class AppLocalizations {
       isFrench ? 'Agence de transport' : 'Transport Agency';
 
   String get call => isFrench ? 'Appeler' : 'Call';
-  String get directions => isFrench ? 'Itinéraire' : 'Directions';
+
+  /// Opens the list of branches with their addresses and coordinates. It does
+  /// not calculate a route, so it is not labelled "Directions".
+  String get branchLocations =>
+      isFrench ? 'Emplacements' : 'Locations';
+
   String get share => isFrench ? 'Partager' : 'Share';
   String get message => 'Message';
 
@@ -180,12 +185,6 @@ class AppLocalizations {
   String get agencyAddress =>
       isFrench ? 'Adresse de l’agence' : 'Agency Address';
 
-  String get mapPreview => isFrench ? 'Aperçu de la carte' : 'Map Preview';
-
-  String get interactiveMapLater => isFrench
-      ? 'Intégration de la carte interactive ultérieurement'
-      : 'Interactive map integration later';
-
   String approximateDistance(String distance) {
     return isFrench
         ? 'Distance approximative : $distance'
@@ -193,14 +192,6 @@ class AppLocalizations {
   }
 
   String get notAvailable => isFrench ? 'Non disponible' : 'Not available';
-
-  String get directionsProductionInfo => isFrench
-      ? 'La version de production utilisera les coordonnées de l’agence et la position de l’utilisateur pour afficher l’agence sur une carte et calculer l’itinéraire.'
-      : 'The production version will use agency coordinates and the user location to display the agency on a map and calculate directions.';
-
-  String get directionsPending => isFrench
-      ? 'Intégration de l’itinéraire en attente'
-      : 'Directions Integration Pending';
 
   String get callIntegrationInfo => isFrench
       ? 'L’appel téléphonique direct sera connecté lors de l’intégration des services externes. Le numéro réel proviendra du profil de l’agence retourné par le backend.'
