@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../messages/models/conversation.dart';
+import '../../messages/services/messaging_service.dart';
+import '../services/agency_console_service.dart';
 import 'agency_chat_screen.dart';
 
 class AgencyConversationsScreen extends StatefulWidget {
@@ -17,139 +21,64 @@ class _AgencyConversationsScreenState extends State<AgencyConversationsScreen> {
 
   String _searchQuery = '';
 
-  final List<Map<String, dynamic>> _conversations = [
-    {
-      'id': 'CONV-DEMO-001',
-      'clientName': 'John Doe',
-      'clientPhone': '+237 6 70 00 00 01',
-      'contextType': 'Booking',
-      'contextReference': 'DEMO-BOOKING-001',
-      'route': 'Yaoundé → Douala',
-      'lastMessage': 'Please, has my luggage already arrived in Douala?',
-      'lastMessageTime': '10:42',
-      'unreadCount': 2,
-      'messages': [
-        {
-          'id': 'MSG-001',
-          'sender': 'client',
-          'message':
-              'Good morning. I would like some information about my luggage.',
-          'time': '10:35',
-        },
-        {
-          'id': 'MSG-002',
-          'sender': 'agency',
-          'message': 'Good morning. Please provide your booking reference.',
-          'time': '10:37',
-        },
-        {
-          'id': 'MSG-003',
-          'sender': 'client',
-          'message': 'My booking reference is DEMO-BOOKING-001.',
-          'time': '10:39',
-        },
-        {
-          'id': 'MSG-004',
-          'sender': 'client',
-          'message': 'Please, has my luggage already arrived in Douala?',
-          'time': '10:42',
-        },
-      ],
-    },
-    {
-      'id': 'CONV-DEMO-002',
-      'clientName': 'Marie N.',
-      'clientPhone': '+237 6 70 00 00 02',
-      'contextType': 'Booking',
-      'contextReference': 'DEMO-BOOKING-002',
-      'route': 'Yaoundé → Bafoussam',
-      'lastMessage': 'Thank you. I will arrive at the agency before departure.',
-      'lastMessageTime': '09:18',
-      'unreadCount': 0,
-      'messages': [
-        {
-          'id': 'MSG-005',
-          'sender': 'client',
-          'message': 'Hello. What time should I arrive before my trip?',
-          'time': '09:10',
-        },
-        {
-          'id': 'MSG-006',
-          'sender': 'agency',
-          'message':
-              'Hello. Please arrive sufficiently before the scheduled departure so the agency can complete the required boarding procedures.',
-          'time': '09:15',
-        },
-        {
-          'id': 'MSG-007',
-          'sender': 'client',
-          'message': 'Thank you. I will arrive at the agency before departure.',
-          'time': '09:18',
-        },
-      ],
-    },
-    {
-      'id': 'CONV-DEMO-003',
-      'clientName': 'Clarisse F.',
-      'clientPhone': '+237 6 70 00 00 05',
-      'contextType': 'Parcel',
-      'contextReference': 'PAR-DEMO-003',
-      'route': 'Yaoundé → Buea',
-      'lastMessage':
-          'Can the recipient collect the parcel immediately after arrival?',
-      'lastMessageTime': 'Yesterday',
-      'unreadCount': 1,
-      'messages': [
-        {
-          'id': 'MSG-008',
-          'sender': 'client',
-          'message': 'Hello. I sent parcel PAR-DEMO-003 to Buea.',
-          'time': '16:20',
-        },
-        {
-          'id': 'MSG-009',
-          'sender': 'agency',
-          'message':
-              'Hello. We can assist you with information concerning the parcel.',
-          'time': '16:24',
-        },
-        {
-          'id': 'MSG-010',
-          'sender': 'client',
-          'message':
-              'Can the recipient collect the parcel immediately after arrival?',
-          'time': '16:28',
-        },
-      ],
-    },
-    {
-      'id': 'CONV-DEMO-004',
-      'clientName': 'Samuel T.',
-      'clientPhone': '+237 6 70 00 00 03',
-      'contextType': 'General',
-      'contextReference': '',
-      'route': '',
-      'lastMessage': 'Do you have VIP trips from Douala to Yaoundé?',
-      'lastMessageTime': 'Mon',
-      'unreadCount': 0,
-      'messages': [
-        {
-          'id': 'MSG-011',
-          'sender': 'client',
-          'message':
-              'Good afternoon. Do you have VIP trips from Douala to Yaoundé?',
-          'time': '14:05',
-        },
-        {
-          'id': 'MSG-012',
-          'sender': 'agency',
-          'message':
-              'Good afternoon. Available trips can be checked from the easyGO trip search.',
-          'time': '14:11',
-        },
-      ],
-    },
-  ];
+  final MessagingService _messaging = MessagingService.instance;
+
+  List<Map<String, dynamic>> _conversations = <Map<String, dynamic>>[];
+
+  String _agencyName = '';
+
+  bool _isLoading = true;
+
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConversations();
+  }
+
+  Future<void> _loadConversations() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final List<Conversation> conversations = await _messaging
+          .getConversations();
+
+      String agencyName = '';
+
+      try {
+        agencyName = (await AgencyConsoleService.instance.getMyAgency()).name;
+      } on ApiException {
+        // The threads are the point of this screen; the name is just a label.
+        agencyName = '';
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _conversations = conversations.map(conversationToCard).toList();
+        _agencyName = agencyName;
+        _isLoading = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
 
   @override
   void dispose() {
@@ -188,10 +117,6 @@ class _AgencyConversationsScreenState extends State<AgencyConversationsScreen> {
   }
 
   Future<void> _openConversation(Map<String, dynamic> conversation) async {
-    setState(() {
-      conversation['unreadCount'] = 0;
-    });
-
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -199,11 +124,10 @@ class _AgencyConversationsScreenState extends State<AgencyConversationsScreen> {
       ),
     );
 
-    if (!mounted) {
-      return;
+    // Opening the thread marks it read, and a reply changes its preview.
+    if (mounted) {
+      await _loadConversations();
     }
-
-    setState(() {});
   }
 
   IconData _contextIcon(String contextType) {
@@ -273,29 +197,38 @@ class _AgencyConversationsScreenState extends State<AgencyConversationsScreen> {
                     children: [
                       _buildHeader(context),
                       const SizedBox(height: 18),
-                      _buildSearchField(),
-                      const SizedBox(height: 20),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        child: conversations.isEmpty
-                            ? _buildEmptyState(context)
-                            : Column(
-                                key: ValueKey(_searchQuery),
-                                children: conversations
-                                    .map(
-                                      (conversation) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 13,
+                      if (_isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 50),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_errorMessage != null)
+                        _buildError(context)
+                      else ...[
+                        _buildSearchField(),
+                        const SizedBox(height: 20),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: conversations.isEmpty
+                              ? _buildEmptyState(context)
+                              : Column(
+                                  key: ValueKey(_searchQuery),
+                                  children: conversations
+                                      .map(
+                                        (conversation) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 13,
+                                          ),
+                                          child: _buildConversationCard(
+                                            context,
+                                            conversation,
+                                          ),
                                         ),
-                                        child: _buildConversationCard(
-                                          context,
-                                          conversation,
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                      ),
+                                      )
+                                      .toList(),
+                                ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -336,8 +269,9 @@ class _AgencyConversationsScreenState extends State<AgencyConversationsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'General Express • '
-                  '${_conversations.length} conversations',
+                  _agencyName.isEmpty
+                      ? '${_conversations.length} conversations'
+                      : '$_agencyName • ${_conversations.length} conversations',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -592,6 +526,40 @@ class _AgencyConversationsScreenState extends State<AgencyConversationsScreen> {
             'No client conversation matches your current search.',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(24),
+      borderRadius: 20,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+            color: AppColors.primary,
+            size: 38,
+          ),
+          const SizedBox(height: 14),
+          Text(
+            'Unable to load conversations',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            _errorMessage!,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: _loadConversations,
+            child: const Text('Retry'),
           ),
         ],
       ),

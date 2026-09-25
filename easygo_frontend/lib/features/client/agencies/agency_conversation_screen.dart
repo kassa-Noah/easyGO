@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../messages/models/conversation.dart';
+import '../../messages/services/messaging_service.dart';
 
 class AgencyConversationScreen extends StatefulWidget {
   final Map<String, dynamic> agency;
@@ -19,30 +22,88 @@ class _AgencyConversationScreenState extends State<AgencyConversationScreen> {
 
   final ScrollController _scrollController = ScrollController();
 
-  final List<Map<String, dynamic>> _messages = [];
+  final MessagingService _messaging = MessagingService.instance;
 
-  bool _demoMessagesCreated = false;
+  List<Map<String, dynamic>> _messages = <Map<String, dynamic>>[];
+
+  /// Set once a thread exists; null until the first message is sent.
+  String? _conversationId;
+
+  bool _isLoading = true;
+
+  bool _isSending = false;
+
+  String? _errorMessage;
 
   String get _agencyName =>
       widget.agency['name']?.toString() ?? 'Transport Agency';
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  String get _agencyId => widget.agency['id']?.toString() ?? '';
 
-    if (_demoMessagesCreated) {
+  @override
+  void initState() {
+    super.initState();
+    _loadThread();
+  }
+
+  /// Finds this customer's existing thread with this agency, so the history is
+  /// visible before anything new is written.
+  Future<void> _loadThread() async {
+    if (!mounted) {
       return;
     }
 
-    final l10n = AppLocalizations.of(context);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    _messages.addAll([
-      {'sender': 'agency', 'message': l10n.demoAgencyGreeting, 'time': '09:10'},
-      {'sender': 'client', 'message': l10n.demoClientQuestion, 'time': '09:12'},
-      {'sender': 'agency', 'message': l10n.demoAgencyResponse, 'time': '09:14'},
-    ]);
+    try {
+      final List<Conversation> conversations = await _messaging
+          .getConversations();
 
-    _demoMessagesCreated = true;
+      if (!mounted) {
+        return;
+      }
+
+      Conversation? thread;
+
+      for (final Conversation conversation in conversations) {
+        if (conversation.agencyId == _agencyId) {
+          thread = conversation;
+          break;
+        }
+      }
+
+      setState(() {
+        _conversationId = thread?.id;
+        _messages = thread == null
+            ? <Map<String, dynamic>>[]
+            : _messagesFromCard(conversationToCard(thread));
+        _isLoading = false;
+      });
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> _messagesFromCard(Map<String, dynamic> card) {
+    final List<dynamic> source = card['messages'] as List<dynamic>? ?? [];
+
+    return source
+        .map((dynamic message) => Map<String, dynamic>.from(message as Map))
+        .toList();
   }
 
   @override
@@ -53,40 +114,72 @@ class _AgencyConversationScreenState extends State<AgencyConversationScreen> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     final String message = _messageController.text.trim();
 
-    if (message.isEmpty) {
+    if (message.isEmpty || _isSending) {
       return;
     }
 
-    final DateTime now = DateTime.now();
-
-    final String hour = now.hour.toString().padLeft(2, '0');
-
-    final String minute = now.minute.toString().padLeft(2, '0');
-
     setState(() {
-      _messages.add({
-        'sender': 'client',
-        'message': message,
-        'time': '$hour:$minute',
-      });
+      _isSending = true;
     });
 
-    _messageController.clear();
+    try {
+      final Conversation conversation;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) {
+      if (_conversationId == null) {
+        conversation = await _messaging.startConversation(
+          agencyId: _agencyId,
+          message: message,
+        );
+      } else {
+        conversation = await _messaging.sendMessage(
+          conversationId: _conversationId!,
+          body: message,
+        );
+      }
+
+      if (!mounted) {
         return;
       }
 
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOut,
-      );
-    });
+      setState(() {
+        _conversationId = conversation.id;
+        _messages = _messagesFromCard(conversationToCard(conversation));
+        _isSending = false;
+      });
+
+      _messageController.clear();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSending = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    }
+  }
+
+  void _scrollToBottom() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -137,53 +230,108 @@ class _AgencyConversationScreenState extends State<AgencyConversationScreen> {
         decoration: BoxDecoration(gradient: _backgroundGradient(context)),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: GlassContainer(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      size: 18,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+            if (_isLoading)
+              const Expanded(
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_errorMessage != null)
+              Expanded(child: _buildError(context))
+            else ...[
+              Expanded(
+                child: _messages.isEmpty
+                    ? _buildEmptyState(context, l10n)
+                    : ListView.builder(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message = _messages[index];
 
-                    const SizedBox(width: 9),
-
-                    Expanded(
-                      child: Text(
-                        l10n.agencyMessagingDemoInfo,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: 10,
-                          height: 1.4,
-                        ),
+                          return _MessageBubble(
+                            message: message['message'].toString(),
+                            time: message['time'].toString(),
+                            isClient: message['sender'] == 'client',
+                          );
+                        },
                       ),
-                    ),
-                  ],
-                ),
               ),
+
+              _buildComposer(l10n),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.forum_outlined,
+              size: 44,
+              color: Theme.of(context).colorScheme.primary,
             ),
 
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final message = _messages[index];
+            const SizedBox(height: 14),
 
-                  return _MessageBubble(
-                    message: message['message'].toString(),
-                    time: message['time'].toString(),
-                    isClient: message['sender'] == 'client',
-                  );
-                },
-              ),
+            Text(
+              l10n.messageAgency,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
 
-            _buildComposer(l10n),
+            const SizedBox(height: 8),
+
+            Text(
+              'Send $_agencyName a message and it will appear here.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_outlined,
+              size: 40,
+              color: AppColors.primary,
+            ),
+
+            const SizedBox(height: 14),
+
+            Text(
+              'Unable to load this conversation',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+
+            const SizedBox(height: 14),
+
+            TextButton(onPressed: _loadThread, child: const Text('Retry')),
           ],
         ),
       ),

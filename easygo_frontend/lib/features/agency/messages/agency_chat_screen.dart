@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../messages/models/conversation.dart';
+import '../../messages/services/messaging_service.dart';
 
 class AgencyChatScreen extends StatefulWidget {
   const AgencyChatScreen({super.key, required this.conversation});
@@ -16,6 +19,8 @@ class _AgencyChatScreenState extends State<AgencyChatScreen> {
   final TextEditingController _messageController = TextEditingController();
 
   final ScrollController _scrollController = ScrollController();
+
+  final MessagingService _messaging = MessagingService.instance;
 
   late List<Map<String, dynamic>> _messages;
 
@@ -35,6 +40,23 @@ class _AgencyChatScreenState extends State<AgencyChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
+
+    // Opening the thread is what marks the client's messages as read.
+    _markRead();
+  }
+
+  Future<void> _markRead() async {
+    final String? conversationId = widget.conversation['id'] as String?;
+
+    if (conversationId == null || conversationId.isEmpty) {
+      return;
+    }
+
+    try {
+      await _messaging.markAsRead(conversationId);
+    } on ApiException {
+      // Reading the thread is not worth interrupting the conversation over.
+    }
   }
 
   @override
@@ -55,16 +77,6 @@ class _AgencyChatScreenState extends State<AgencyChatScreen> {
 
   String get _route => widget.conversation['route'] as String;
 
-  String _currentTime() {
-    final DateTime now = DateTime.now();
-
-    final String hour = now.hour.toString().padLeft(2, '0');
-
-    final String minute = now.minute.toString().padLeft(2, '0');
-
-    return '$hour:$minute';
-  }
-
   Future<void> _sendMessage() async {
     final String text = _messageController.text.trim();
 
@@ -72,41 +84,63 @@ class _AgencyChatScreenState extends State<AgencyChatScreen> {
       return;
     }
 
+    final String? conversationId = widget.conversation['id'] as String?;
+
+    if (conversationId == null || conversationId.isEmpty) {
+      _showError('This conversation cannot be replied to.');
+      return;
+    }
+
     setState(() {
       _isSending = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 350));
+    try {
+      final Conversation updated = await _messaging.sendMessage(
+        conversationId: conversationId,
+        body: text,
+      );
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      final Map<String, dynamic> card = conversationToCard(updated);
+
+      setState(() {
+        _messages = (card['messages'] as List<dynamic>)
+            .map((message) => Map<String, dynamic>.from(message as Map))
+            .toList();
+        _isSending = false;
+
+        widget.conversation['messages'] = card['messages'];
+        widget.conversation['lastMessage'] = card['lastMessage'];
+        widget.conversation['lastMessageTime'] = card['lastMessageTime'];
+        widget.conversation['unreadCount'] = card['unreadCount'];
+      });
+
+      _messageController.clear();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSending = false;
+      });
+
+      _showError(error.message);
     }
+  }
 
-    final Map<String, dynamic> message = {
-      'id': 'MSG-LOCAL-${DateTime.now().millisecondsSinceEpoch}',
-      'sender': 'agency',
-      'message': text,
-      'time': _currentTime(),
-    };
-
-    setState(() {
-      _messages.add(message);
-      _isSending = false;
-
-      widget.conversation['messages'] = _messages;
-
-      widget.conversation['lastMessage'] = text;
-
-      widget.conversation['lastMessageTime'] = _currentTime();
-
-      widget.conversation['unreadCount'] = 0;
-    });
-
-    _messageController.clear();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
-    });
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void _scrollToBottom() {
