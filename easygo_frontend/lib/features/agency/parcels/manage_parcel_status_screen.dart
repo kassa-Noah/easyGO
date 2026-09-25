@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 
 class ManageParcelStatusScreen extends StatefulWidget {
   const ManageParcelStatusScreen({super.key, required this.parcel});
@@ -14,15 +17,9 @@ class ManageParcelStatusScreen extends StatefulWidget {
 }
 
 class _ManageParcelStatusScreenState extends State<ManageParcelStatusScreen> {
-  static const List<String> _statuses = [
-    'Registered',
-    'Received by Agency',
-    'Loaded',
-    'In Transit',
-    'Arrived',
-    'Ready for Collection',
-    'Delivered',
-  ];
+  static const List<String> _statuses = parcelLifecycle;
+
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
 
   late String _currentStatus;
   bool _isSaving = false;
@@ -145,10 +142,10 @@ class _ManageParcelStatusScreenState extends State<ManageParcelStatusScreen> {
           title: const Text('Confirm Parcel Update'),
           content: Text(
             'Advance parcel '
-            '${widget.parcel['id']} from '
-            '$_currentStatus to $next?\n\n'
-            'The current prototype requires parcel '
-            'tracking stages to progress sequentially.',
+            '${widget.parcel['trackingNumber'] ?? widget.parcel['id']} '
+            'from $_currentStatus to $next?\n\n'
+            'Tracking stages cannot be skipped or '
+            'moved backward in the current lifecycle.',
           ),
           actions: [
             TextButton(
@@ -176,39 +173,65 @@ class _ManageParcelStatusScreenState extends State<ManageParcelStatusScreen> {
       _isSaving = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    final String trackingNumber =
+        widget.parcel['trackingNumber']?.toString() ??
+        widget.parcel['id'].toString();
 
-    if (!mounted) {
-      return;
+    try {
+      await _console.updateParcelStatus(
+        parcelId: widget.parcel['id'] as String,
+        status: parcelStatusToApi(next),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+        _currentStatus = next;
+      });
+
+      await _showResult(
+        title: 'Tracking Status Updated',
+        message:
+            'Parcel $trackingNumber is now recorded as "$next". '
+            'The new tracking event is visible to the sender.',
+        isError: false,
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      await _showResult(
+        title: 'Update Failed',
+        message: error.message,
+        isError: true,
+      );
     }
-
-    setState(() {
-      _isSaving = false;
-      _currentStatus = next;
-    });
-
-    await _showDemoResult(next);
   }
 
-  Future<void> _showDemoResult(String status) async {
+  Future<void> _showResult({
+    required String title,
+    required String message,
+    required bool isError,
+  }) async {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          icon: const Icon(
-            Icons.check_circle_outline,
-            color: AppColors.success,
+          icon: Icon(
+            isError ? Icons.error_outline : Icons.check_circle_outline,
+            color: isError ? AppColors.error : AppColors.success,
             size: 38,
           ),
-          title: const Text('Parcel Status Validated'),
-          content: Text(
-            'The parcel status change to '
-            '$status has been simulated '
-            'successfully on this screen.\n\n'
-            'No database record has been updated. '
-            'The backend will authorize and persist '
-            'the real parcel tracking event.',
-          ),
+          title: Text(title),
+          content: Text(message),
           actions: [
             FilledButton(
               onPressed: () {

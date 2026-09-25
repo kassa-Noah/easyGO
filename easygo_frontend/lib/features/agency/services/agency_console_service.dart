@@ -82,6 +82,43 @@ class AgencyConsoleService {
     return ConsoleBooking.fromJson(_extractData(response));
   }
 
+  /// Advances a piece of luggage along its operational status. The
+  /// backend records a tracking event and computes the progress.
+  Future<void> updateLuggageStatus({
+    required String luggageId,
+    required String status,
+    String? location,
+    String? description,
+  }) async {
+    await _apiClient.patch(
+      '/luggage/$luggageId/status',
+      authenticated: true,
+      body: {
+        'status': status,
+        'location': ?location,
+        'description': ?description,
+      },
+    );
+  }
+
+  /// Advances a parcel along its operational status.
+  Future<void> updateParcelStatus({
+    required String parcelId,
+    required String status,
+    String? location,
+    String? description,
+  }) async {
+    await _apiClient.patch(
+      '/parcels/$parcelId/status',
+      authenticated: true,
+      body: {
+        'status': status,
+        'location': ?location,
+        'description': ?description,
+      },
+    );
+  }
+
   Map<String, dynamic> _extractData(dynamic response) {
     if (response is! Map) {
       throw const ApiException(

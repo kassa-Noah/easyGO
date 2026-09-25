@@ -369,7 +369,11 @@ class ConsoleLuggage {
   final String status;
   final int progressPercentage;
   final String passengerName;
+  final String? passengerPhone;
   final String? bookingReference;
+  final String? ticketNumber;
+  final String? tripId;
+  final DateTime? departureTime;
   final String originCity;
   final String destinationCity;
   final List<TrackingEvent> trackingEvents;
@@ -382,7 +386,11 @@ class ConsoleLuggage {
     required this.status,
     required this.progressPercentage,
     required this.passengerName,
+    required this.passengerPhone,
     required this.bookingReference,
+    required this.ticketNumber,
+    required this.tripId,
+    required this.departureTime,
     required this.originCity,
     required this.destinationCity,
     required this.trackingEvents,
@@ -395,6 +403,10 @@ class ConsoleLuggage {
 
     final Map<String, dynamic>? route = _toMap(trip?['route']);
 
+    final Map<String, dynamic>? user = _toMap(booking?['user']);
+
+    final Map<String, dynamic>? ticket = _toMap(booking?['ticket']);
+
     return ConsoleLuggage(
       id: json['id']?.toString() ?? '',
       trackingNumber: json['trackingNumber']?.toString() ?? '',
@@ -402,8 +414,12 @@ class ConsoleLuggage {
       weightKg: _toNullableDouble(json['weightKg']),
       status: json['status']?.toString() ?? '',
       progressPercentage: _toInt(json['progressPercentage']),
-      passengerName: _fullName(_toMap(booking?['user'])),
+      passengerName: _fullName(user),
+      passengerPhone: _toNullableString(user?['phone']),
       bookingReference: _toNullableString(booking?['bookingReference']),
+      ticketNumber: _toNullableString(ticket?['ticketNumber']),
+      tripId: _toNullableString(booking?['tripId']),
+      departureTime: _toNullableDateTime(trip?['departureTime']),
       originCity:
           _toMap(route?['originBranch'])?['city']?.toString() ?? '',
       destinationCity:
@@ -414,7 +430,7 @@ class ConsoleLuggage {
 
   String get routeLabel => '$originCity → $destinationCity';
 
-  String get statusLabel => formatTrackingStatus(status);
+  String get statusLabel => luggageStatusLabel(status);
 }
 
 /// A parcel as presented in the agency console.
@@ -428,6 +444,9 @@ class ConsoleParcel {
   final String status;
   final int progressPercentage;
   final String senderName;
+  final String? senderPhone;
+  final double? shipmentPrice;
+  final DateTime? registeredAt;
   final String originCity;
   final String destinationCity;
   final List<TrackingEvent> trackingEvents;
@@ -442,6 +461,9 @@ class ConsoleParcel {
     required this.status,
     required this.progressPercentage,
     required this.senderName,
+    required this.senderPhone,
+    required this.shipmentPrice,
+    required this.registeredAt,
     required this.originCity,
     required this.destinationCity,
     required this.trackingEvents,
@@ -454,6 +476,8 @@ class ConsoleParcel {
       json['destinationBranch'],
     );
 
+    final Map<String, dynamic>? sender = _toMap(json['sender']);
+
     return ConsoleParcel(
       id: json['id']?.toString() ?? '',
       trackingNumber: json['trackingNumber']?.toString() ?? '',
@@ -463,7 +487,10 @@ class ConsoleParcel {
       recipientPhone: json['recipientPhone']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
       progressPercentage: _toInt(json['progressPercentage']),
-      senderName: _fullName(_toMap(json['sender'])),
+      senderName: _fullName(sender),
+      senderPhone: _toNullableString(sender?['phone']),
+      shipmentPrice: _toNullableDouble(json['shipmentPrice']),
+      registeredAt: _toNullableDateTime(json['createdAt']),
       originCity: originBranch?['city']?.toString() ?? '',
       destinationCity: destinationBranch?['city']?.toString() ?? '',
       trackingEvents: _toEvents(json['trackingEvents']),
@@ -472,7 +499,7 @@ class ConsoleParcel {
 
   String get routeLabel => '$originCity → $destinationCity';
 
-  String get statusLabel => formatTrackingStatus(status);
+  String get statusLabel => parcelStatusLabel(status);
 }
 
 class AgencyDashboard {
@@ -557,3 +584,131 @@ List<T> _toList<T>(
 
   return result;
 }
+
+/// Display label used by the agency tracking screens for each backend status.
+///
+/// The screens group and filter on human labels ("Arrived", "Received by
+/// Agency") while the API stores enum values ("ARRIVED_AT_DESTINATION_AGENCY",
+/// "RECEIVED_AT_AGENCY"), so both directions are needed. The order below is the
+/// operational lifecycle: a status may only advance to the next entry.
+const List<String> luggageLifecycle = <String>[
+  'Registered',
+  'Received by Agency',
+  'Loaded',
+  'In Transit',
+  'Arrived',
+  'Ready for Collection',
+  'Delivered',
+];
+
+/// Parcels share the luggage wording except for the first legacy hand-over,
+/// which the API records as `RECEIVED_AT_ORIGIN_AGENCY`.
+const List<String> parcelLifecycle = <String>[
+  'Registered',
+  'Received by Agency',
+  'Loaded',
+  'In Transit',
+  'Arrived',
+  'Ready for Collection',
+  'Delivered',
+];
+
+const Map<String, String> _luggageLabelsToApi = <String, String>{
+  'Registered': 'REGISTERED',
+  'Received by Agency': 'RECEIVED_AT_AGENCY',
+  'Loaded': 'LOADED',
+  'In Transit': 'IN_TRANSIT',
+  'Arrived': 'ARRIVED_AT_DESTINATION_AGENCY',
+  'Ready for Collection': 'READY_FOR_COLLECTION',
+  'Delivered': 'DELIVERED',
+  'Lost': 'LOST',
+};
+
+const Map<String, String> _parcelLabelsToApi = <String, String>{
+  'Registered': 'REGISTERED',
+  'Received by Agency': 'RECEIVED_AT_ORIGIN_AGENCY',
+  'Loaded': 'LOADED',
+  'In Transit': 'IN_TRANSIT',
+  'Arrived': 'ARRIVED_AT_DESTINATION_AGENCY',
+  'Ready for Collection': 'READY_FOR_COLLECTION',
+  'Collected': 'COLLECTED',
+  'Delivered': 'DELIVERED',
+  'Lost': 'LOST',
+  'Cancelled': 'CANCELLED',
+};
+
+String _labelFor(Map<String, String> labelsToApi, String apiStatus) {
+  for (final MapEntry<String, String> entry in labelsToApi.entries) {
+    if (entry.value == apiStatus) {
+      return entry.key;
+    }
+  }
+
+  return formatTrackingStatus(apiStatus);
+}
+
+/// Converts an agency screen label into the value the API expects.
+String luggageStatusToApi(String label) =>
+    _luggageLabelsToApi[label] ?? label;
+
+/// Converts a luggage enum value returned by the API into a screen label.
+String luggageStatusLabel(String apiStatus) =>
+    _labelFor(_luggageLabelsToApi, apiStatus);
+
+/// Converts an agency screen label into the value the API expects.
+String parcelStatusToApi(String label) => _parcelLabelsToApi[label] ?? label;
+
+/// Converts a parcel enum value returned by the API into a screen label.
+String parcelStatusLabel(String apiStatus) =>
+    _labelFor(_parcelLabelsToApi, apiStatus);
+
+/// The label that follows [label] in the lifecycle, or `null` at the end.
+String? nextLuggageStatus(String label) => _nextIn(luggageLifecycle, label);
+
+/// The label that follows [label] in the lifecycle, or `null` at the end.
+String? nextParcelStatus(String label) => _nextIn(parcelLifecycle, label);
+
+String? _nextIn(List<String> lifecycle, String label) {
+  final int index = lifecycle.indexOf(label);
+
+  if (index < 0 || index >= lifecycle.length - 1) {
+    return null;
+  }
+
+  return lifecycle[index + 1];
+}
+
+/// Optional console fields are frequently absent, so render a dash rather than
+/// leaving a row value visually empty.
+String dashIfEmpty(String? value) =>
+    (value == null || value.isEmpty) ? '—' : value;
+
+/// Renders a number the way the agency screens display it, or a dash when the
+/// platform has no value for the field yet.
+String dashIfNull(num? value) =>
+    value == null ? '—' : value.toStringAsFixed(1);
+
+const List<String> _monthAbbreviations = <String>[
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+/// Formats a tracking date as the agency screens display it (e.g. `10 Oct 2026`).
+String formatConsoleDate(DateTime value) =>
+    '${value.day.toString().padLeft(2, '0')} '
+    '${_monthAbbreviations[value.month - 1]} ${value.year}';
+
+/// Formats a time of day as `HH:mm`.
+String formatConsoleTime(DateTime value) =>
+    '${value.hour.toString().padLeft(2, '0')}:'
+    '${value.minute.toString().padLeft(2, '0')}';

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 import 'agency_luggage_details_screen.dart';
 
 class AgencyLuggageScreen extends StatefulWidget {
@@ -14,96 +17,133 @@ class AgencyLuggageScreen extends StatefulWidget {
 class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
   static const String _all = 'All';
 
-  static const List<String> _filters = [
-    _all,
-    'Registered',
-    'Received by Agency',
-    'Loaded',
-    'In Transit',
-    'Arrived',
-    'Ready for Collection',
-    'Delivered',
-  ];
+  static const List<String> _filters = [_all, ...luggageLifecycle];
+
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
 
   String _selectedFilter = _all;
 
-  static const List<Map<String, dynamic>> _luggageItems = [
-    {
-      'id': 'LUG-DEMO-001',
-      'bookingReference': 'DEMO-BOOKING-001',
-      'ticketReference': 'DEMO-TICKET-001',
-      'clientName': 'John Doe',
-      'clientPhone': '+237 6 70 00 00 01',
-      'tripId': 'TRIP-DEMO-001',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'travelDate': '20 Sep 2026',
-      'departureTime': '07:00',
-      'description': 'Traveler suitcase',
-      'weight': 18,
-      'status': 'In Transit',
-    },
-    {
-      'id': 'LUG-DEMO-002',
-      'bookingReference': 'DEMO-BOOKING-002',
-      'ticketReference': 'DEMO-TICKET-002',
-      'clientName': 'Marie N.',
-      'clientPhone': '+237 6 70 00 00 02',
-      'tripId': 'TRIP-DEMO-002',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'travelDate': '25 Sep 2026',
-      'departureTime': '09:30',
-      'description': 'Medium blue travel bag',
-      'weight': 12,
-      'status': 'Received by Agency',
-    },
-    {
-      'id': 'LUG-DEMO-003',
-      'bookingReference': 'DEMO-BOOKING-002',
-      'ticketReference': 'DEMO-TICKET-002',
-      'clientName': 'Marie N.',
-      'clientPhone': '+237 6 70 00 00 02',
-      'tripId': 'TRIP-DEMO-002',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'travelDate': '25 Sep 2026',
-      'departureTime': '09:30',
-      'description': 'Traveler suitcase',
-      'weight': 15,
-      'status': 'Received by Agency',
-    },
-    {
-      'id': 'LUG-DEMO-004',
-      'bookingReference': 'DEMO-BOOKING-003',
-      'ticketReference': 'DEMO-TICKET-003',
-      'clientName': 'Samuel T.',
-      'clientPhone': '+237 6 70 00 00 03',
-      'tripId': 'TRIP-DEMO-003',
-      'departureCity': 'Douala',
-      'destinationCity': 'Yaoundé',
-      'travelDate': '04 Aug 2026',
-      'departureTime': '08:00',
-      'description': 'Traveler suitcase',
-      'weight': 16,
-      'status': 'Delivered',
-    },
-    {
-      'id': 'LUG-DEMO-005',
-      'bookingReference': 'DEMO-BOOKING-005',
-      'ticketReference': 'DEMO-TICKET-005',
-      'clientName': 'Clarisse F.',
-      'clientPhone': '+237 6 70 00 00 05',
-      'tripId': 'TRIP-DEMO-001',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'travelDate': '20 Sep 2026',
-      'departureTime': '07:00',
-      'description': 'Black cabin bag',
-      'weight': 9,
-      'status': 'Loaded',
-    },
-  ];
+  List<Map<String, dynamic>> _luggageItems = <Map<String, dynamic>>[];
+  bool _isLoading = true;
+  String? _errorMessage;
+  String? _agencyName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLuggage();
+  }
+
+  Future<void> _loadLuggage() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final List<ConsoleLuggage> luggage = await _console.getLuggage();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _luggageItems = luggage.map(_toCard).toList();
+        _isLoading = false;
+      });
+
+      await _loadAgencyName();
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// The signed-in agency name is decorative, so a failure is not surfaced.
+  Future<void> _loadAgencyName() async {
+    try {
+      final StaffAgencyProfile agency = await _console.getMyAgency();
+
+      if (mounted) {
+        setState(() => _agencyName = agency.name);
+      }
+    } on ApiException {
+      // Keep the generic heading when the profile cannot be read.
+    }
+  }
+
+  /// Projects a console luggage record onto the keys the cards render.
+  Map<String, dynamic> _toCard(ConsoleLuggage luggage) {
+    final DateTime? departure = luggage.departureTime;
+
+    return <String, dynamic>{
+      'id': luggage.id,
+      'bookingReference': dashIfEmpty(luggage.bookingReference),
+      'ticketReference': dashIfEmpty(luggage.ticketNumber),
+      'clientName': dashIfEmpty(luggage.passengerName),
+      'clientPhone': dashIfEmpty(luggage.passengerPhone),
+      'tripId': dashIfEmpty(luggage.tripId),
+      'departureCity': luggage.originCity,
+      'destinationCity': luggage.destinationCity,
+      'travelDate': departure == null ? '—' : formatConsoleDate(departure),
+      'departureTime': departure == null ? '—' : formatConsoleTime(departure),
+      'description': dashIfEmpty(luggage.description ?? luggage.trackingNumber),
+      'trackingNumber': luggage.trackingNumber,
+      'weight': dashIfNull(luggage.weightKg),
+      'status': luggage.statusLabel,
+    };
+  }
+
+  Future<void> _openDetails(Map<String, dynamic> luggage) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AgencyLuggageDetailsScreen(luggage: luggage),
+      ),
+    );
+
+    // The details screen can advance the tracking status.
+    if (mounted) {
+      await _loadLuggage();
+    }
+  }
+
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      borderRadius: 18,
+      child: Column(
+        children: [
+          Icon(
+            Icons.cloud_off_outlined,
+            color: AppColors.error,
+            size: 34,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage ?? 'Unable to load luggage.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 14),
+          TextButton.icon(
+            onPressed: _loadLuggage,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Try again'),
+          ),
+        ],
+      ),
+    );
+  }
 
   List<Map<String, dynamic>> get _filteredItems {
     if (_selectedFilter == _all) {
@@ -113,15 +153,6 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
     return _luggageItems
         .where((item) => item['status'] == _selectedFilter)
         .toList();
-  }
-
-  void _openDetails(Map<String, dynamic> luggage) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AgencyLuggageDetailsScreen(luggage: luggage),
-      ),
-    );
   }
 
   Color _statusColor(String status) {
@@ -211,26 +242,38 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
                     children: [
                       _buildSummary(context),
                       const SizedBox(height: 20),
-                      _buildFilters(),
-                      const SizedBox(height: 20),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        child: items.isEmpty
-                            ? _buildEmptyState(context)
-                            : Column(
-                                key: ValueKey(_selectedFilter),
-                                children: items
-                                    .map(
-                                      (item) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 14,
+                      if (_isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_errorMessage != null)
+                        _buildError(context)
+                      else ...[
+                        _buildFilters(),
+                        const SizedBox(height: 20),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: items.isEmpty
+                              ? _buildEmptyState(context)
+                              : Column(
+                                  key: ValueKey(_selectedFilter),
+                                  children: items
+                                      .map(
+                                        (item) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 14,
+                                          ),
+                                          child: _buildLuggageCard(
+                                            context,
+                                            item,
+                                          ),
                                         ),
-                                        child: _buildLuggageCard(context, item),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                      ),
+                                      )
+                                      .toList(),
+                                ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -285,8 +328,10 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'General Express • '
-                      '${_luggageItems.length} items',
+                      _agencyName == null
+                          ? '${_luggageItems.length} items'
+                          : '$_agencyName • '
+                                '${_luggageItems.length} items',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],

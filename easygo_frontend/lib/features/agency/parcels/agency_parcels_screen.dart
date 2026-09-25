@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 import 'agency_parcel_details_screen.dart';
 
 class AgencyParcelsScreen extends StatefulWidget {
@@ -14,106 +17,127 @@ class AgencyParcelsScreen extends StatefulWidget {
 class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
   static const String _all = 'All';
 
-  static const List<String> _filters = [
-    _all,
-    'Registered',
-    'Received by Agency',
-    'Loaded',
-    'In Transit',
-    'Arrived',
-    'Ready for Collection',
-    'Delivered',
-  ];
+  static const List<String> _filters = [_all, ...parcelLifecycle];
+
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
 
   String _selectedFilter = _all;
 
-  static const List<Map<String, dynamic>> _parcels = [
-    {
-      'id': 'PAR-DEMO-001',
-      'senderName': 'John Doe',
-      'senderPhone': '+237 6 70 00 00 01',
-      'recipientName': 'Michael N.',
-      'recipientPhone': '+237 6 70 00 00 11',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'description': 'Clothes and personal items',
-      'weight': 6,
-      'serviceType': 'Standard Parcel',
-      'amount': 3500,
-      'paymentMethod': 'MTN Mobile Money',
-      'paymentStatus': 'Paid',
-      'registeredDate': '20 Sep 2026',
-      'status': 'In Transit',
-    },
-    {
-      'id': 'PAR-DEMO-002',
-      'senderName': 'Marie N.',
-      'senderPhone': '+237 6 70 00 00 02',
-      'recipientName': 'Brice K.',
-      'recipientPhone': '+237 6 70 00 00 12',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'description': 'Books and documents',
-      'weight': 4,
-      'serviceType': 'Standard Parcel',
-      'amount': 3000,
-      'paymentMethod': 'Orange Money',
-      'paymentStatus': 'Paid',
-      'registeredDate': '21 Sep 2026',
-      'status': 'Received by Agency',
-    },
-    {
-      'id': 'PAR-DEMO-003',
-      'senderName': 'Clarisse F.',
-      'senderPhone': '+237 6 70 00 00 05',
-      'recipientName': 'Paul M.',
-      'recipientPhone': '+237 6 70 00 00 13',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Buea',
-      'description': 'Small household package',
-      'weight': 8,
-      'serviceType': 'Standard Parcel',
-      'amount': 4500,
-      'paymentMethod': 'MTN Mobile Money',
-      'paymentStatus': 'Paid',
-      'registeredDate': '22 Sep 2026',
-      'status': 'Loaded',
-    },
-    {
-      'id': 'PAR-DEMO-004',
-      'senderName': 'Samuel T.',
-      'senderPhone': '+237 6 70 00 00 03',
-      'recipientName': 'Alice E.',
-      'recipientPhone': '+237 6 70 00 00 14',
-      'departureCity': 'Douala',
-      'destinationCity': 'Yaoundé',
-      'description': 'Personal effects',
-      'weight': 5,
-      'serviceType': 'Standard Parcel',
-      'amount': 3500,
-      'paymentMethod': 'Orange Money',
-      'paymentStatus': 'Paid',
-      'registeredDate': '04 Aug 2026',
-      'status': 'Delivered',
-    },
-    {
-      'id': 'PAR-DEMO-005',
-      'senderName': 'Grace M.',
-      'senderPhone': '+237 6 70 00 00 04',
-      'recipientName': 'Kevin A.',
-      'recipientPhone': '+237 6 70 00 00 15',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Limbe',
-      'description': 'Shoes and accessories',
-      'weight': 3,
-      'serviceType': 'Standard Parcel',
-      'amount': 3000,
-      'paymentMethod': 'MTN Mobile Money',
-      'paymentStatus': 'Paid',
-      'registeredDate': '23 Sep 2026',
-      'status': 'Registered',
-    },
-  ];
+  List<Map<String, dynamic>> _parcels = <Map<String, dynamic>>[];
+  bool _isLoading = true;
+  String? _errorMessage;
+  String? _agencyName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadParcels();
+  }
+
+  Future<void> _loadParcels() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final List<ConsoleParcel> parcels = await _console.getParcels();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _parcels = parcels.map(_toCard).toList();
+        _isLoading = false;
+      });
+
+      await _loadAgencyName();
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// The signed-in agency name is decorative, so a failure is not surfaced.
+  Future<void> _loadAgencyName() async {
+    try {
+      final StaffAgencyProfile agency = await _console.getMyAgency();
+
+      if (mounted) {
+        setState(() => _agencyName = agency.name);
+      }
+    } on ApiException {
+      // Keep the generic heading when the profile cannot be read.
+    }
+  }
+
+  /// Projects a console parcel record onto the keys the cards render.
+  Map<String, dynamic> _toCard(ConsoleParcel parcel) {
+    final DateTime? registered = parcel.registeredAt;
+
+    return <String, dynamic>{
+      'id': parcel.id,
+      'trackingNumber': parcel.trackingNumber,
+      'senderName': dashIfEmpty(parcel.senderName),
+      'senderPhone': dashIfEmpty(parcel.senderPhone),
+      'recipientName': dashIfEmpty(parcel.recipientName),
+      'recipientPhone': dashIfEmpty(parcel.recipientPhone),
+      'departureCity': parcel.originCity,
+      'destinationCity': parcel.destinationCity,
+      'description': parcel.description.isEmpty
+          ? parcel.trackingNumber
+          : parcel.description,
+      'weight': dashIfNull(parcel.weightKg),
+      // Shipments are neither categorised nor priced nor billed by the platform
+      // yet, so nothing is invented for these fields.
+      'serviceType': '—',
+      'amount': parcel.shipmentPrice?.round() ?? 0,
+      'paymentMethod': '—',
+      'paymentStatus': 'Unpaid',
+      'registeredDate': registered == null
+          ? '—'
+          : formatConsoleDate(registered),
+      'status': parcel.statusLabel,
+    };
+  }
+
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      borderRadius: 18,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+            color: AppColors.error,
+            size: 34,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage ?? 'Unable to load parcels.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 14),
+          TextButton.icon(
+            onPressed: _loadParcels,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Try again'),
+          ),
+        ],
+      ),
+    );
+  }
 
   List<Map<String, dynamic>> get _filteredParcels {
     if (_selectedFilter == _all) {
@@ -174,13 +198,18 @@ class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
     }
   }
 
-  void _openParcelDetails(Map<String, dynamic> parcel) {
-    Navigator.push(
+  Future<void> _openParcelDetails(Map<String, dynamic> parcel) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AgencyParcelDetailsScreen(parcel: parcel),
       ),
     );
+
+    // The details screen can advance the tracking status.
+    if (mounted) {
+      await _loadParcels();
+    }
   }
 
   @override
@@ -228,29 +257,38 @@ class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
                     children: [
                       _buildSummary(context),
                       const SizedBox(height: 20),
-                      _buildFilters(),
-                      const SizedBox(height: 20),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        child: parcels.isEmpty
-                            ? _buildEmptyState(context)
-                            : Column(
-                                key: ValueKey(_selectedFilter),
-                                children: parcels
-                                    .map(
-                                      (parcel) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 14,
+                      if (_isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_errorMessage != null)
+                        _buildError(context)
+                      else ...[
+                        _buildFilters(),
+                        const SizedBox(height: 20),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: parcels.isEmpty
+                              ? _buildEmptyState(context)
+                              : Column(
+                                  key: ValueKey(_selectedFilter),
+                                  children: parcels
+                                      .map(
+                                        (parcel) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 14,
+                                          ),
+                                          child: _buildParcelCard(
+                                            context,
+                                            parcel,
+                                          ),
                                         ),
-                                        child: _buildParcelCard(
-                                          context,
-                                          parcel,
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                      ),
+                                      )
+                                      .toList(),
+                                ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -305,8 +343,10 @@ class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'General Express • '
-                      '${_parcels.length} parcels',
+                      _agencyName == null
+                          ? '${_parcels.length} parcels'
+                          : '$_agencyName • '
+                                '${_parcels.length} parcels',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -492,7 +532,9 @@ class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
             children: [
               Expanded(
                 child: Text(
-                  '${_formatPrice(parcel['amount'] as int)} FCFA',
+                  (parcel['amount'] as int) > 0
+                      ? '${_formatPrice(parcel['amount'] as int)} FCFA'
+                      : 'Price not set',
                   style: Theme.of(
                     context,
                   ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),

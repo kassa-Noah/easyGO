@@ -205,11 +205,15 @@ void main() {
           'progressPercentage': 15,
           'booking': <String, dynamic>{
             'bookingReference': 'EG-MUH670F0-V42W9B',
+            'tripId': 't1',
             'user': <String, dynamic>{
               'firstName': 'Claire',
               'lastName': 'Client',
+              'phone': '+237690000001',
             },
+            'ticket': <String, dynamic>{'ticketNumber': 'TKT-0001'},
             'trip': <String, dynamic>{
+              'departureTime': '2026-10-10T06:00:00.000Z',
               'route': <String, dynamic>{
                 'originBranch': <String, dynamic>{'city': 'Yaounde'},
                 'destinationBranch': <String, dynamic>{'city': 'Douala'},
@@ -231,12 +235,50 @@ void main() {
 
       expect(luggage.trackingNumber, 'LUG-MUH3YJR1-EY01OL');
       expect(luggage.passengerName, 'Claire Client');
+      expect(luggage.passengerPhone, '+237690000001');
       expect(luggage.bookingReference, 'EG-MUH670F0-V42W9B');
+      expect(luggage.ticketNumber, 'TKT-0001');
+      expect(luggage.tripId, 't1');
+      expect(luggage.departureTime, isNotNull);
       expect(luggage.routeLabel, 'Yaounde → Douala');
       expect(luggage.weightKg, 12.5);
-      expect(luggage.statusLabel, 'Received At Agency');
+      expect(luggage.statusLabel, 'Received by Agency');
       expect(luggage.trackingEvents, hasLength(1));
       expect(luggage.trackingEvents.first.location, 'Yaounde Main Branch');
+    });
+  });
+
+  group('tracking lifecycle', () {
+    test('maps the agency wording onto the stored luggage enums', () {
+      expect(luggageStatusToApi('Registered'), 'REGISTERED');
+      expect(luggageStatusToApi('Received by Agency'), 'RECEIVED_AT_AGENCY');
+      expect(luggageStatusToApi('Arrived'), 'ARRIVED_AT_DESTINATION_AGENCY');
+      expect(luggageStatusToApi('Ready for Collection'), 'READY_FOR_COLLECTION');
+      expect(luggageStatusToApi('Delivered'), 'DELIVERED');
+    });
+
+    test('maps the stored luggage enums back onto the agency wording', () {
+      expect(luggageStatusLabel('RECEIVED_AT_AGENCY'), 'Received by Agency');
+      expect(
+        luggageStatusLabel('ARRIVED_AT_DESTINATION_AGENCY'),
+        'Arrived',
+      );
+      expect(luggageStatusLabel('DELIVERED'), 'Delivered');
+    });
+
+    test('parcels reuse the wording with their own origin enum', () {
+      expect(parcelStatusToApi('Received by Agency'), 'RECEIVED_AT_ORIGIN_AGENCY');
+      expect(parcelStatusLabel('RECEIVED_AT_ORIGIN_AGENCY'), 'Received by Agency');
+      expect(parcelStatusLabel('COLLECTED'), 'Collected');
+    });
+
+    test('advances one stage at a time and stops at the end', () {
+      expect(nextLuggageStatus('Registered'), 'Received by Agency');
+      expect(nextLuggageStatus('Loaded'), 'In Transit');
+      expect(nextLuggageStatus('Delivered'), isNull);
+      expect(nextLuggageStatus('Lost'), isNull);
+      expect(nextParcelStatus('Ready for Collection'), 'Delivered');
+      expect(nextParcelStatus('Delivered'), isNull);
     });
   });
 

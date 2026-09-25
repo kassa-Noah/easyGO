@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 
 class ManageLuggageStatusScreen extends StatefulWidget {
   const ManageLuggageStatusScreen({super.key, required this.luggage});
@@ -14,15 +17,9 @@ class ManageLuggageStatusScreen extends StatefulWidget {
 }
 
 class _ManageLuggageStatusScreenState extends State<ManageLuggageStatusScreen> {
-  static const List<String> _statuses = [
-    'Registered',
-    'Received by Agency',
-    'Loaded',
-    'In Transit',
-    'Arrived',
-    'Ready for Collection',
-    'Delivered',
-  ];
+  static const List<String> _statuses = luggageLifecycle;
+
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
 
   late String _currentStatus;
 
@@ -146,8 +143,8 @@ class _ManageLuggageStatusScreenState extends State<ManageLuggageStatusScreen> {
           title: const Text('Confirm Tracking Update'),
           content: Text(
             'Advance luggage '
-            '${widget.luggage['id']} from '
-            '$_currentStatus to $next?\n\n'
+            '${widget.luggage['trackingNumber'] ?? widget.luggage['id']} '
+            'from $_currentStatus to $next?\n\n'
             'Tracking stages cannot be skipped '
             'or moved backward in the current lifecycle.',
           ),
@@ -177,39 +174,65 @@ class _ManageLuggageStatusScreenState extends State<ManageLuggageStatusScreen> {
       _isSaving = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    final String trackingNumber =
+        widget.luggage['trackingNumber']?.toString() ??
+        widget.luggage['id'].toString();
 
-    if (!mounted) {
-      return;
+    try {
+      await _console.updateLuggageStatus(
+        luggageId: widget.luggage['id'] as String,
+        status: luggageStatusToApi(next),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+        _currentStatus = next;
+      });
+
+      await _showResult(
+        title: 'Tracking Status Updated',
+        message:
+            'Luggage $trackingNumber is now recorded as "$next". '
+            'The new tracking event is visible to the traveler.',
+        isError: false,
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      await _showResult(
+        title: 'Update Failed',
+        message: error.message,
+        isError: true,
+      );
     }
-
-    setState(() {
-      _isSaving = false;
-      _currentStatus = next;
-    });
-
-    await _showDemoResult(next);
   }
 
-  Future<void> _showDemoResult(String status) async {
+  Future<void> _showResult({
+    required String title,
+    required String message,
+    required bool isError,
+  }) async {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          icon: const Icon(
-            Icons.check_circle_outline,
-            color: AppColors.success,
+          icon: Icon(
+            isError ? Icons.error_outline : Icons.check_circle_outline,
+            color: isError ? AppColors.error : AppColors.success,
             size: 38,
           ),
-          title: const Text('Tracking Status Validated'),
-          content: Text(
-            'The luggage status change to '
-            '$status has been simulated '
-            'successfully on this screen.\n\n'
-            'No database record has been updated. '
-            'The backend will authorize and persist '
-            'the real tracking update.',
-          ),
+          title: Text(title),
+          content: Text(message),
           actions: [
             FilledButton(
               onPressed: () {
