@@ -10,3 +10,12 @@ node_modules
 # covers the older layout; the client now lands in /generated/prisma and is
 # still committed so the project runs without a generate step.
 /src/generated/prisma
+
+# The Prisma skills are installed by the skills CLI (see skills-lock.json) into
+# .agents/skills, and that is the only real copy. .claude/skills and
+# .windsurf/skills hold NTFS junctions pointing at it so each editor finds its
+# own path, but git follows a junction and records the files as if they were
+# separate, which duplicated 142 paths in the repository. The junctions stay on
+# disk; only the duplicate paths are untracked.
+/.claude/skills/
+/.windsurf/skills/
