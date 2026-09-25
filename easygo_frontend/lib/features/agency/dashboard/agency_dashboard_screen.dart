@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 
-class AgencyDashboardScreen extends StatelessWidget {
+class AgencyDashboardScreen extends StatefulWidget {
   const AgencyDashboardScreen({
     super.key,
     this.onOpenOperations,
@@ -13,58 +16,157 @@ class AgencyDashboardScreen extends StatelessWidget {
   final VoidCallback? onOpenOperations;
   final VoidCallback? onOpenMessages;
 
-  static const List<Map<String, dynamic>> _statistics = [
-    {'label': 'Trips', 'value': 6, 'icon': Icons.directions_bus_outlined},
-    {
-      'label': 'Bookings',
-      'value': 24,
-      'icon': Icons.confirmation_number_outlined,
-    },
-    {'label': 'Luggage', 'value': 12, 'icon': Icons.luggage_outlined},
-    {'label': 'Parcels', 'value': 8, 'icon': Icons.inventory_2_outlined},
-  ];
+  @override
+  State<AgencyDashboardScreen> createState() => _AgencyDashboardScreenState();
+}
 
-  static const List<Map<String, dynamic>> _upcomingTrips = [
-    {
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'departureTime': '07:00',
-      'arrivalTime': '11:00',
-      'travelClass': 'VIP',
-      'bookedSeats': 32,
-      'totalSeats': 50,
-    },
-    {
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'departureTime': '09:30',
-      'arrivalTime': '13:30',
-      'travelClass': 'Classic',
-      'bookedSeats': 18,
-      'totalSeats': 40,
-    },
-  ];
+class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
 
-  static const List<Map<String, dynamic>> _recentActivity = [
-    {
-      'title': 'New booking received',
-      'description': 'Yaoundé → Douala',
-      'time': '10 min ago',
-      'icon': Icons.confirmation_number_outlined,
-    },
-    {
-      'title': 'Parcel status updated',
-      'description': 'PAR-DEMO-001 • In Transit',
-      'time': '25 min ago',
-      'icon': Icons.inventory_2_outlined,
-    },
-    {
-      'title': 'New client message',
-      'description': 'A client sent a new message.',
-      'time': '40 min ago',
-      'icon': Icons.chat_bubble_outline,
-    },
-  ];
+  AgencyDashboard? _dashboard;
+  StaffAgencyProfile? _agency;
+
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadDashboard();
+  }
+
+  Future<void> _loadDashboard() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final StaffAgencyProfile agency = await _console.getMyAgency();
+
+      final AgencyDashboard dashboard = await _console.getDashboard();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _agency = agency;
+        _dashboard = dashboard;
+        _isLoading = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> get _statistics {
+    final AgencyDashboard? dashboard = _dashboard;
+
+    if (dashboard == null) {
+      return const <Map<String, dynamic>>[];
+    }
+
+    return <Map<String, dynamic>>[
+      {
+        'label': 'Trips',
+        'value': dashboard.tripCount(),
+        'icon': Icons.directions_bus_outlined,
+      },
+      {
+        'label': 'Bookings',
+        'value': dashboard.bookingCount(),
+        'icon': Icons.confirmation_number_outlined,
+      },
+      {
+        'label': 'Luggage',
+        'value': dashboard.luggageCount(),
+        'icon': Icons.luggage_outlined,
+      },
+      {
+        'label': 'Parcels',
+        'value': dashboard.parcelCount(),
+        'icon': Icons.inventory_2_outlined,
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> get _upcomingTrips {
+    final AgencyDashboard? dashboard = _dashboard;
+
+    if (dashboard == null) {
+      return const <Map<String, dynamic>>[];
+    }
+
+    return dashboard.upcomingTrips.map((ConsoleTrip trip) {
+      return <String, dynamic>{
+        'departureCity': trip.originCity,
+        'destinationCity': trip.destinationCity,
+        'departureTime': _formatTime(trip.departureTime),
+        'arrivalTime': _formatTime(trip.arrivalTime),
+        'travelClass': trip.vehicleDescription ?? l10nVehicle,
+        'bookedSeats': trip.bookedSeats,
+        'totalSeats': trip.totalSeats,
+      };
+    }).toList();
+  }
+
+  /// Recent activity is derived from the agency's latest bookings,
+  /// which is real operational traffic rather than invented events.
+  List<Map<String, dynamic>> get _recentActivity {
+    final AgencyDashboard? dashboard = _dashboard;
+
+    if (dashboard == null) {
+      return const <Map<String, dynamic>>[];
+    }
+
+    return dashboard.recentBookings.map((ConsoleBooking booking) {
+      return <String, dynamic>{
+        'title': 'Booking ${booking.bookingReference}',
+        'description': '${booking.passengerName} • ${booking.routeLabel}',
+        'time': _formatDateTime(booking.departureTime),
+        'icon': Icons.confirmation_number_outlined,
+      };
+    }).toList();
+  }
+
+  String get l10nVehicle => 'Vehicle';
+
+  String _formatTime(DateTime? value) {
+    if (value == null) {
+      return '--:--';
+    }
+
+    final DateTime local = value.toLocal();
+
+    final String hour = local.hour.toString().padLeft(2, '0');
+
+    final String minute = local.minute.toString().padLeft(2, '0');
+
+    return '$hour:$minute';
+  }
+
+  String _formatDateTime(DateTime? value) {
+    if (value == null) {
+      return '';
+    }
+
+    final DateTime local = value.toLocal();
+
+    final String day = local.day.toString().padLeft(2, '0');
+
+    final String month = local.month.toString().padLeft(2, '0');
+
+    return '$day/$month/${local.year} ${_formatTime(value)}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,31 +210,46 @@ class AgencyDashboardScreen extends StatelessWidget {
                       children: [
                         _buildHeader(context),
                         const SizedBox(height: 26),
-                        _buildSectionTitle(context, 'Today'),
-                        const SizedBox(height: 14),
-                        _buildStatistics(context),
-                        const SizedBox(height: 28),
-                        _buildSectionTitle(context, 'Quick Actions'),
-                        const SizedBox(height: 14),
-                        _buildQuickActions(context),
-                        const SizedBox(height: 28),
-                        _buildSectionHeader(
-                          context,
-                          title: 'Upcoming Trips',
-                          actionLabel: 'View all',
-                          onPressed: onOpenOperations,
-                        ),
-                        const SizedBox(height: 14),
-                        ..._upcomingTrips.map(
-                          (trip) => Padding(
-                            padding: const EdgeInsets.only(bottom: 14),
-                            child: _UpcomingTripCard(trip: trip),
+                        if (_isLoading) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 60),
+                            child: Center(child: CircularProgressIndicator()),
                           ),
-                        ),
-                        const SizedBox(height: 14),
-                        _buildSectionTitle(context, 'Recent Activity'),
-                        const SizedBox(height: 14),
-                        _buildRecentActivity(context),
+                        ] else if (_errorMessage != null) ...[
+                          _buildError(context),
+                        ] else ...[
+                          _buildSectionTitle(context, 'Today'),
+                          const SizedBox(height: 14),
+                          _buildStatistics(context),
+                          const SizedBox(height: 28),
+                          _buildSectionTitle(context, 'Quick Actions'),
+                          const SizedBox(height: 14),
+                          _buildQuickActions(context),
+                          const SizedBox(height: 28),
+                          _buildSectionHeader(
+                            context,
+                            title: 'Upcoming Trips',
+                            actionLabel: 'View all',
+                            onPressed: widget.onOpenOperations,
+                          ),
+                          const SizedBox(height: 14),
+                          if (_upcomingTrips.isEmpty)
+                            _buildEmpty(context, 'No upcoming trips.')
+                          else
+                            ..._upcomingTrips.map(
+                              (trip) => Padding(
+                                padding: const EdgeInsets.only(bottom: 14),
+                                child: _UpcomingTripCard(trip: trip),
+                              ),
+                            ),
+                          const SizedBox(height: 14),
+                          _buildSectionTitle(context, 'Recent Activity'),
+                          const SizedBox(height: 14),
+                          if (_recentActivity.isEmpty)
+                            _buildEmpty(context, 'No recent bookings.')
+                          else
+                            _buildRecentActivity(context),
+                        ],
                       ],
                     ),
                   ),
@@ -141,6 +258,51 @@ class AgencyDashboardScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(20),
+      borderRadius: 16,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: AppColors.textSecondary,
+            size: 34,
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            _errorMessage ?? '',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+
+          const SizedBox(height: 14),
+
+          OutlinedButton.icon(
+            onPressed: _loadDashboard,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty(BuildContext context, String message) {
+    return GlassContainer(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      borderRadius: 16,
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodyMedium,
       ),
     );
   }
@@ -179,7 +341,7 @@ class AgencyDashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                'General Express',
+                _agency?.name ?? 'Transport Agency',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
@@ -259,7 +421,7 @@ class AgencyDashboardScreen extends StatelessWidget {
                 title: 'Create Trip',
                 description: 'Add a new interurban trip schedule.',
                 icon: Icons.add_road_outlined,
-                onTap: onOpenOperations,
+                onTap: widget.onOpenOperations,
               ),
             ),
             SizedBox(
@@ -268,7 +430,7 @@ class AgencyDashboardScreen extends StatelessWidget {
                 title: 'View Bookings',
                 description: 'Review bookings made with your agency.',
                 icon: Icons.confirmation_number_outlined,
-                onTap: onOpenOperations,
+                onTap: widget.onOpenOperations,
               ),
             ),
             SizedBox(
@@ -277,7 +439,7 @@ class AgencyDashboardScreen extends StatelessWidget {
                 title: 'Manage Luggage',
                 description: 'View and update traveler luggage status.',
                 icon: Icons.luggage_outlined,
-                onTap: onOpenOperations,
+                onTap: widget.onOpenOperations,
               ),
             ),
             SizedBox(
@@ -286,7 +448,7 @@ class AgencyDashboardScreen extends StatelessWidget {
                 title: 'Client Messages',
                 description: 'Open conversations with your clients.',
                 icon: Icons.chat_bubble_outline,
-                onTap: onOpenMessages,
+                onTap: widget.onOpenMessages,
               ),
             ),
           ],
