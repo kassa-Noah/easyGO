@@ -17,6 +17,7 @@ import parcelRoutes from "./modules/parcel/parcel.routes";
 import notificationRoutes from "./modules/notification/notification.routes";
 import reviewRoutes from "./modules/review/review.routes";
 import adminRoutes from "./modules/admin/admin.routes";
+import staffRoutes from "./modules/staff/staff.routes";
 
 import {
   authenticate,
@@ -120,6 +121,11 @@ app.use(
 app.use(
   "/api/admin",
   adminRoutes
+);
+
+app.use(
+  "/api/staff",
+  staffRoutes
 );
 
 // Temporary authorization test routes
