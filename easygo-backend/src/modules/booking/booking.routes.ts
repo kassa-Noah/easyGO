@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   addBooking,
   cancelMyBooking,
+  changeBookingStatus,
   getBooking,
   listMyBookings,
 } from "./booking.controller";
@@ -47,6 +48,19 @@ router.patch(
   authenticate,
   authorizeRoles("CUSTOMER"),
   cancelMyBooking
+);
+
+// Agency staff or an administrator moves a booking to a terminal
+// state (completed or cancelled). Confirmation is not available
+// here: a booking is confirmed by a successful payment only.
+router.patch(
+  "/:id/status",
+  authenticate,
+  authorizeRoles(
+    "AGENCY_STAFF",
+    "ADMIN"
+  ),
+  changeBookingStatus
 );
 
 export default router;

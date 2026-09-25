@@ -250,12 +250,18 @@ class ConsoleBooking {
   final String originCity;
   final String destinationCity;
   final DateTime? departureTime;
+  final DateTime? arrivalTime;
   final String status;
   final double totalAmount;
   final int numberOfSeats;
   final String? paymentStatus;
+  final String? paymentMethod;
   final String? ticketNumber;
   final bool hasJourney;
+  final int luggageCount;
+  final String? pickupAddress;
+  final String? finalDestination;
+  final String? vehicleDescription;
 
   const ConsoleBooking({
     required this.id,
@@ -266,12 +272,18 @@ class ConsoleBooking {
     required this.originCity,
     required this.destinationCity,
     required this.departureTime,
+    required this.arrivalTime,
     required this.status,
     required this.totalAmount,
     required this.numberOfSeats,
     required this.paymentStatus,
+    required this.paymentMethod,
     required this.ticketNumber,
     required this.hasJourney,
+    required this.luggageCount,
+    required this.pickupAddress,
+    required this.finalDestination,
+    required this.vehicleDescription,
   });
 
   factory ConsoleBooking.fromJson(Map<String, dynamic> json) {
@@ -300,6 +312,19 @@ class ConsoleBooking {
 
     final Map<String, dynamic>? ticket = _toMap(json['ticket']);
 
+    final Map<String, dynamic>? journey = _toMap(json['journey']);
+
+    final Map<String, dynamic>? vehicle = _toMap(trip?['vehicle']);
+
+    final List<dynamic> luggage = json['luggage'] is List
+        ? json['luggage'] as List<dynamic>
+        : const <dynamic>[];
+
+    final String vehicleDescription = [
+      _toNullableString(vehicle?['brand']) ?? '',
+      _toNullableString(vehicle?['model']) ?? '',
+    ].where((String part) => part.isNotEmpty).join(' ');
+
     return ConsoleBooking(
       id: json['id']?.toString() ?? '',
       bookingReference: json['bookingReference']?.toString() ?? '',
@@ -311,12 +336,22 @@ class ConsoleBooking {
       destinationCity:
           _toMap(route?['destinationBranch'])?['city']?.toString() ?? '',
       departureTime: _toNullableDateTime(trip?['departureTime']),
+      arrivalTime: _toNullableDateTime(trip?['arrivalTime']),
       status: json['status']?.toString() ?? '',
       totalAmount: _toDouble(json['totalAmount']),
       numberOfSeats: _toInt(json['numberOfSeats']),
       paymentStatus: _toNullableString(latestPayment?['status']),
+      paymentMethod: _toNullableString(latestPayment?['method']),
       ticketNumber: _toNullableString(ticket?['ticketNumber']),
-      hasJourney: _toMap(json['journey']) != null,
+      hasJourney: journey != null,
+      luggageCount: luggage.length,
+      pickupAddress: _toNullableString(journey?['pickupAddress']),
+      finalDestination: _toNullableString(
+        journey?['destinationAddress'],
+      ),
+      vehicleDescription: vehicleDescription.isEmpty
+          ? null
+          : vehicleDescription,
     );
   }
 

@@ -10,10 +10,12 @@ import {
   getBookingById,
   getTripForBooking,
   getUserBookings,
+  updateBookingStatus,
 } from "./booking.service";
 
 import {
   createBookingSchema,
+  updateBookingStatusSchema,
 } from "./booking.schema";
 
 export const addBooking = async (
@@ -128,7 +130,6 @@ export const getBooking = async (
     const bookingId = String(
       req.params.id
     );
-
     const booking =
       await getBookingById(
         bookingId
@@ -242,3 +243,70 @@ export const cancelMyBooking =
       });
     }
   };
+
+// Agency staff move a booking to a terminal state. The agency is
+// verified against the trip's agency, and an administrator may act on
+// any booking.
+export const changeBookingStatus = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const bookingId = String(
+      req.params.id
+    );
+
+    const booking = await getBookingById(
+      bookingId
+    );
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (
+      req.user!.role === "AGENCY_STAFF"
+    ) {
+      const membership =
+        await getAgencyStaffMembership(
+          req.user!.userId,
+          booking.trip.agencyId
+        );
+
+      if (!membership) {
+        return res.status(403).json({
+          success: false,
+          message:
+            "You are not authorized to update this booking",
+        });
+      }
+    }
+
+    const validatedData =
+      updateBookingStatusSchema.parse(
+        req.body
+      );
+
+    const updated = await updateBookingStatus(
+      bookingId,
+      validatedData.status
+    );
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Booking status updated successfully",
+      data: updated,
+    });
+  } catch (error: any) {
+    return res.status(400).json({
+      success: false,
+      message:
+        error.message ||
+        "Unable to update booking status",
+    });
+  }
+};

@@ -372,3 +372,173 @@ export const getAgencyStaffMembership =
       },
     });
   };
+
+type StaffBookingStatus =
+  | "CANCELLED"
+  | "COMPLETED";
+
+// Only these transitions are permitted, so a booking can never move
+// backwards or be confirmed by hand.
+const ALLOWED_BOOKING_TRANSITIONS: Record<
+  StaffBookingStatus,
+  string[]
+> = {
+  CANCELLED: ["PENDING", "CONFIRMED"],
+  COMPLETED: ["CONFIRMED"],
+};
+
+export const updateBookingStatus =
+  async (
+    bookingId: string,
+    status: StaffBookingStatus
+  ) => {
+    return prisma.$transaction(
+      async (tx) => {
+        const booking =
+          await tx.booking.findUnique({
+            where: {
+              id: bookingId,
+            },
+
+            include: {
+              trip: true,
+              journey: true,
+              ticket: true,
+            },
+          });
+
+        if (!booking) {
+          throw new Error("Booking not found");
+        }
+
+        const allowedFrom =
+          ALLOWED_BOOKING_TRANSITIONS[status];
+
+        if (
+          !allowedFrom.includes(
+            booking.status
+          )
+        ) {
+          throw new Error(
+            `A ${booking.status.toLowerCase()} booking cannot be marked as ${status.toLowerCase()}`
+          );
+        }
+
+        if (
+          status === "CANCELLED" &&
+          booking.trip.departureTime <=
+            new Date()
+        ) {
+          throw new Error(
+            "A booking cannot be cancelled after the trip departure time"
+          );
+        }
+
+        await tx.booking.update({
+          where: {
+            id: bookingId,
+          },
+
+          data: {
+            status,
+          },
+        });
+
+        if (status === "CANCELLED") {
+          // Releasing the seat keeps availability consistent, and
+          // the journey and ticket must stop with the booking.
+          await tx.trip.update({
+            where: {
+              id: booking.tripId,
+            },
+
+            data: {
+              availableSeats: {
+                increment:
+                  booking.numberOfSeats,
+              },
+            },
+          });
+
+          if (booking.journey) {
+            await tx.doorToDoorJourney.update({
+              where: {
+                id: booking.journey.id,
+              },
+
+              data: {
+                status: "CANCELLED",
+              },
+            });
+          }
+
+          if (booking.ticket) {
+            await tx.ticket.update({
+              where: {
+                id: booking.ticket.id,
+              },
+
+              data: {
+                status: "CANCELLED",
+              },
+            });
+          }
+        }
+
+        if (
+          status === "COMPLETED" &&
+          booking.ticket &&
+          booking.ticket.status ===
+            "ACTIVE"
+        ) {
+          // A completed journey means the ticket was used.
+          await tx.ticket.update({
+            where: {
+              id: booking.ticket.id,
+            },
+
+            data: {
+              status: "USED",
+              usedAt: new Date(),
+            },
+          });
+        }
+
+        return tx.booking.findUnique({
+          where: {
+            id: bookingId,
+          },
+
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
+              },
+            },
+
+            trip: {
+              include: {
+                agency: true,
+
+                route: {
+                  include: {
+                    originBranch: true,
+                    destinationBranch: true,
+                  },
+                },
+              },
+            },
+
+            payments: true,
+            ticket: true,
+            journey: true,
+            luggage: true,
+          },
+        });
+      }
+    );
+  };

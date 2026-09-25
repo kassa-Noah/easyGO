@@ -65,6 +65,23 @@ class AgencyConsoleService {
     return _toParcels(_extractList(response));
   }
 
+  /// Moves a booking to a terminal state.
+  ///
+  /// Only `CANCELLED` and `COMPLETED` are accepted: a booking is
+  /// confirmed by a successful payment, never by hand.
+  Future<ConsoleBooking> updateBookingStatus({
+    required String bookingId,
+    required String status,
+  }) async {
+    final dynamic response = await _apiClient.patch(
+      '/bookings/$bookingId/status',
+      authenticated: true,
+      body: {'status': status},
+    );
+
+    return ConsoleBooking.fromJson(_extractData(response));
+  }
+
   Map<String, dynamic> _extractData(dynamic response) {
     if (response is! Map) {
       throw const ApiException(

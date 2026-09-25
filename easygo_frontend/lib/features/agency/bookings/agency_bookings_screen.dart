@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 import 'agency_booking_details_screen.dart';
 
 class AgencyBookingsScreen extends StatefulWidget {
@@ -26,103 +29,146 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
     _cancelled,
   ];
 
-  static const List<Map<String, dynamic>> _bookings = [
-    {
-      'bookingReference': 'DEMO-BOOKING-001',
-      'ticketReference': 'DEMO-TICKET-001',
-      'clientName': 'John Doe',
-      'clientPhone': '+237 6 70 00 00 01',
-      'tripId': 'TRIP-DEMO-001',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'date': '20 Sep 2026',
-      'departureTime': '07:00',
-      'arrivalTime': '11:00',
-      'travelClass': 'VIP',
-      'bookingMode': 'Door-to-Door',
-      'passengers': 1,
-      'luggage': 1,
-      'amount': 12500,
-      'paymentMethod': 'MTN Mobile Money',
-      'paymentStatus': 'Paid',
-      'status': 'Confirmed',
-      'pickupLocation': 'Bastos, Yaoundé',
-      'finalDestination': 'Bonapriso, Douala',
-    },
-    {
-      'bookingReference': 'DEMO-BOOKING-002',
-      'ticketReference': 'DEMO-TICKET-002',
-      'clientName': 'Marie N.',
-      'clientPhone': '+237 6 70 00 00 02',
-      'tripId': 'TRIP-DEMO-002',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'date': '25 Sep 2026',
-      'departureTime': '09:30',
-      'arrivalTime': '13:30',
-      'travelClass': 'Classic',
-      'bookingMode': 'Interurban Only',
-      'passengers': 1,
-      'luggage': 2,
-      'amount': 5000,
-      'paymentMethod': 'Orange Money',
-      'paymentStatus': 'Paid',
-      'status': 'Confirmed',
-      'pickupLocation': null,
-      'finalDestination': null,
-    },
-    {
-      'bookingReference': 'DEMO-BOOKING-003',
-      'ticketReference': 'DEMO-TICKET-003',
-      'clientName': 'Samuel T.',
-      'clientPhone': '+237 6 70 00 00 03',
-      'tripId': 'TRIP-DEMO-003',
-      'departureCity': 'Douala',
-      'destinationCity': 'Yaoundé',
-      'date': '04 Aug 2026',
-      'departureTime': '08:00',
-      'arrivalTime': '12:00',
-      'travelClass': 'VIP',
-      'bookingMode': 'Interurban Only',
-      'passengers': 1,
-      'luggage': 1,
-      'amount': 7000,
-      'paymentMethod': 'MTN Mobile Money',
-      'paymentStatus': 'Paid',
-      'status': 'Completed',
-      'pickupLocation': null,
-      'finalDestination': null,
-    },
-    {
-      'bookingReference': 'DEMO-BOOKING-004',
-      'ticketReference': 'DEMO-TICKET-004',
-      'clientName': 'Grace M.',
-      'clientPhone': '+237 6 70 00 00 04',
-      'tripId': 'TRIP-DEMO-004',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Buea',
-      'date': '18 Jul 2026',
-      'departureTime': '06:30',
-      'arrivalTime': '12:30',
-      'travelClass': 'Classic',
-      'bookingMode': 'Interurban Only',
-      'passengers': 1,
-      'luggage': 0,
-      'amount': 7000,
-      'paymentMethod': 'Orange Money',
-      'paymentStatus': 'Paid',
-      'status': 'Cancelled',
-      'pickupLocation': null,
-      'finalDestination': null,
-    },
-  ];
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
 
-  List<Map<String, dynamic>> get _filteredBookings {
-    if (_selectedFilter == _all) {
-      return _bookings;
+  List<ConsoleBooking> _bookings = const <ConsoleBooking>[];
+
+  bool _isLoading = true;
+
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadBookings();
+  }
+
+  Future<void> _loadBookings() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final List<ConsoleBooking> bookings = await _console.getBookings();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _bookings = bookings;
+        _isLoading = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// The card and details screens read a display map, so each console
+  /// booking is projected into the values they render.
+  List<Map<String, dynamic>> get _bookingCards {
+    return _bookings.map((ConsoleBooking booking) {
+      return <String, dynamic>{
+        'id': booking.id,
+        'bookingReference': booking.bookingReference,
+        'ticketReference': booking.ticketNumber ?? '—',
+        'clientName': booking.passengerName,
+        'clientPhone': booking.passengerPhone ?? '—',
+        'tripId': booking.routeLabel,
+        'departureCity': booking.originCity,
+        'destinationCity': booking.destinationCity,
+        'date': _formatDate(booking.departureTime),
+        'departureTime': _formatTime(booking.departureTime),
+        'arrivalTime': _formatTime(booking.arrivalTime),
+        'travelClass': booking.vehicleDescription ?? '—',
+        'bookingMode': booking.hasJourney
+            ? 'Door-to-Door'
+            : 'Interurban Only',
+        'passengers': booking.numberOfSeats,
+        'luggage': booking.luggageCount,
+        'amount': booking.totalAmount.round(),
+        'paymentMethod': booking.paymentMethod ?? '—',
+        'paymentStatus': _paymentLabel(booking.paymentStatus),
+        'status': booking.statusLabel,
+        'pickupLocation': booking.pickupAddress,
+        'finalDestination': booking.finalDestination,
+      };
+    }).toList();
+  }
+
+  String _paymentLabel(String? status) {
+    switch (status) {
+      case 'SUCCESSFUL':
+        return 'Paid';
+
+      case 'PENDING':
+        return 'Pending';
+
+      case 'FAILED':
+        return 'Failed';
+
+      case 'REFUNDED':
+        return 'Refunded';
+
+      default:
+        return 'Unpaid';
+    }
+  }
+
+  String _formatDate(DateTime? value) {
+    if (value == null) {
+      return '—';
     }
 
-    return _bookings
+    final DateTime local = value.toLocal();
+
+    const List<String> months = <String>[
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return '${local.day.toString().padLeft(2, '0')} '
+        '${months[local.month - 1]} ${local.year}';
+  }
+
+  String _formatTime(DateTime? value) {
+    if (value == null) {
+      return '--:--';
+    }
+
+    final DateTime local = value.toLocal();
+
+    return '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}';
+  }
+
+  List<Map<String, dynamic>> get _filteredBookings {
+    final List<Map<String, dynamic>> bookings = _bookingCards;
+
+    if (_selectedFilter == _all) {
+      return bookings;
+    }
+
+    return bookings
         .where((booking) => booking['status'] == _selectedFilter)
         .toList();
   }
@@ -190,32 +236,40 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
                       const SizedBox(height: 22),
                       _buildFilters(),
                       const SizedBox(height: 20),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        child: bookings.isEmpty
-                            ? _buildEmptyState(context)
-                            : Column(
-                                key: ValueKey(_selectedFilter),
-                                children: bookings
-                                    .map(
-                                      (booking) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 14,
-                                        ),
-                                        child: _AgencyBookingCard(
-                                          booking: booking,
-                                          formattedAmount: _formatPrice(
-                                            booking['amount'] as int,
+                      if (_isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 50),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_errorMessage != null)
+                        _buildError(context)
+                      else
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: bookings.isEmpty
+                              ? _buildEmptyState(context)
+                              : Column(
+                                  key: ValueKey(_selectedFilter),
+                                  children: bookings
+                                      .map(
+                                        (booking) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 14,
                                           ),
-                                          onTap: () {
-                                            _openBookingDetails(booking);
-                                          },
+                                          child: _AgencyBookingCard(
+                                            booking: booking,
+                                            formattedAmount: _formatPrice(
+                                              booking['amount'] as int,
+                                            ),
+                                            onTap: () {
+                                              _openBookingDetails(booking);
+                                            },
+                                          ),
                                         ),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                      ),
+                                      )
+                                      .toList(),
+                                ),
+                        ),
                     ],
                   ),
                 ),
@@ -227,17 +281,50 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
     );
   }
 
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      borderRadius: 16,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: AppColors.textSecondary,
+            size: 34,
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            _errorMessage ?? '',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+
+          const SizedBox(height: 14),
+
+          OutlinedButton.icon(
+            onPressed: _loadBookings,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSummary(BuildContext context) {
     final int confirmed = _bookings
-        .where((booking) => booking['status'] == _confirmed)
+        .where((ConsoleBooking booking) => booking.statusLabel == _confirmed)
         .length;
 
     final int completed = _bookings
-        .where((booking) => booking['status'] == _completed)
+        .where((ConsoleBooking booking) => booking.statusLabel == _completed)
         .length;
 
     final int cancelled = _bookings
-        .where((booking) => booking['status'] == _cancelled)
+        .where((ConsoleBooking booking) => booking.statusLabel == _cancelled)
         .length;
 
     return GlassContainer(
@@ -274,8 +361,7 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'General Express • '
-                      '${_bookings.length} bookings',
+                      '${_bookings.length} bookings for your agency',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],

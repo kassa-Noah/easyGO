@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
+import '../services/agency_console_service.dart';
 import '../../../../shared/widgets/glass_container.dart';
 
 class ManageBookingStatusScreen extends StatefulWidget {
@@ -97,25 +99,49 @@ class _ManageBookingStatusScreenState extends State<ManageBookingStatusScreen> {
       return;
     }
 
+    final String newStatus = _selectedStatus!;
+
+    final String bookingId = widget.booking['id']?.toString() ?? '';
+
+    if (bookingId.isEmpty) {
+      _showMessage('This booking cannot be updated.');
+      return;
+    }
+
     setState(() {
       _isSaving = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    try {
+      // The backend authorizes the change against the trip's agency
+      // and only accepts the terminal transitions.
+      await AgencyConsoleService.instance.updateBookingStatus(
+        bookingId: bookingId,
+        status: newStatus.toUpperCase(),
+      );
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+        _currentStatus = newStatus;
+        _selectedStatus = null;
+      });
+
+      await _showResult(newStatus);
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      _showMessage(error.message);
     }
-
-    final String newStatus = _selectedStatus!;
-
-    setState(() {
-      _isSaving = false;
-      _currentStatus = newStatus;
-      _selectedStatus = null;
-    });
-
-    await _showDemoResult(newStatus);
   }
 
   Future<bool?> _confirmStatusChange() {
@@ -158,7 +184,7 @@ class _ManageBookingStatusScreenState extends State<ManageBookingStatusScreen> {
     );
   }
 
-  Future<void> _showDemoResult(String newStatus) async {
+  Future<void> _showResult(String newStatus) async {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -168,14 +194,13 @@ class _ManageBookingStatusScreenState extends State<ManageBookingStatusScreen> {
             color: AppColors.success,
             size: 38,
           ),
-          title: const Text('Status Validated'),
+          title: const Text('Status Updated'),
           content: Text(
-            'The booking status change to '
-            '$newStatus has been simulated '
-            'successfully on this screen.\n\n'
-            'No database record has been updated. '
-            'The backend will perform and authorize '
-            'the real status transition.',
+            'The booking has been marked as '
+            '$newStatus.\n\n'
+            'The change was authorised by the backend '
+            'and saved, and the affected seat, journey '
+            'and ticket were updated with it.',
           ),
           actions: [
             FilledButton(
