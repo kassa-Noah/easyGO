@@ -683,6 +683,17 @@ class AppLocalizations {
       ? 'Le téléchargement du billet sera connecté lors de l’intégration de la génération PDF.'
       : 'Ticket download will be connected when PDF generation is integrated.';
 
+  String get verifyTicket =>
+      isFrench ? 'Vérifier un billet' : 'Verify Ticket';
+
+  String get verifyTicketDescription => isFrench
+      ? 'Saisissez la référence du billet présenté par le voyageur pour confirmer qu’il est valable. Seuls les billets de votre propre agence peuvent être vérifiés.'
+      : 'Enter the reference on the ticket a traveller presents to confirm it is valid. Only tickets for your own agency can be verified.';
+
+  String get ticketVerificationDescription => isFrench
+      ? 'Contrôler un billet à l’embarquement'
+      : 'Check a ticket at boarding';
+
   // ==================================================
   // TRACKING HOME
   // ==================================================

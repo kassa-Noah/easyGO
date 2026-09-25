@@ -235,6 +235,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
           paymentMethod: payment?.method ?? 'Not available',
           bookingReference: _booking.bookingReference,
           ticketReference: ticket.ticketNumber,
+          qrCodeData: ticket.qrCodeData,
           pickupLocation: _booking.journey?.pickupAddress,
           finalDestination: _booking.journey?.destinationAddress,
         ),

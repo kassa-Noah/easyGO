@@ -10,6 +10,7 @@ import '../models/agency_console.dart';
 import '../parcels/agency_parcels_screen.dart';
 import '../services/agency_console_service.dart';
 import '../trips/agency_trips_screen.dart';
+import 'ticket_verification_screen.dart';
 
 class AgencyOperationsScreen extends StatefulWidget {
   const AgencyOperationsScreen({super.key});
@@ -81,6 +82,15 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AgencyParcelsScreen()),
+    );
+  }
+
+  void _openTicketVerification(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const TicketVerificationScreen(),
+      ),
     );
   }
 
@@ -259,6 +269,16 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
                   _openParcels(context);
                 },
               ),
+              const SizedBox(height: 14),
+              _OperationCard(
+                icon: Icons.qr_code_scanner_outlined,
+                title: localizations.verifyTicket,
+                description: localizations.ticketVerificationDescription,
+                color: AppColors.secondary,
+                onTap: () {
+                  _openTicketVerification(context);
+                },
+              ),
             ],
           );
         }
@@ -305,6 +325,15 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
               color: AppColors.primaryDark,
               onTap: () {
                 _openParcels(context);
+              },
+            ),
+            _OperationCard(
+              icon: Icons.qr_code_scanner_outlined,
+              title: localizations.verifyTicket,
+              description: localizations.ticketVerificationDescription,
+              color: AppColors.secondary,
+              onTap: () {
+                _openTicketVerification(context);
               },
             ),
           ],

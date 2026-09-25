@@ -32,6 +32,10 @@ class BookingConfirmationScreen extends StatelessWidget {
   // confirmed booking.
   final String ticketNumber;
 
+  // The payload the backend stores for the ticket, rendered as the code the
+  // traveller presents for verification.
+  final String qrCodeData;
+
   const BookingConfirmationScreen({
     super.key,
     required this.agency,
@@ -46,6 +50,7 @@ class BookingConfirmationScreen extends StatelessWidget {
     required this.paymentMethod,
     required this.bookingReference,
     required this.ticketNumber,
+    required this.qrCodeData,
     this.pickupLocation,
     this.finalDestination,
   });
@@ -98,6 +103,7 @@ class BookingConfirmationScreen extends StatelessWidget {
           // Both references now come from the backend.
           bookingReference: bookingReference,
           ticketReference: ticketNumber,
+          qrCodeData: qrCodeData,
         ),
       ),
     );

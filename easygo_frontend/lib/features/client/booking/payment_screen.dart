@@ -147,7 +147,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       // The booking is confirmed at this point, so the digital
       // ticket required by the MVP is issued before moving on.
-      final String ticketNumber = await _resolveTicketNumber();
+      final BookingTicket ticket = await _resolveTicket();
 
       if (!mounted) {
         return;
@@ -170,7 +170,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
             totalAmount: settledPayment.amount.round(),
             paymentMethod: _selectedPaymentMethod!,
             bookingReference: widget.booking.bookingReference,
-            ticketNumber: ticketNumber,
+            ticketNumber: ticket.ticketNumber,
+            qrCodeData: ticket.qrCodeData,
           ),
         ),
       );
@@ -194,23 +195,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
   /// Only one ticket may exist per booking. The backend answers
   /// with 409 when a ticket was already issued, in which case the
   /// existing ticket is retrieved instead of a new one being made.
-  Future<String> _resolveTicketNumber() async {
+  Future<BookingTicket> _resolveTicket() async {
     try {
-      final BookingTicket ticket = await _ticketService.generateTicket(
-        widget.booking.id,
-      );
-
-      return ticket.ticketNumber;
+      return await _ticketService.generateTicket(widget.booking.id);
     } on ApiException catch (error) {
       if (error.statusCode != 409) {
         rethrow;
       }
 
-      final BookingTicket ticket = await _ticketService.getTicketByBookingId(
-        widget.booking.id,
-      );
-
-      return ticket.ticketNumber;
+      return _ticketService.getTicketByBookingId(widget.booking.id);
     }
   }
 

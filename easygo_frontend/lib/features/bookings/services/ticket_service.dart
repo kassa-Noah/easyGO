@@ -1,6 +1,7 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../models/booking.dart';
+import '../models/verified_ticket.dart';
 
 class TicketService {
   TicketService._();
@@ -61,6 +62,33 @@ class TicketService {
         .whereType<Map>()
         .map((item) => BookingTicket.fromJson(Map<String, dynamic>.from(item)))
         .toList();
+  }
+
+  /// Checks a ticket number at the gate.
+  ///
+  /// Agency staff may only verify tickets belonging to their own agency; the
+  /// backend resolves the membership and answers 403 otherwise. A number that
+  /// does not exist is a 404, which the caller reports as "not found" rather
+  /// than as a failure to reach the server.
+  Future<VerifiedTicket> verifyTicket(String ticketNumber) async {
+    final dynamic response = await _apiClient.get(
+      '/tickets/verify/${ticketNumber.trim()}',
+      authenticated: true,
+    );
+
+    if (response is! Map) {
+      throw const ApiException(
+        message: 'Invalid response received from the server.',
+      );
+    }
+
+    final dynamic data = response['data'];
+
+    if (data is! Map) {
+      throw const ApiException(message: 'Ticket information is missing.');
+    }
+
+    return VerifiedTicket.fromJson(Map<String, dynamic>.from(data));
   }
 
   BookingTicket _extractTicket(

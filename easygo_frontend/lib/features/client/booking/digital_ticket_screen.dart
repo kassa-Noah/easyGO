@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
@@ -29,6 +30,10 @@ class DigitalTicketScreen extends StatelessWidget {
   final String bookingReference;
   final String ticketReference;
 
+  /// The payload the backend stores on the ticket. It is what a scanner reads,
+  /// so it is rendered as a code rather than as a decorative symbol.
+  final String qrCodeData;
+
   const DigitalTicketScreen({
     super.key,
     required this.agency,
@@ -43,6 +48,7 @@ class DigitalTicketScreen extends StatelessWidget {
     required this.paymentMethod,
     required this.bookingReference,
     required this.ticketReference,
+    required this.qrCodeData,
     this.pickupLocation,
     this.finalDestination,
   });
@@ -434,21 +440,39 @@ class DigitalTicketScreen extends StatelessWidget {
   }
 
   Widget _buildQrPlaceholder(BuildContext context, AppLocalizations l10n) {
+    final bool hasPayload = qrCodeData.trim().isNotEmpty;
+
     return Column(
       children: [
         Container(
-          width: 130,
-          height: 130,
+          width: 150,
+          height: 150,
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.black.withValues(alpha: 0.10)),
           ),
-          child: const Icon(
-            Icons.qr_code_2_rounded,
-            size: 105,
-            color: AppColors.textPrimary,
-          ),
+          child: hasPayload
+              ? QrImageView(
+                  data: qrCodeData,
+                  version: QrVersions.auto,
+                  backgroundColor: Colors.white,
+                  errorStateBuilder: (context, error) {
+                    return const Center(
+                      child: Icon(
+                        Icons.qr_code_2_rounded,
+                        size: 105,
+                        color: AppColors.textPrimary,
+                      ),
+                    );
+                  },
+                )
+              : const Icon(
+                  Icons.qr_code_2_rounded,
+                  size: 105,
+                  color: AppColors.textPrimary,
+                ),
         ),
         const SizedBox(height: 8),
         Text(
