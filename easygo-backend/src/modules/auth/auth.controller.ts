@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { loginSchema, registerSchema } from "./auth.schema";
+import { changePasswordSchema, loginSchema, registerSchema } from "./auth.schema";
 import { loginUser, registerUser } from "./auth.service";
+import { changePasswordForUser } from "./change-password.service";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -36,6 +37,37 @@ export const login = async (req: Request, res: Response) => {
     res.status(400).json({
       success: false,
       message: error.message || "Login failed",
+    });
+  }
+};
+
+/**
+ * Changes the signed-in account's password.
+ *
+ * The account comes from the verified token, never from the request body, so a
+ * caller cannot change someone else's password by naming them.
+ */
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const validatedData = changePasswordSchema.parse(req.body);
+
+    const result = await changePasswordForUser({
+      userId: req.user!.userId,
+
+      currentPassword: validatedData.currentPassword,
+
+      newPassword: validatedData.newPassword,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message || "Unable to change the password",
     });
   }
 };

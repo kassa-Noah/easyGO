@@ -15,6 +15,7 @@ import ticketRoutes from "./modules/ticket/ticket.routes";
 import luggageRoutes from "./modules/luggage/luggage.routes";
 import parcelRoutes from "./modules/parcel/parcel.routes";
 import notificationRoutes from "./modules/notification/notification.routes";
+import conversationRoutes from "./modules/conversation/conversation.routes";
 import reviewRoutes from "./modules/review/review.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import staffRoutes from "./modules/staff/staff.routes";
@@ -111,6 +112,11 @@ app.use(
 app.use(
   "/api/notifications",
   notificationRoutes
+);
+
+app.use(
+  "/api/conversations",
+  conversationRoutes
 );
 
 app.use(

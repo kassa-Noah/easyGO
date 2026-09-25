@@ -159,6 +159,9 @@ model User {
   luggageUpdates LuggageTrackingEvent[]
   parcelUpdates  ParcelTrackingEvent[]
 
+  conversations Conversation[] @relation("ConversationCustomer")
+  sentMessages  Message[]      @relation("MessageSender")
+
   @@index([email])
   @@index([phone])
 }
@@ -185,6 +188,8 @@ model Agency {
   vehicles Vehicle[]
   trips    Trip[]
   reviews  Review[]
+
+  conversations Conversation[]
 
   @@index([name])
 }
@@ -682,6 +687,63 @@ model Notification {
 
   @@index([userId])
   @@index([status])
+}
+
+// ======================================================
+// MESSAGING
+// ======================================================
+
+enum ConversationContextType {
+  BOOKING
+  PARCEL
+  GENERAL
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+/// A thread between one customer and one agency.
+///
+/// The booking or parcel the thread is about is held as its human reference
+/// rather than a foreign key, because the same thread may be opened before a
+/// record exists and the reference is what both sides quote to each other.
+model Conversation {
+  id               String                  @id @default(uuid())
+  contextType      ConversationContextType @default(GENERAL)
+  contextReference String?
+  status           ConversationStatus      @default(OPEN)
+
+  agencyId   String
+  customerId String
+
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  agency   Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  customer User      @relation("ConversationCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([agencyId])
+  @@index([customerId])
+  @@index([lastMessageAt])
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  conversationId String
+  senderId       String
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
 }
 
 // ======================================================

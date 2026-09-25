@@ -231,6 +231,8 @@ export type UserWhereInput = {
   agencyStaff?: Prisma.XOR<Prisma.AgencyStaffNullableScalarRelationFilter, Prisma.AgencyStaffWhereInput> | null
   luggageUpdates?: Prisma.LuggageTrackingEventListRelationFilter
   parcelUpdates?: Prisma.ParcelTrackingEventListRelationFilter
+  conversations?: Prisma.ConversationListRelationFilter
+  sentMessages?: Prisma.MessageListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -253,6 +255,8 @@ export type UserOrderByWithRelationInput = {
   agencyStaff?: Prisma.AgencyStaffOrderByWithRelationInput
   luggageUpdates?: Prisma.LuggageTrackingEventOrderByRelationAggregateInput
   parcelUpdates?: Prisma.ParcelTrackingEventOrderByRelationAggregateInput
+  conversations?: Prisma.ConversationOrderByRelationAggregateInput
+  sentMessages?: Prisma.MessageOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -278,6 +282,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   agencyStaff?: Prisma.XOR<Prisma.AgencyStaffNullableScalarRelationFilter, Prisma.AgencyStaffWhereInput> | null
   luggageUpdates?: Prisma.LuggageTrackingEventListRelationFilter
   parcelUpdates?: Prisma.ParcelTrackingEventListRelationFilter
+  conversations?: Prisma.ConversationListRelationFilter
+  sentMessages?: Prisma.MessageListRelationFilter
 }, "id" | "email" | "phone">
 
 export type UserOrderByWithAggregationInput = {
@@ -332,6 +338,8 @@ export type UserCreateInput = {
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -354,6 +362,8 @@ export type UserUncheckedCreateInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserUpdateInput = {
@@ -376,6 +386,8 @@ export type UserUpdateInput = {
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -398,6 +410,8 @@ export type UserUncheckedUpdateInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -622,6 +636,34 @@ export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationsInput, Prisma.UserUpdateWithoutNotificationsInput>, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
 }
 
+export type UserCreateNestedOneWithoutConversationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConversationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutConversationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConversationsInput
+  upsert?: Prisma.UserUpsertWithoutConversationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutConversationsInput, Prisma.UserUpdateWithoutConversationsInput>, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+}
+
+export type UserCreateNestedOneWithoutSentMessagesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSentMessagesInput, Prisma.UserUncheckedCreateWithoutSentMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSentMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSentMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSentMessagesInput, Prisma.UserUncheckedCreateWithoutSentMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSentMessagesInput
+  upsert?: Prisma.UserUpsertWithoutSentMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSentMessagesInput, Prisma.UserUpdateWithoutSentMessagesInput>, Prisma.UserUncheckedUpdateWithoutSentMessagesInput>
+}
+
 export type UserCreateNestedOneWithoutReviewsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutReviewsInput, Prisma.UserUncheckedCreateWithoutReviewsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutReviewsInput
@@ -655,6 +697,8 @@ export type UserCreateWithoutAgencyStaffInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutAgencyStaffInput = {
@@ -676,6 +720,8 @@ export type UserUncheckedCreateWithoutAgencyStaffInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutAgencyStaffInput = {
@@ -713,6 +759,8 @@ export type UserUpdateWithoutAgencyStaffInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAgencyStaffInput = {
@@ -734,6 +782,8 @@ export type UserUncheckedUpdateWithoutAgencyStaffInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutBookingsInput = {
@@ -755,6 +805,8 @@ export type UserCreateWithoutBookingsInput = {
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutBookingsInput = {
@@ -776,6 +828,8 @@ export type UserUncheckedCreateWithoutBookingsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutBookingsInput = {
@@ -813,6 +867,8 @@ export type UserUpdateWithoutBookingsInput = {
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBookingsInput = {
@@ -834,6 +890,8 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutJourneysInput = {
@@ -855,6 +913,8 @@ export type UserCreateWithoutJourneysInput = {
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutJourneysInput = {
@@ -876,6 +936,8 @@ export type UserUncheckedCreateWithoutJourneysInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutJourneysInput = {
@@ -913,6 +975,8 @@ export type UserUpdateWithoutJourneysInput = {
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutJourneysInput = {
@@ -934,6 +998,8 @@ export type UserUncheckedUpdateWithoutJourneysInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutLuggageUpdatesInput = {
@@ -955,6 +1021,8 @@ export type UserCreateWithoutLuggageUpdatesInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutLuggageUpdatesInput = {
@@ -976,6 +1044,8 @@ export type UserUncheckedCreateWithoutLuggageUpdatesInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutLuggageUpdatesInput = {
@@ -1013,6 +1083,8 @@ export type UserUpdateWithoutLuggageUpdatesInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLuggageUpdatesInput = {
@@ -1034,6 +1106,8 @@ export type UserUncheckedUpdateWithoutLuggageUpdatesInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutSentParcelsInput = {
@@ -1055,6 +1129,8 @@ export type UserCreateWithoutSentParcelsInput = {
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutSentParcelsInput = {
@@ -1076,6 +1152,8 @@ export type UserUncheckedCreateWithoutSentParcelsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutSentParcelsInput = {
@@ -1102,6 +1180,8 @@ export type UserCreateWithoutReceivedParcelsInput = {
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutReceivedParcelsInput = {
@@ -1123,6 +1203,8 @@ export type UserUncheckedCreateWithoutReceivedParcelsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutReceivedParcelsInput = {
@@ -1160,6 +1242,8 @@ export type UserUpdateWithoutSentParcelsInput = {
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentParcelsInput = {
@@ -1181,6 +1265,8 @@ export type UserUncheckedUpdateWithoutSentParcelsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUpsertWithoutReceivedParcelsInput = {
@@ -1213,6 +1299,8 @@ export type UserUpdateWithoutReceivedParcelsInput = {
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReceivedParcelsInput = {
@@ -1234,6 +1322,8 @@ export type UserUncheckedUpdateWithoutReceivedParcelsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutParcelUpdatesInput = {
@@ -1255,6 +1345,8 @@ export type UserCreateWithoutParcelUpdatesInput = {
   reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutParcelUpdatesInput = {
@@ -1276,6 +1368,8 @@ export type UserUncheckedCreateWithoutParcelUpdatesInput = {
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutParcelUpdatesInput = {
@@ -1313,6 +1407,8 @@ export type UserUpdateWithoutParcelUpdatesInput = {
   reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutParcelUpdatesInput = {
@@ -1334,6 +1430,8 @@ export type UserUncheckedUpdateWithoutParcelUpdatesInput = {
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -1355,6 +1453,8 @@ export type UserCreateWithoutNotificationsInput = {
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -1376,6 +1476,8 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -1413,6 +1515,8 @@ export type UserUpdateWithoutNotificationsInput = {
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -1434,6 +1538,224 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+}
+
+export type UserCreateWithoutConversationsInput = {
+  id?: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  passwordHash: string
+  role?: $Enums.UserRole
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  journeys?: Prisma.DoorToDoorJourneyCreateNestedManyWithoutUserInput
+  sentParcels?: Prisma.ParcelCreateNestedManyWithoutSenderInput
+  receivedParcels?: Prisma.ParcelCreateNestedManyWithoutRecipientUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
+  luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
+  parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+}
+
+export type UserUncheckedCreateWithoutConversationsInput = {
+  id?: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  passwordHash: string
+  role?: $Enums.UserRole
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  journeys?: Prisma.DoorToDoorJourneyUncheckedCreateNestedManyWithoutUserInput
+  sentParcels?: Prisma.ParcelUncheckedCreateNestedManyWithoutSenderInput
+  receivedParcels?: Prisma.ParcelUncheckedCreateNestedManyWithoutRecipientUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
+  luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+}
+
+export type UserCreateOrConnectWithoutConversationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+}
+
+export type UserUpsertWithoutConversationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutConversationsInput, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutConversationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutConversationsInput, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+}
+
+export type UserUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  journeys?: Prisma.DoorToDoorJourneyUpdateManyWithoutUserNestedInput
+  sentParcels?: Prisma.ParcelUpdateManyWithoutSenderNestedInput
+  receivedParcels?: Prisma.ParcelUpdateManyWithoutRecipientUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
+  luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+}
+
+export type UserUncheckedUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  journeys?: Prisma.DoorToDoorJourneyUncheckedUpdateManyWithoutUserNestedInput
+  sentParcels?: Prisma.ParcelUncheckedUpdateManyWithoutSenderNestedInput
+  receivedParcels?: Prisma.ParcelUncheckedUpdateManyWithoutRecipientUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
+  luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+}
+
+export type UserCreateWithoutSentMessagesInput = {
+  id?: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  passwordHash: string
+  role?: $Enums.UserRole
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  journeys?: Prisma.DoorToDoorJourneyCreateNestedManyWithoutUserInput
+  sentParcels?: Prisma.ParcelCreateNestedManyWithoutSenderInput
+  receivedParcels?: Prisma.ParcelCreateNestedManyWithoutRecipientUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutUserInput
+  agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
+  luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
+  parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+}
+
+export type UserUncheckedCreateWithoutSentMessagesInput = {
+  id?: string
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  passwordHash: string
+  role?: $Enums.UserRole
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  journeys?: Prisma.DoorToDoorJourneyUncheckedCreateNestedManyWithoutUserInput
+  sentParcels?: Prisma.ParcelUncheckedCreateNestedManyWithoutSenderInput
+  receivedParcels?: Prisma.ParcelUncheckedCreateNestedManyWithoutRecipientUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutUserInput
+  agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
+  luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+}
+
+export type UserCreateOrConnectWithoutSentMessagesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSentMessagesInput, Prisma.UserUncheckedCreateWithoutSentMessagesInput>
+}
+
+export type UserUpsertWithoutSentMessagesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSentMessagesInput, Prisma.UserUncheckedUpdateWithoutSentMessagesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSentMessagesInput, Prisma.UserUncheckedCreateWithoutSentMessagesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSentMessagesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSentMessagesInput, Prisma.UserUncheckedUpdateWithoutSentMessagesInput>
+}
+
+export type UserUpdateWithoutSentMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  journeys?: Prisma.DoorToDoorJourneyUpdateManyWithoutUserNestedInput
+  sentParcels?: Prisma.ParcelUpdateManyWithoutSenderNestedInput
+  receivedParcels?: Prisma.ParcelUpdateManyWithoutRecipientUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutUserNestedInput
+  agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
+  luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSentMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  journeys?: Prisma.DoorToDoorJourneyUncheckedUpdateManyWithoutUserNestedInput
+  sentParcels?: Prisma.ParcelUncheckedUpdateManyWithoutSenderNestedInput
+  receivedParcels?: Prisma.ParcelUncheckedUpdateManyWithoutRecipientUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutUserNestedInput
+  agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
+  luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
 }
 
 export type UserCreateWithoutReviewsInput = {
@@ -1455,6 +1777,8 @@ export type UserCreateWithoutReviewsInput = {
   agencyStaff?: Prisma.AgencyStaffCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutReviewsInput = {
@@ -1476,6 +1800,8 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedCreateNestedOneWithoutUserInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedCreateNestedManyWithoutUpdatedByInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutReviewsInput = {
@@ -1513,6 +1839,8 @@ export type UserUpdateWithoutReviewsInput = {
   agencyStaff?: Prisma.AgencyStaffUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewsInput = {
@@ -1534,6 +1862,8 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   agencyStaff?: Prisma.AgencyStaffUncheckedUpdateOneWithoutUserNestedInput
   luggageUpdates?: Prisma.LuggageTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
   parcelUpdates?: Prisma.ParcelTrackingEventUncheckedUpdateManyWithoutUpdatedByNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 
@@ -1550,6 +1880,8 @@ export type UserCountOutputType = {
   reviews: number
   luggageUpdates: number
   parcelUpdates: number
+  conversations: number
+  sentMessages: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1561,6 +1893,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   reviews?: boolean | UserCountOutputTypeCountReviewsArgs
   luggageUpdates?: boolean | UserCountOutputTypeCountLuggageUpdatesArgs
   parcelUpdates?: boolean | UserCountOutputTypeCountParcelUpdatesArgs
+  conversations?: boolean | UserCountOutputTypeCountConversationsArgs
+  sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
 }
 
 /**
@@ -1629,6 +1963,20 @@ export type UserCountOutputTypeCountParcelUpdatesArgs<ExtArgs extends runtime.Ty
   where?: Prisma.ParcelTrackingEventWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ConversationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSentMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MessageWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1650,6 +1998,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   agencyStaff?: boolean | Prisma.User$agencyStaffArgs<ExtArgs>
   luggageUpdates?: boolean | Prisma.User$luggageUpdatesArgs<ExtArgs>
   parcelUpdates?: boolean | Prisma.User$parcelUpdatesArgs<ExtArgs>
+  conversations?: boolean | Prisma.User$conversationsArgs<ExtArgs>
+  sentMessages?: boolean | Prisma.User$sentMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1703,6 +2053,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   agencyStaff?: boolean | Prisma.User$agencyStaffArgs<ExtArgs>
   luggageUpdates?: boolean | Prisma.User$luggageUpdatesArgs<ExtArgs>
   parcelUpdates?: boolean | Prisma.User$parcelUpdatesArgs<ExtArgs>
+  conversations?: boolean | Prisma.User$conversationsArgs<ExtArgs>
+  sentMessages?: boolean | Prisma.User$sentMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1720,6 +2072,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     agencyStaff: Prisma.$AgencyStaffPayload<ExtArgs> | null
     luggageUpdates: Prisma.$LuggageTrackingEventPayload<ExtArgs>[]
     parcelUpdates: Prisma.$ParcelTrackingEventPayload<ExtArgs>[]
+    conversations: Prisma.$ConversationPayload<ExtArgs>[]
+    sentMessages: Prisma.$MessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2135,6 +2489,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   agencyStaff<T extends Prisma.User$agencyStaffArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$agencyStaffArgs<ExtArgs>>): Prisma.Prisma__AgencyStaffClient<runtime.Types.Result.GetResult<Prisma.$AgencyStaffPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   luggageUpdates<T extends Prisma.User$luggageUpdatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$luggageUpdatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LuggageTrackingEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   parcelUpdates<T extends Prisma.User$parcelUpdatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$parcelUpdatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ParcelTrackingEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  conversations<T extends Prisma.User$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  sentMessages<T extends Prisma.User$sentMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2775,6 +3131,54 @@ export type User$parcelUpdatesArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.ParcelTrackingEventScalarFieldEnum | Prisma.ParcelTrackingEventScalarFieldEnum[]
+}
+
+/**
+ * User.conversations
+ */
+export type User$conversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Conversation
+   */
+  select?: Prisma.ConversationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Conversation
+   */
+  omit?: Prisma.ConversationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConversationInclude<ExtArgs> | null
+  where?: Prisma.ConversationWhereInput
+  orderBy?: Prisma.ConversationOrderByWithRelationInput | Prisma.ConversationOrderByWithRelationInput[]
+  cursor?: Prisma.ConversationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ConversationScalarFieldEnum | Prisma.ConversationScalarFieldEnum[]
+}
+
+/**
+ * User.sentMessages
+ */
+export type User$sentMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Message
+   */
+  select?: Prisma.MessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Message
+   */
+  omit?: Prisma.MessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessageInclude<ExtArgs> | null
+  where?: Prisma.MessageWhereInput
+  orderBy?: Prisma.MessageOrderByWithRelationInput | Prisma.MessageOrderByWithRelationInput[]
+  cursor?: Prisma.MessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MessageScalarFieldEnum | Prisma.MessageScalarFieldEnum[]
 }
 
 /**

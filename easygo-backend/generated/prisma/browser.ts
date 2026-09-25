@@ -108,6 +108,20 @@ export type ParcelTrackingEvent = Prisma.ParcelTrackingEventModel
  */
 export type Notification = Prisma.NotificationModel
 /**
+ * Model Conversation
+ * A thread between one customer and one agency.
+ * 
+ * The booking or parcel the thread is about is held as its human reference
+ * rather than a foreign key, because the same thread may be opened before a
+ * record exists and the reference is what both sides quote to each other.
+ */
+export type Conversation = Prisma.ConversationModel
+/**
+ * Model Message
+ * 
+ */
+export type Message = Prisma.MessageModel
+/**
  * Model Review
  * 
  */

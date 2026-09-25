@@ -227,6 +227,7 @@ export type AgencyWhereInput = {
   vehicles?: Prisma.VehicleListRelationFilter
   trips?: Prisma.TripListRelationFilter
   reviews?: Prisma.ReviewListRelationFilter
+  conversations?: Prisma.ConversationListRelationFilter
 }
 
 export type AgencyOrderByWithRelationInput = {
@@ -245,6 +246,7 @@ export type AgencyOrderByWithRelationInput = {
   vehicles?: Prisma.VehicleOrderByRelationAggregateInput
   trips?: Prisma.TripOrderByRelationAggregateInput
   reviews?: Prisma.ReviewOrderByRelationAggregateInput
+  conversations?: Prisma.ConversationOrderByRelationAggregateInput
 }
 
 export type AgencyWhereUniqueInput = Prisma.AtLeast<{
@@ -266,6 +268,7 @@ export type AgencyWhereUniqueInput = Prisma.AtLeast<{
   vehicles?: Prisma.VehicleListRelationFilter
   trips?: Prisma.TripListRelationFilter
   reviews?: Prisma.ReviewListRelationFilter
+  conversations?: Prisma.ConversationListRelationFilter
 }, "id">
 
 export type AgencyOrderByWithAggregationInput = {
@@ -316,6 +319,7 @@ export type AgencyCreateInput = {
   vehicles?: Prisma.VehicleCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyUncheckedCreateInput = {
@@ -334,6 +338,7 @@ export type AgencyUncheckedCreateInput = {
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripUncheckedCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyUpdateInput = {
@@ -352,6 +357,7 @@ export type AgencyUpdateInput = {
   vehicles?: Prisma.VehicleUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyUncheckedUpdateInput = {
@@ -370,6 +376,7 @@ export type AgencyUncheckedUpdateInput = {
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUncheckedUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyCreateManyInput = {
@@ -515,6 +522,20 @@ export type AgencyUpdateOneRequiredWithoutTripsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.AgencyUpdateToOneWithWhereWithoutTripsInput, Prisma.AgencyUpdateWithoutTripsInput>, Prisma.AgencyUncheckedUpdateWithoutTripsInput>
 }
 
+export type AgencyCreateNestedOneWithoutConversationsInput = {
+  create?: Prisma.XOR<Prisma.AgencyCreateWithoutConversationsInput, Prisma.AgencyUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.AgencyCreateOrConnectWithoutConversationsInput
+  connect?: Prisma.AgencyWhereUniqueInput
+}
+
+export type AgencyUpdateOneRequiredWithoutConversationsNestedInput = {
+  create?: Prisma.XOR<Prisma.AgencyCreateWithoutConversationsInput, Prisma.AgencyUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.AgencyCreateOrConnectWithoutConversationsInput
+  upsert?: Prisma.AgencyUpsertWithoutConversationsInput
+  connect?: Prisma.AgencyWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AgencyUpdateToOneWithWhereWithoutConversationsInput, Prisma.AgencyUpdateWithoutConversationsInput>, Prisma.AgencyUncheckedUpdateWithoutConversationsInput>
+}
+
 export type AgencyCreateNestedOneWithoutReviewsInput = {
   create?: Prisma.XOR<Prisma.AgencyCreateWithoutReviewsInput, Prisma.AgencyUncheckedCreateWithoutReviewsInput>
   connectOrCreate?: Prisma.AgencyCreateOrConnectWithoutReviewsInput
@@ -544,6 +565,7 @@ export type AgencyCreateWithoutStaffInput = {
   vehicles?: Prisma.VehicleCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyUncheckedCreateWithoutStaffInput = {
@@ -561,6 +583,7 @@ export type AgencyUncheckedCreateWithoutStaffInput = {
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripUncheckedCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyCreateOrConnectWithoutStaffInput = {
@@ -594,6 +617,7 @@ export type AgencyUpdateWithoutStaffInput = {
   vehicles?: Prisma.VehicleUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyUncheckedUpdateWithoutStaffInput = {
@@ -611,6 +635,7 @@ export type AgencyUncheckedUpdateWithoutStaffInput = {
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUncheckedUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyCreateWithoutBranchesInput = {
@@ -628,6 +653,7 @@ export type AgencyCreateWithoutBranchesInput = {
   vehicles?: Prisma.VehicleCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyUncheckedCreateWithoutBranchesInput = {
@@ -645,6 +671,7 @@ export type AgencyUncheckedCreateWithoutBranchesInput = {
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripUncheckedCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyCreateOrConnectWithoutBranchesInput = {
@@ -678,6 +705,7 @@ export type AgencyUpdateWithoutBranchesInput = {
   vehicles?: Prisma.VehicleUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyUncheckedUpdateWithoutBranchesInput = {
@@ -695,6 +723,7 @@ export type AgencyUncheckedUpdateWithoutBranchesInput = {
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUncheckedUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyCreateWithoutVehiclesInput = {
@@ -712,6 +741,7 @@ export type AgencyCreateWithoutVehiclesInput = {
   staff?: Prisma.AgencyStaffCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyUncheckedCreateWithoutVehiclesInput = {
@@ -729,6 +759,7 @@ export type AgencyUncheckedCreateWithoutVehiclesInput = {
   staff?: Prisma.AgencyStaffUncheckedCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripUncheckedCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyCreateOrConnectWithoutVehiclesInput = {
@@ -762,6 +793,7 @@ export type AgencyUpdateWithoutVehiclesInput = {
   staff?: Prisma.AgencyStaffUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyUncheckedUpdateWithoutVehiclesInput = {
@@ -779,6 +811,7 @@ export type AgencyUncheckedUpdateWithoutVehiclesInput = {
   staff?: Prisma.AgencyStaffUncheckedUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUncheckedUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyCreateWithoutTripsInput = {
@@ -796,6 +829,7 @@ export type AgencyCreateWithoutTripsInput = {
   staff?: Prisma.AgencyStaffCreateNestedManyWithoutAgencyInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyUncheckedCreateWithoutTripsInput = {
@@ -813,6 +847,7 @@ export type AgencyUncheckedCreateWithoutTripsInput = {
   staff?: Prisma.AgencyStaffUncheckedCreateNestedManyWithoutAgencyInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutAgencyInput
   reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyCreateOrConnectWithoutTripsInput = {
@@ -846,6 +881,7 @@ export type AgencyUpdateWithoutTripsInput = {
   staff?: Prisma.AgencyStaffUpdateManyWithoutAgencyNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyUncheckedUpdateWithoutTripsInput = {
@@ -862,6 +898,95 @@ export type AgencyUncheckedUpdateWithoutTripsInput = {
   branches?: Prisma.AgencyBranchUncheckedUpdateManyWithoutAgencyNestedInput
   staff?: Prisma.AgencyStaffUncheckedUpdateManyWithoutAgencyNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutAgencyNestedInput
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutAgencyNestedInput
+}
+
+export type AgencyCreateWithoutConversationsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  phone?: string | null
+  email?: string | null
+  logoUrl?: string | null
+  website?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  branches?: Prisma.AgencyBranchCreateNestedManyWithoutAgencyInput
+  staff?: Prisma.AgencyStaffCreateNestedManyWithoutAgencyInput
+  vehicles?: Prisma.VehicleCreateNestedManyWithoutAgencyInput
+  trips?: Prisma.TripCreateNestedManyWithoutAgencyInput
+  reviews?: Prisma.ReviewCreateNestedManyWithoutAgencyInput
+}
+
+export type AgencyUncheckedCreateWithoutConversationsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  phone?: string | null
+  email?: string | null
+  logoUrl?: string | null
+  website?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  branches?: Prisma.AgencyBranchUncheckedCreateNestedManyWithoutAgencyInput
+  staff?: Prisma.AgencyStaffUncheckedCreateNestedManyWithoutAgencyInput
+  vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutAgencyInput
+  trips?: Prisma.TripUncheckedCreateNestedManyWithoutAgencyInput
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutAgencyInput
+}
+
+export type AgencyCreateOrConnectWithoutConversationsInput = {
+  where: Prisma.AgencyWhereUniqueInput
+  create: Prisma.XOR<Prisma.AgencyCreateWithoutConversationsInput, Prisma.AgencyUncheckedCreateWithoutConversationsInput>
+}
+
+export type AgencyUpsertWithoutConversationsInput = {
+  update: Prisma.XOR<Prisma.AgencyUpdateWithoutConversationsInput, Prisma.AgencyUncheckedUpdateWithoutConversationsInput>
+  create: Prisma.XOR<Prisma.AgencyCreateWithoutConversationsInput, Prisma.AgencyUncheckedCreateWithoutConversationsInput>
+  where?: Prisma.AgencyWhereInput
+}
+
+export type AgencyUpdateToOneWithWhereWithoutConversationsInput = {
+  where?: Prisma.AgencyWhereInput
+  data: Prisma.XOR<Prisma.AgencyUpdateWithoutConversationsInput, Prisma.AgencyUncheckedUpdateWithoutConversationsInput>
+}
+
+export type AgencyUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  branches?: Prisma.AgencyBranchUpdateManyWithoutAgencyNestedInput
+  staff?: Prisma.AgencyStaffUpdateManyWithoutAgencyNestedInput
+  vehicles?: Prisma.VehicleUpdateManyWithoutAgencyNestedInput
+  trips?: Prisma.TripUpdateManyWithoutAgencyNestedInput
+  reviews?: Prisma.ReviewUpdateManyWithoutAgencyNestedInput
+}
+
+export type AgencyUncheckedUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  logoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  branches?: Prisma.AgencyBranchUncheckedUpdateManyWithoutAgencyNestedInput
+  staff?: Prisma.AgencyStaffUncheckedUpdateManyWithoutAgencyNestedInput
+  vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutAgencyNestedInput
+  trips?: Prisma.TripUncheckedUpdateManyWithoutAgencyNestedInput
   reviews?: Prisma.ReviewUncheckedUpdateManyWithoutAgencyNestedInput
 }
 
@@ -880,6 +1005,7 @@ export type AgencyCreateWithoutReviewsInput = {
   staff?: Prisma.AgencyStaffCreateNestedManyWithoutAgencyInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyUncheckedCreateWithoutReviewsInput = {
@@ -897,6 +1023,7 @@ export type AgencyUncheckedCreateWithoutReviewsInput = {
   staff?: Prisma.AgencyStaffUncheckedCreateNestedManyWithoutAgencyInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutAgencyInput
   trips?: Prisma.TripUncheckedCreateNestedManyWithoutAgencyInput
+  conversations?: Prisma.ConversationUncheckedCreateNestedManyWithoutAgencyInput
 }
 
 export type AgencyCreateOrConnectWithoutReviewsInput = {
@@ -930,6 +1057,7 @@ export type AgencyUpdateWithoutReviewsInput = {
   staff?: Prisma.AgencyStaffUpdateManyWithoutAgencyNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUpdateManyWithoutAgencyNestedInput
 }
 
 export type AgencyUncheckedUpdateWithoutReviewsInput = {
@@ -947,6 +1075,7 @@ export type AgencyUncheckedUpdateWithoutReviewsInput = {
   staff?: Prisma.AgencyStaffUncheckedUpdateManyWithoutAgencyNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutAgencyNestedInput
   trips?: Prisma.TripUncheckedUpdateManyWithoutAgencyNestedInput
+  conversations?: Prisma.ConversationUncheckedUpdateManyWithoutAgencyNestedInput
 }
 
 
@@ -960,6 +1089,7 @@ export type AgencyCountOutputType = {
   vehicles: number
   trips: number
   reviews: number
+  conversations: number
 }
 
 export type AgencyCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -968,6 +1098,7 @@ export type AgencyCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   vehicles?: boolean | AgencyCountOutputTypeCountVehiclesArgs
   trips?: boolean | AgencyCountOutputTypeCountTripsArgs
   reviews?: boolean | AgencyCountOutputTypeCountReviewsArgs
+  conversations?: boolean | AgencyCountOutputTypeCountConversationsArgs
 }
 
 /**
@@ -1015,6 +1146,13 @@ export type AgencyCountOutputTypeCountReviewsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.ReviewWhereInput
 }
 
+/**
+ * AgencyCountOutputType without action
+ */
+export type AgencyCountOutputTypeCountConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ConversationWhereInput
+}
+
 
 export type AgencySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1032,6 +1170,7 @@ export type AgencySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   vehicles?: boolean | Prisma.Agency$vehiclesArgs<ExtArgs>
   trips?: boolean | Prisma.Agency$tripsArgs<ExtArgs>
   reviews?: boolean | Prisma.Agency$reviewsArgs<ExtArgs>
+  conversations?: boolean | Prisma.Agency$conversationsArgs<ExtArgs>
   _count?: boolean | Prisma.AgencyCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["agency"]>
 
@@ -1081,6 +1220,7 @@ export type AgencyInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   vehicles?: boolean | Prisma.Agency$vehiclesArgs<ExtArgs>
   trips?: boolean | Prisma.Agency$tripsArgs<ExtArgs>
   reviews?: boolean | Prisma.Agency$reviewsArgs<ExtArgs>
+  conversations?: boolean | Prisma.Agency$conversationsArgs<ExtArgs>
   _count?: boolean | Prisma.AgencyCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type AgencyIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1094,6 +1234,7 @@ export type $AgencyPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     vehicles: Prisma.$VehiclePayload<ExtArgs>[]
     trips: Prisma.$TripPayload<ExtArgs>[]
     reviews: Prisma.$ReviewPayload<ExtArgs>[]
+    conversations: Prisma.$ConversationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1505,6 +1646,7 @@ export interface Prisma__AgencyClient<T, Null = never, ExtArgs extends runtime.T
   vehicles<T extends Prisma.Agency$vehiclesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Agency$vehiclesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   trips<T extends Prisma.Agency$tripsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Agency$tripsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TripPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reviews<T extends Prisma.Agency$reviewsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Agency$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  conversations<T extends Prisma.Agency$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Agency$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2054,6 +2196,30 @@ export type Agency$reviewsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.ReviewScalarFieldEnum | Prisma.ReviewScalarFieldEnum[]
+}
+
+/**
+ * Agency.conversations
+ */
+export type Agency$conversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Conversation
+   */
+  select?: Prisma.ConversationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Conversation
+   */
+  omit?: Prisma.ConversationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConversationInclude<ExtArgs> | null
+  where?: Prisma.ConversationWhereInput
+  orderBy?: Prisma.ConversationOrderByWithRelationInput | Prisma.ConversationOrderByWithRelationInput[]
+  cursor?: Prisma.ConversationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ConversationScalarFieldEnum | Prisma.ConversationScalarFieldEnum[]
 }
 
 /**

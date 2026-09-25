@@ -172,3 +172,20 @@ export const NotificationStatus = {
 } as const
 
 export type NotificationStatus = (typeof NotificationStatus)[keyof typeof NotificationStatus]
+
+
+export const ConversationContextType = {
+  BOOKING: 'BOOKING',
+  PARCEL: 'PARCEL',
+  GENERAL: 'GENERAL'
+} as const
+
+export type ConversationContextType = (typeof ConversationContextType)[keyof typeof ConversationContextType]
+
+
+export const ConversationStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED'
+} as const
+
+export type ConversationStatus = (typeof ConversationStatus)[keyof typeof ConversationStatus]

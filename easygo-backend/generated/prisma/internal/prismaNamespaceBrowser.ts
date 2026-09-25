@@ -69,6 +69,8 @@ export const ModelName = {
   Parcel: 'Parcel',
   ParcelTrackingEvent: 'ParcelTrackingEvent',
   Notification: 'Notification',
+  Conversation: 'Conversation',
+  Message: 'Message',
   Review: 'Review'
 } as const
 
@@ -377,6 +379,33 @@ export const NotificationScalarFieldEnum = {
 } as const
 
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+export const ConversationScalarFieldEnum = {
+  id: 'id',
+  contextType: 'contextType',
+  contextReference: 'contextReference',
+  status: 'status',
+  agencyId: 'agencyId',
+  customerId: 'customerId',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
+
+
+export const MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  body: 'body',
+  readAt: 'readAt',
+  createdAt: 'createdAt'
+} as const
+
+export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
 
 
 export const ReviewScalarFieldEnum = {
