@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../agencies/models/agency.dart';
+import '../../agencies/services/agency_service.dart';
 import 'parcel_review_screen.dart';
 
 class CreateParcelScreen extends StatefulWidget {
@@ -15,6 +18,8 @@ class CreateParcelScreen extends StatefulWidget {
 class _CreateParcelScreenState extends State<CreateParcelScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  final AgencyService _agencyService = AgencyService.instance;
+
   final TextEditingController _recipientNameController =
       TextEditingController();
 
@@ -25,17 +30,87 @@ class _CreateParcelScreenState extends State<CreateParcelScreen> {
 
   final TextEditingController _weightController = TextEditingController();
 
-  String? _departureCity;
-  String? _destinationCity;
+  /* The backend identifies a route by its agency branches, so the
+   * sender picks the real departure and arrival branches instead of
+   * a free city name. */
+  List<AgencyBranch> _branches = const <AgencyBranch>[];
 
-  final List<String> _cities = [
-    'Yaoundé',
-    'Douala',
-    'Bafoussam',
-    'Bamenda',
-    'Buea',
-    'Limbe',
-  ];
+  final Map<String, String> _agencyNamesByBranchId = <String, String>{};
+
+  AgencyBranch? _originBranch;
+  AgencyBranch? _destinationBranch;
+
+  bool _isLoadingBranches = true;
+
+  String? _branchError;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadBranches();
+  }
+
+  Future<void> _loadBranches() async {
+    setState(() {
+      _isLoadingBranches = true;
+      _branchError = null;
+    });
+
+    try {
+      final List<Agency> agencies = await _agencyService.getAgencies();
+
+      final List<AgencyBranch> branches = <AgencyBranch>[];
+      final Map<String, String> agencyNames = <String, String>{};
+
+      for (final Agency agency in agencies) {
+        for (final AgencyBranch branch in agency.activeBranches) {
+          branches.add(branch);
+
+          agencyNames[branch.id] = agency.name;
+        }
+      }
+
+      branches.sort((AgencyBranch first, AgencyBranch second) {
+        return '${first.city}${first.name}'.compareTo(
+          '${second.city}${second.name}',
+        );
+      });
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _branches = branches;
+
+        _agencyNamesByBranchId
+          ..clear()
+          ..addAll(agencyNames);
+
+        _isLoadingBranches = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _branchError = error.message;
+        _isLoadingBranches = false;
+      });
+    }
+  }
+
+  String _branchLabel(AgencyBranch branch) {
+    final String agencyName = _agencyNamesByBranchId[branch.id] ?? '';
+
+    if (agencyName.isEmpty) {
+      return '${branch.name} (${branch.city})';
+    }
+
+    return '$agencyName — ${branch.name} (${branch.city})';
+  }
 
   @override
   void dispose() {
@@ -54,7 +129,7 @@ class _CreateParcelScreenState extends State<CreateParcelScreen> {
       return;
     }
 
-    if (_departureCity == null || _destinationCity == null) {
+    if (_originBranch == null || _destinationBranch == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.selectParcelCitiesError)));
@@ -62,7 +137,7 @@ class _CreateParcelScreenState extends State<CreateParcelScreen> {
       return;
     }
 
-    if (_departureCity == _destinationCity) {
+    if (_originBranch!.id == _destinationBranch!.id) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(l10n.differentParcelCitiesError)));
@@ -88,12 +163,116 @@ class _CreateParcelScreenState extends State<CreateParcelScreen> {
         builder: (context) => ParcelReviewScreen(
           recipientName: _recipientNameController.text.trim(),
           recipientPhone: _recipientPhoneController.text.trim(),
-          departureCity: _departureCity!,
-          destinationCity: _destinationCity!,
+          departureCity: _originBranch!.city,
+          destinationCity: _destinationBranch!.city,
+          originBranchId: _originBranch!.id,
+          destinationBranchId: _destinationBranch!.id,
+          originAgencyName: _agencyNamesByBranchId[_originBranch!.id] ?? '',
+          destinationAgencyName:
+              _agencyNamesByBranchId[_destinationBranch!.id] ?? '',
           description: _descriptionController.text.trim(),
           weight: weight,
         ),
       ),
+    );
+  }
+
+  Widget _buildRouteSection(BuildContext context, AppLocalizations l10n) {
+    final bool isFrench = Localizations.localeOf(context).languageCode == 'fr';
+
+    if (_isLoadingBranches) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_branchError != null) {
+      return Column(
+        children: [
+          Text(
+            _branchError!,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+
+          const SizedBox(height: 12),
+
+          OutlinedButton.icon(
+            onPressed: _loadBranches,
+            icon: const Icon(Icons.refresh),
+            label: Text(isFrench ? 'Réessayer' : 'Try Again'),
+          ),
+        ],
+      );
+    }
+
+    if (_branches.isEmpty) {
+      return Text(
+        isFrench
+            ? 'Aucune agence de transport disponible pour le moment.'
+            : 'No transport agency is available at the moment.',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+
+    return Column(
+      children: [
+        DropdownButtonFormField<AgencyBranch>(
+          initialValue: _originBranch,
+          isExpanded: true,
+          decoration: InputDecoration(
+            labelText: l10n.departureCity,
+            prefixIcon: const Icon(Icons.trip_origin_outlined),
+          ),
+          items: _branches
+              .map(
+                (branch) => DropdownMenuItem<AgencyBranch>(
+                  value: branch,
+                  child: Text(
+                    _branchLabel(branch),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              _originBranch = value;
+            });
+          },
+        ),
+
+        const SizedBox(height: 14),
+
+        DropdownButtonFormField<AgencyBranch>(
+          initialValue: _destinationBranch,
+          isExpanded: true,
+          decoration: InputDecoration(
+            labelText: l10n.destinationCity,
+            prefixIcon: const Icon(Icons.location_on_outlined),
+          ),
+          items: _branches
+              .map(
+                (branch) => DropdownMenuItem<AgencyBranch>(
+                  value: branch,
+                  child: Text(
+                    _branchLabel(branch),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              _destinationBranch = value;
+            });
+          },
+        ),
+      ],
     );
   }
 
@@ -205,59 +384,7 @@ class _CreateParcelScreenState extends State<CreateParcelScreen> {
                         _SectionCard(
                           title: l10n.transportRoute,
                           icon: Icons.route_outlined,
-                          child: Column(
-                            children: [
-                              DropdownButtonFormField<String>(
-                                initialValue: _departureCity,
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  labelText: l10n.departureCity,
-                                  prefixIcon: const Icon(
-                                    Icons.trip_origin_outlined,
-                                  ),
-                                ),
-                                items: _cities
-                                    .map(
-                                      (city) => DropdownMenuItem<String>(
-                                        value: city,
-                                        child: Text(city),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _departureCity = value;
-                                  });
-                                },
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              DropdownButtonFormField<String>(
-                                initialValue: _destinationCity,
-                                isExpanded: true,
-                                decoration: InputDecoration(
-                                  labelText: l10n.destinationCity,
-                                  prefixIcon: const Icon(
-                                    Icons.location_on_outlined,
-                                  ),
-                                ),
-                                items: _cities
-                                    .map(
-                                      (city) => DropdownMenuItem<String>(
-                                        value: city,
-                                        child: Text(city),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _destinationCity = value;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
+                          child: _buildRouteSection(context, l10n),
                         ),
 
                         const SizedBox(height: 18),

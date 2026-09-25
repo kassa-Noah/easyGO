@@ -107,10 +107,17 @@ class BookingLuggageScreen extends StatelessWidget {
                                               destinationCity: _tripValue(
                                                 'destinationCity',
                                               ),
-                                              currentStatus:
+                                              status:
                                                   luggage['status']
                                                       ?.toString() ??
-                                                  'Registered',
+                                                  'REGISTERED',
+                                              progressPercentage:
+                                                  int.tryParse(
+                                                    luggage['progressPercentage']
+                                                            ?.toString() ??
+                                                        '',
+                                                  ) ??
+                                                  0,
                                             ),
                                       ),
                                     );

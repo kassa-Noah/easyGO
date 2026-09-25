@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../bookings/models/booking.dart';
+import '../../bookings/services/ticket_service.dart';
+import '../../payments/models/payment.dart';
+import '../../payments/services/payment_service.dart';
 import '../../trips/models/trip.dart';
 import 'booking_confirmation_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   final Map<String, dynamic> agency;
   final Trip trip;
+  final Booking booking;
 
   final String bookingMode;
   final String departureCity;
@@ -21,19 +27,23 @@ class PaymentScreen extends StatefulWidget {
 
   final int passengers;
   final int luggage;
-  final int totalAmount;
+
+  // This remains a frontend display amount
+  // until the payment API is integrated.
+  final int displayTotalAmount;
 
   const PaymentScreen({
     super.key,
     required this.agency,
     required this.trip,
+    required this.booking,
     required this.bookingMode,
     required this.departureCity,
     required this.destinationCity,
     required this.travelDate,
     required this.passengers,
     required this.luggage,
-    required this.totalAmount,
+    required this.displayTotalAmount,
     this.pickupLocation,
     this.finalDestination,
   });
@@ -43,6 +53,10 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  final PaymentService _paymentService = PaymentService.instance;
+
+  final TicketService _ticketService = TicketService.instance;
+
   String? _selectedPaymentMethod;
 
   bool _isProcessing = false;
@@ -85,7 +99,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (!_isValidPhoneNumber(_phoneController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Enter a valid 9-digit mobile money number.'),
+          content: Text(
+            'Enter a valid 9-digit '
+            'mobile money number.',
+          ),
         ),
       );
 
@@ -97,10 +114,40 @@ class _PaymentScreenState extends State<PaymentScreen> {
     });
 
     try {
-      // Temporary payment simulation.
-      // Real backend payment integration
-      // will replace this later.
-      await Future<void>.delayed(const Duration(seconds: 2));
+      // The mobile money providers are not integrated for the
+      // academic prototype, so the MVP settles payments through
+      // the backend's deterministic SIMULATED adapter.
+      final Payment pendingPayment = await _paymentService.initiatePayment(
+        bookingId: widget.booking.id,
+      );
+
+      // The backend only confirms the booking when the payment
+      // reaches SUCCESSFUL. A FAILED result leaves it PENDING.
+      final Payment settledPayment = await _paymentService.simulatePayment(
+        paymentId: pendingPayment.id,
+        result: 'SUCCESSFUL',
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      if (!settledPayment.isSuccessful) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Payment was not successful. '
+              'Your booking has not been confirmed.',
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      // The booking is confirmed at this point, so the digital
+      // ticket required by the MVP is issued before moving on.
+      final String ticketNumber = await _resolveTicketNumber();
 
       if (!mounted) {
         return;
@@ -120,17 +167,50 @@ class _PaymentScreenState extends State<PaymentScreen> {
             travelDate: widget.travelDate,
             passengers: widget.passengers,
             luggage: widget.luggage,
-            totalAmount: widget.totalAmount,
+            totalAmount: settledPayment.amount.round(),
             paymentMethod: _selectedPaymentMethod!,
+            bookingReference: widget.booking.bookingReference,
+            ticketNumber: ticketNumber,
           ),
         ),
       );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
     } finally {
       if (mounted) {
         setState(() {
           _isProcessing = false;
         });
       }
+    }
+  }
+
+  /// Only one ticket may exist per booking. The backend answers
+  /// with 409 when a ticket was already issued, in which case the
+  /// existing ticket is retrieved instead of a new one being made.
+  Future<String> _resolveTicketNumber() async {
+    try {
+      final BookingTicket ticket = await _ticketService.generateTicket(
+        widget.booking.id,
+      );
+
+      return ticket.ticketNumber;
+    } on ApiException catch (error) {
+      if (error.statusCode != 409) {
+        rethrow;
+      }
+
+      final BookingTicket ticket = await _ticketService.getTicketByBookingId(
+        widget.booking.id,
+      );
+
+      return ticket.ticketNumber;
     }
   }
 
@@ -180,6 +260,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         children: [
                           _buildAmountCard(context),
                           const SizedBox(height: 20),
+                          _buildBookingCard(context),
+                          const SizedBox(height: 20),
                           _buildPaymentMethodCard(context),
                           const SizedBox(height: 20),
                           _buildPhoneCard(context),
@@ -224,7 +306,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              '${_formatPrice(widget.totalAmount)} FCFA',
+              '${_formatPrice(widget.displayTotalAmount)} '
+              'FCFA',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: AppColors.primary,
@@ -251,6 +334,53 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
+  Widget _buildBookingCard(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(18),
+      borderRadius: 18,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Booking created',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Your booking has been created '
+            'in easyGO. Complete payment to '
+            'continue the reservation process.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          _PaymentInfoRow(
+            label: 'Booking reference',
+            value: widget.booking.bookingReference,
+          ),
+          const Divider(height: 24),
+          _PaymentInfoRow(
+            label: 'Booking status',
+            value: widget.booking.status,
+          ),
+          const Divider(height: 24),
+          _PaymentInfoRow(
+            label: 'Reserved seats',
+            value: widget.booking.numberOfSeats.toString(),
+          ),
+          if (widget.booking.isDoorToDoor) ...[
+            const Divider(height: 24),
+            const _PaymentInfoRow(
+              label: 'Door-to-door journey',
+              value: 'Created',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildPaymentMethodCard(BuildContext context) {
     return GlassContainer(
       padding: const EdgeInsets.all(18),
@@ -271,7 +401,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 18),
-
           RadioGroup<String>(
             groupValue: _selectedPaymentMethod,
             onChanged: (String? value) {
@@ -355,10 +484,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
             child: Text(
               'This payment is currently '
               'simulated for the easyGO '
-              'demonstration. Real payment '
-              'processing will be handled '
-              'through the configured '
-              'payment provider.',
+              'demonstration. The real '
+              'backend payment endpoint '
+              'will be connected in the '
+              'next integration step.',
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(height: 1.5),
@@ -392,7 +521,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   children: [
                     const Expanded(child: Text('Total amount')),
                     Text(
-                      '${_formatPrice(widget.totalAmount)} FCFA',
+                      '${_formatPrice(widget.displayTotalAmount)} '
+                      'FCFA',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -418,7 +548,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       _isProcessing
                           ? 'Processing...'
                           : 'Pay '
-                                '${_formatPrice(widget.totalAmount)} FCFA',
+                                '${_formatPrice(widget.displayTotalAmount)} '
+                                'FCFA',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -431,6 +562,35 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _PaymentInfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _PaymentInfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
     );
   }
 }

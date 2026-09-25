@@ -2,47 +2,81 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../tracking/models/tracking.dart';
+import '../../tracking/services/luggage_service.dart';
 import 'tracking_details_screen.dart';
 
-class TravelerLuggageScreen extends StatelessWidget {
+class TravelerLuggageScreen extends StatefulWidget {
   const TravelerLuggageScreen({super.key});
 
-  /*
-   * FRONTEND DEMONSTRATION DATA ONLY.
-   *
-   * During backend integration, these records
-   * will be retrieved using the authenticated
-   * client's confirmed bookings.
-   *
-   * Tracking status values remain canonical
-   * internal values. Their visible labels are
-   * localized by the frontend.
-   */
-  List<Map<String, dynamic>> get _luggageItems => [
-    {
-      'id': 'luggage_001',
-      'trackingReference': 'LUG-DEMO-001',
-      'bookingReference': 'DEMO-BOOKING-001',
-      'agency': 'General Express',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'description': 'Large black suitcase',
-      'weight': '18 kg',
-      'status': 'In Transit',
-    },
-    {
-      'id': 'luggage_002',
-      'trackingReference': 'LUG-DEMO-002',
-      'bookingReference': 'DEMO-BOOKING-002',
-      'agency': 'Finexs Voyage',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'description': 'Medium blue travel bag',
-      'weight': '12 kg',
-      'status': 'Received by Agency',
-    },
-  ];
+  @override
+  State<TravelerLuggageScreen> createState() => _TravelerLuggageScreenState();
+}
+
+class _TravelerLuggageScreenState extends State<TravelerLuggageScreen> {
+  final LuggageService _luggageService = LuggageService.instance;
+
+  List<Luggage> _luggageItems = const <Luggage>[];
+
+  bool _isLoading = true;
+
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadLuggage();
+  }
+
+  Future<void> _loadLuggage() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final List<Luggage> luggage = await _luggageService.getMyLuggage();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _luggageItems = luggage;
+        _isLoading = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// `_LuggageCard` keeps its simple map contract, so each backend
+  /// luggage record is projected into the values the card renders.
+  Map<String, dynamic> _toCardData(Luggage luggage) {
+    return <String, dynamic>{
+      'id': luggage.id,
+      'trackingReference': luggage.trackingNumber,
+      'bookingReference': luggage.bookingReference ?? '—',
+      'agency': luggage.agencyName ?? '—',
+      'departureCity': luggage.originCity ?? '—',
+      'destinationCity': luggage.destinationCity ?? '—',
+      'description': luggage.description ?? '',
+      'weight': luggage.weightKg == null
+          ? '—'
+          : '${luggage.weightKg!.toStringAsFixed(1)} kg',
+      'status': luggage.status,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,29 +129,18 @@ class TravelerLuggageScreen extends StatelessWidget {
 
                       const SizedBox(height: 16),
 
-                      ..._luggageItems.map(
-                        (luggage) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _LuggageCard(
-                            luggage: luggage,
-                            onTrack: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TrackingDetailsScreen(
-                                    trackingReference:
-                                        luggage['trackingReference'],
-                                    itemType: 'luggage',
-                                    departureCity: luggage['departureCity'],
-                                    destinationCity: luggage['destinationCity'],
-                                    currentStatus: luggage['status'],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                      if (_isLoading) ...[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: CircularProgressIndicator()),
                         ),
-                      ),
+                      ] else if (_errorMessage != null) ...[
+                        _buildError(context),
+                      ] else if (_luggageItems.isEmpty) ...[
+                        _buildEmpty(context, l10n),
+                      ] else ...[
+                        ..._luggageItems.map(_buildLuggageCard),
+                      ],
 
                       const SizedBox(height: 4),
 
@@ -131,6 +154,95 @@ class TravelerLuggageScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLuggageCard(Luggage luggage) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: _LuggageCard(
+        luggage: _toCardData(luggage),
+        onTrack: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TrackingDetailsScreen(
+                trackingReference: luggage.trackingNumber,
+                itemType: 'luggage',
+                departureCity: luggage.originCity ?? '',
+                destinationCity: luggage.destinationCity ?? '',
+                status: luggage.status,
+                progressPercentage: luggage.progressPercentage,
+                events: luggage.trackingEvents,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(20),
+      borderRadius: 16,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: AppColors.textSecondary,
+            size: 34,
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            _errorMessage ?? '',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+
+          const SizedBox(height: 14),
+
+          OutlinedButton.icon(
+            onPressed: _loadLuggage,
+            icon: const Icon(Icons.refresh),
+            label: Text(
+              Localizations.localeOf(context).languageCode == 'fr'
+                  ? 'Réessayer'
+                  : 'Try Again',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty(BuildContext context, AppLocalizations l10n) {
+    final bool isFrench = Localizations.localeOf(context).languageCode == 'fr';
+
+    return GlassContainer(
+      padding: const EdgeInsets.all(24),
+      borderRadius: 16,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.luggage_outlined,
+            color: AppColors.textSecondary,
+            size: 34,
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            isFrench
+                ? 'Aucun bagage pour le moment. Les bagages enregistrés avec vos réservations apparaîtront ici.'
+                : 'No luggage yet. Luggage registered with your bookings will appear here.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
       ),
     );
   }
@@ -281,13 +393,19 @@ class _LuggageCard extends StatelessWidget {
   Color _statusColor() {
     switch (luggage['status']) {
       case 'Delivered':
+      case 'DELIVERED':
         return AppColors.success;
 
       case 'In Transit':
+      case 'IN_TRANSIT':
+      case 'Loaded':
+      case 'LOADED':
         return AppColors.primary;
 
       case 'Arrived':
+      case 'ARRIVED_AT_DESTINATION_AGENCY':
       case 'Ready for Collection':
+      case 'READY_FOR_COLLECTION':
         return AppColors.secondary;
 
       default:

@@ -3,190 +3,309 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
-import '../../trips/models/trip.dart' as trip_model;
+import '../../bookings/models/booking.dart';
+import '../../bookings/services/booking_service.dart';
+import '../../journeys/models/journey.dart';
+import '../../journeys/services/journey_service.dart';
 import '../booking/digital_ticket_screen.dart';
 import 'booking_luggage_screen.dart';
 
-class TripDetailsScreen extends StatelessWidget {
-  final Map<String, dynamic> trip;
+class TripDetailsScreen extends StatefulWidget {
+  final Booking booking;
 
-  const TripDetailsScreen({super.key, required this.trip});
+  const TripDetailsScreen({super.key, required this.booking});
 
-  bool get _isDoorToDoor => trip['bookingMode'] == 'Door-to-Door';
+  @override
+  State<TripDetailsScreen> createState() => _TripDetailsScreenState();
+}
 
-  bool get _isCancelled => trip['status'] == 'Cancelled';
+class _TripDetailsScreenState extends State<TripDetailsScreen> {
+  final BookingService _bookingService = BookingService.instance;
 
-  String _stringValue(String key, {String fallback = ''}) {
-    return trip[key]?.toString() ?? fallback;
+  final JourneyService _journeyService = JourneyService.instance;
+
+  late Booking _booking;
+
+  Journey? _journey;
+
+  bool _isCancelling = false;
+  bool _isLoadingJourney = false;
+
+  String? _journeyError;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _booking = widget.booking;
+
+    if (_booking.isDoorToDoor) {
+      _loadJourney();
+    }
   }
 
-  String _formatPrice(int value) {
-    return value.toString().replaceAllMapped(
+  Future<void> _loadJourney() async {
+    final String? journeyId = _booking.journey?.id;
+
+    if (journeyId == null || journeyId.trim().isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingJourney = true;
+      _journeyError = null;
+    });
+
+    try {
+      final Journey journey = await _journeyService.getJourneyById(journeyId);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _journey = journey;
+        _isLoadingJourney = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _journeyError = error.toString();
+        _isLoadingJourney = false;
+      });
+    }
+  }
+
+  String _formatPrice(double value) {
+    return value.round().toString().replaceAllMapped(
       RegExp(r'(?=(\d{3})+(?!\d))'),
       (match) => ',',
     );
   }
 
-  DateTime _getTravelDate() {
-    final String date = _stringValue('date');
-
-    final List<String> parts = date.split(' ');
-
-    if (parts.length != 3) {
-      return DateTime.now();
+  String _formatDate(DateTime? value) {
+    if (value == null) {
+      return '—';
     }
 
-    final int? day = int.tryParse(parts[0]);
+    final DateTime date = value.toLocal();
 
-    const Map<String, int> months = {
-      'Jan': 1,
-      'Feb': 2,
-      'Mar': 3,
-      'Apr': 4,
-      'May': 5,
-      'Jun': 6,
-      'Jul': 7,
-      'Aug': 8,
-      'Sep': 9,
-      'Oct': 10,
-      'Nov': 11,
-      'Dec': 12,
+    const List<String> months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return '${date.day.toString().padLeft(2, '0')} '
+        '${months[date.month - 1]} '
+        '${date.year}';
+  }
+
+  String _formatTime(DateTime? value) {
+    if (value == null) {
+      return '—';
+    }
+
+    final DateTime time = value.toLocal();
+
+    return '${time.hour.toString().padLeft(2, '0')}:'
+        '${time.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatDateTime(DateTime? value) {
+    if (value == null) {
+      return '—';
+    }
+
+    return '${_formatDate(value)} '
+        '${_formatTime(value)}';
+  }
+
+  String _readableStatus(String value) {
+    if (value.trim().isEmpty) {
+      return '—';
+    }
+
+    return value
+        .toLowerCase()
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map(
+          (part) =>
+              '${part[0].toUpperCase()}'
+              '${part.substring(1)}',
+        )
+        .join(' ');
+  }
+
+  String get _displayStatus {
+    if (_booking.isCancelled) {
+      return 'Cancelled';
+    }
+
+    final DateTime? arrival = _booking.arrivalTime;
+
+    if (arrival != null && arrival.isBefore(DateTime.now().toUtc())) {
+      return 'Completed';
+    }
+
+    return 'Upcoming';
+  }
+
+  Map<String, dynamic> _buildLuggageCompatibilityMap() {
+    return {
+      'bookingReference': _booking.bookingReference,
+      'agency': _booking.agencyName,
+      'departureCity': _booking.originCity,
+      'destinationCity': _booking.destinationCity,
+      'luggage': _booking.luggageCount,
+      'luggageItems': _booking.luggage
+          .map(
+            (item) => {
+              'id': item.id,
+              'trackingReference': item.trackingNumber,
+              'trackingNumber': item.trackingNumber,
+              'description': item.description,
+              'weight': item.weightKg == null ? '' : '${item.weightKg} kg',
+              'weightKg': item.weightKg,
+              'status': item.status,
+              'progressPercentage': item.progressPercentage,
+            },
+          )
+          .toList(),
     };
-
-    final int? month = months[parts[1]];
-
-    final int? year = int.tryParse(parts[2]);
-
-    if (day == null || month == null || year == null) {
-      return DateTime.now();
-    }
-
-    return DateTime(year, month, day);
   }
 
-  DateTime _buildTripDateTime(String timeValue) {
-    final DateTime date = _getTravelDate();
-
-    final List<String> parts = timeValue.trim().split(':');
-
-    if (parts.length < 2) {
-      return date;
-    }
-
-    final int? hour = int.tryParse(parts[0]);
-
-    final String minutePart = parts[1].replaceAll(RegExp(r'[^0-9]'), '').trim();
-
-    final int? minute = int.tryParse(minutePart);
-
-    if (hour == null || minute == null) {
-      return date;
-    }
-
-    return DateTime(date.year, date.month, date.day, hour, minute);
-  }
-
-  double _toDouble(dynamic value) {
-    if (value is num) {
-      return value.toDouble();
-    }
-
-    return double.tryParse(value?.toString() ?? '') ?? 0;
-  }
-
-  int _toInt(dynamic value) {
-    if (value is num) {
-      return value.toInt();
-    }
-
-    return int.tryParse(value?.toString() ?? '') ?? 0;
-  }
-
-  trip_model.Trip _buildTypedTrip() {
-    final DateTime departureTime = _buildTripDateTime(
-      _stringValue('departureTime'),
-    );
-
-    DateTime arrivalTime = _buildTripDateTime(_stringValue('arrivalTime'));
-
-    if (arrivalTime.isBefore(departureTime)) {
-      arrivalTime = arrivalTime.add(const Duration(days: 1));
-    }
-
-    return trip_model.Trip(
-      id: _stringValue('tripId', fallback: _stringValue('id')),
-      departureTime: departureTime,
-      arrivalTime: arrivalTime,
-      price: _toDouble(trip['amount']),
-      totalSeats: 0,
-      availableSeats: 0,
-      status: _stringValue('status'),
-      agencyId: _stringValue('agencyId'),
-      routeId: _stringValue('routeId'),
-      vehicleId: _stringValue('vehicleId'),
-      agencyName: _stringValue('agency'),
-      originCity: _stringValue('departureCity'),
-      destinationCity: _stringValue('destinationCity'),
-      originBranchName: _stringValue('originBranchName'),
-      destinationBranchName: _stringValue('destinationBranchName'),
-      originBranchAddress: _stringValue('originBranchAddress'),
-      destinationBranchAddress: _stringValue('destinationBranchAddress'),
-      distanceKm: trip['distanceKm'] == null
-          ? null
-          : _toDouble(trip['distanceKm']),
-      estimatedDurationMinutes: trip['estimatedDurationMinutes'] == null
-          ? null
-          : _toInt(trip['estimatedDurationMinutes']),
-      vehicleRegistrationNumber: _stringValue('vehicleRegistrationNumber'),
-      vehicleModel: _stringValue('vehicleModel'),
-      vehicleBrand: _stringValue('vehicleBrand'),
-      vehicleCapacity: trip['vehicleCapacity'] == null
-          ? null
-          : _toInt(trip['vehicleCapacity']),
+  void _openLuggage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            BookingLuggageScreen(trip: _buildLuggageCompatibilityMap()),
+      ),
     );
   }
 
-  void _openDigitalTicket(BuildContext context) {
-    final Map<String, dynamic> agency = {'name': _stringValue('agency')};
+  void _openDigitalTicket() {
+    final ticket = _booking.ticket;
+    final trip = _booking.trip;
 
-    final trip_model.Trip ticketTrip = _buildTypedTrip();
+    if (ticket == null || trip == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'A digital ticket is not '
+            'available for this booking yet.',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    final BookingPayment? payment = _booking.successfulPayment;
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DigitalTicketScreen(
-          agency: agency,
-          trip: ticketTrip,
-          bookingMode: _isDoorToDoor ? 'door_to_door' : 'interurban_only',
-          departureCity: _stringValue('departureCity'),
-          destinationCity: _stringValue('destinationCity'),
-          travelDate: _getTravelDate(),
-          passengers: (trip['passengers'] as int?) ?? 1,
-          luggage: (trip['luggage'] as int?) ?? 0,
-          totalAmount: (trip['amount'] as int?) ?? 0,
-          paymentMethod: _stringValue(
-            'paymentMethod',
-            fallback: 'Mobile Money',
-          ),
-          bookingReference: _stringValue('bookingReference'),
-          ticketReference: _stringValue(
-            'ticketReference',
-            fallback: 'DEMO-TICKET',
-          ),
-          pickupLocation: _isDoorToDoor ? _stringValue('pickupLocation') : null,
-          finalDestination: _isDoorToDoor
-              ? _stringValue('finalDestination')
-              : null,
+          agency: {'id': trip.agencyId, 'name': trip.agencyName},
+          trip: trip,
+          bookingMode: _booking.isDoorToDoor
+              ? 'door_to_door'
+              : 'interurban_only',
+          departureCity: trip.originCity,
+          destinationCity: trip.destinationCity,
+          travelDate: trip.departureTime,
+          passengers: _booking.numberOfSeats,
+          luggage: _booking.luggageCount,
+          totalAmount: _booking.totalAmount.round(),
+          paymentMethod: payment?.method ?? 'Not available',
+          bookingReference: _booking.bookingReference,
+          ticketReference: ticket.ticketNumber,
+          pickupLocation: _booking.journey?.pickupAddress,
+          finalDestination: _booking.journey?.destinationAddress,
         ),
       ),
     );
   }
 
-  void _openLuggage(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => BookingLuggageScreen(trip: trip)),
+  Future<void> _cancelBooking() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Cancel booking'),
+          content: const Text(
+            'Are you sure you want to '
+            'cancel this booking?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+              child: const Text('Keep booking'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: const Text('Cancel booking'),
+            ),
+          ],
+        );
+      },
     );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _isCancelling = true;
+    });
+
+    try {
+      final Booking updated = await _bookingService.cancelBooking(_booking.id);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _booking = updated;
+        _isCancelling = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Booking cancelled successfully.')),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isCancelling = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
   }
 
   @override
@@ -223,40 +342,48 @@ class TripDetailsScreen extends StatelessWidget {
         ),
         child: SafeArea(
           top: false,
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 820),
-                  child: Column(
-                    children: [
-                      _buildBookingHeader(context, l10n),
-                      const SizedBox(height: 18),
-                      _buildJourneyCard(context, l10n),
-                      if (_isDoorToDoor) ...[
+          child: RefreshIndicator(
+            onRefresh: () async {
+              if (_booking.isDoorToDoor) {
+                await _loadJourney();
+              }
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 820),
+                    child: Column(
+                      children: [
+                        _buildHeader(context, l10n),
                         const SizedBox(height: 18),
-                        _buildDoorToDoorJourney(context, l10n),
+                        _buildJourneyCard(context, l10n),
+                        if (_booking.isDoorToDoor) ...[
+                          const SizedBox(height: 18),
+                          _buildDoorToDoor(context, l10n),
+                        ],
+                        const SizedBox(height: 18),
+                        _buildTravelInfo(context, l10n),
+                        const SizedBox(height: 18),
+                        _buildPaymentInfo(context, l10n),
+                        const SizedBox(height: 18),
+                        _buildActions(context, l10n),
+                        const SizedBox(height: 24),
                       ],
-                      const SizedBox(height: 18),
-                      _buildTravelInformation(context, l10n),
-                      const SizedBox(height: 18),
-                      _buildPaymentInformation(context, l10n),
-                      const SizedBox(height: 18),
-                      _buildActions(context, l10n),
-                      const SizedBox(height: 24),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildBookingHeader(BuildContext context, AppLocalizations l10n) {
+  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -267,23 +394,17 @@ class TripDetailsScreen extends StatelessWidget {
           colors: [AppColors.primary, AppColors.primaryDark],
         ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.20),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
-                  _stringValue('agency'),
+                  _booking.agencyName.isEmpty
+                      ? 'Transport agency'
+                      : _booking.agencyName,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -291,47 +412,27 @@ class TripDetailsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              _StatusBadge(
-                status: _stringValue('status'),
-                label: l10n.tripStatusLabel(_stringValue('status')),
-              ),
+              _HeaderStatusBadge(label: l10n.tripStatusLabel(_displayStatus)),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Text(
             l10n.bookingReferenceLabel,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: Colors.white70,
-            ),
+            style: const TextStyle(fontSize: 10, color: Colors.white70),
           ),
           const SizedBox(height: 4),
           SelectableText(
-            _stringValue('bookingReference'),
+            _booking.bookingReference,
             style: const TextStyle(
-              fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 18),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-            ),
-            child: Text(
-              l10n.bookingModeLabel(_stringValue('bookingMode')),
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
+          const SizedBox(height: 14),
+          Text(
+            'Backend status: '
+            '${_readableStatus(_booking.status)}',
+            style: const TextStyle(fontSize: 11, color: Colors.white70),
           ),
         ],
       ),
@@ -349,135 +450,128 @@ class TripDetailsScreen extends StatelessWidget {
               Expanded(
                 child: _JourneyLocation(
                   label: l10n.departureLabel,
-                  city: _stringValue('departureCity'),
-                  time: _stringValue('departureTime'),
+                  city: _booking.originCity,
+                  time: _formatTime(_booking.departureTime),
                 ),
               ),
-              Expanded(
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.directions_bus_outlined,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(height: 5),
-                    Container(
-                      height: 2,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                  ],
+              const Expanded(
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AppColors.primary,
                 ),
               ),
               Expanded(
                 child: _JourneyLocation(
                   label: l10n.arrivalLabel,
-                  city: _stringValue('destinationCity'),
-                  time: _stringValue('arrivalTime'),
+                  city: _booking.destinationCity,
+                  time: _formatTime(_booking.arrivalTime),
                   alignEnd: true,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          Divider(color: Theme.of(context).dividerColor),
-          const SizedBox(height: 14),
           _InformationRow(
             icon: Icons.calendar_today_outlined,
             label: l10n.travelDate,
-            value: _stringValue('date'),
-          ),
-          const SizedBox(height: 13),
-          _InformationRow(
-            icon: Icons.event_seat_outlined,
-            label: l10n.travelClass,
-            value: _stringValue(
-              'travelClass',
-              fallback: _stringValue('status'),
-            ),
+            value: _formatDate(_booking.departureTime),
           ),
           const SizedBox(height: 13),
           _InformationRow(
             icon: Icons.business_outlined,
             label: l10n.transportAgency,
-            value: _stringValue('agency'),
+            value: _booking.agencyName,
           ),
+          if (_booking.trip != null) ...[
+            const SizedBox(height: 13),
+            _InformationRow(
+              icon: Icons.directions_bus_outlined,
+              label: 'Vehicle',
+              value: _booking.trip!.vehicleDescription,
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildDoorToDoorJourney(BuildContext context, AppLocalizations l10n) {
+  Widget _buildDoorToDoor(BuildContext context, AppLocalizations l10n) {
+    final BookingJourney bookingJourney = _booking.journey!;
+
     return _SectionCard(
       title: l10n.doorToDoorJourney,
       icon: Icons.route_outlined,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _JourneyStage(
+          _InformationRow(
             icon: Icons.home_outlined,
-            title: l10n.pickupLocation,
-            subtitle: _stringValue(
-              'pickupLocation',
-              fallback: l10n.pickupLocationFallback,
-            ),
-            status: l10n.scheduled,
-            first: true,
+            label: l10n.pickupLocation,
+            value: bookingJourney.pickupAddress,
           ),
-          _JourneyStage(
-            icon: Icons.local_taxi_outlined,
-            title: l10n.pickupTaxi,
-            subtitle: l10n.pickupTaxiAssignmentPending,
-            status: l10n.pendingAssignment,
+          const SizedBox(height: 14),
+          _InformationRow(
+            icon: Icons.route_outlined,
+            label: 'Journey status',
+            value: _readableStatus(_journey?.status ?? bookingJourney.status),
           ),
-          _JourneyStage(
-            icon: Icons.business_outlined,
-            title: l10n.departureAgency,
-            subtitle:
-                '${_stringValue('agency')} • '
-                '${_stringValue('departureCity')}',
-            status: l10n.scheduled,
-          ),
-          _JourneyStage(
-            icon: Icons.directions_bus_outlined,
-            title: l10n.interurbanTrip,
-            subtitle:
-                '${_stringValue('departureCity')} → '
-                '${_stringValue('destinationCity')}',
-            status: l10n.journeyStageStatusLabel(_stringValue('status')),
-          ),
-          _JourneyStage(
-            icon: Icons.business_outlined,
-            title: l10n.arrivalAgency,
-            subtitle:
-                '${_stringValue('agency')} • '
-                '${_stringValue('destinationCity')}',
-            status: l10n.scheduled,
-          ),
-          _JourneyStage(
-            icon: Icons.local_taxi_outlined,
-            title: l10n.destinationTaxi,
-            subtitle: l10n.destinationTaxiAssignmentPending,
-            status: l10n.pendingAssignment,
-          ),
-          _JourneyStage(
+          const SizedBox(height: 14),
+          _InformationRow(
             icon: Icons.location_on_outlined,
-            title: l10n.finalDestination,
-            subtitle: _stringValue(
-              'finalDestination',
-              fallback: l10n.finalDestinationFallback,
-            ),
-            status: l10n.scheduled,
-            last: true,
+            label: l10n.finalDestination,
+            value: bookingJourney.destinationAddress,
           ),
+          const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 16),
+          if (_isLoadingJourney)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: CircularProgressIndicator(),
+              ),
+            )
+          else if (_journeyError != null)
+            _JourneyError(message: _journeyError!, onRetry: _loadJourney)
+          else if (_journey == null)
+            const Text(
+              'Detailed taxi information '
+              'is not available yet.',
+            )
+          else ...[
+            _TaxiAssignmentCard(
+              title: l10n.pickupTaxi,
+              assignment: _journey!.pickupTaxi,
+              readableStatus: _readableStatus,
+              formatPrice: _formatPrice,
+              formatDateTime: _formatDateTime,
+              pendingMessage:
+                  'Pickup taxi assignment '
+                  'is pending.',
+            ),
+            const SizedBox(height: 16),
+            _InterurbanSegment(
+              booking: _booking,
+              readableStatus: _readableStatus,
+            ),
+            const SizedBox(height: 16),
+            _TaxiAssignmentCard(
+              title: l10n.destinationTaxi,
+              assignment: _journey!.arrivalTaxi,
+              readableStatus: _readableStatus,
+              formatPrice: _formatPrice,
+              formatDateTime: _formatDateTime,
+              pendingMessage:
+                  'Destination taxi '
+                  'assignment is pending.',
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildTravelInformation(BuildContext context, AppLocalizations l10n) {
+  Widget _buildTravelInfo(BuildContext context, AppLocalizations l10n) {
     return _SectionCard(
       title: l10n.travelInformation,
       icon: Icons.info_outline,
@@ -486,29 +580,29 @@ class TripDetailsScreen extends StatelessWidget {
           _InformationRow(
             icon: Icons.person_outline,
             label: l10n.passengers,
-            value: '${(trip['passengers'] as int?) ?? 0}',
+            value: _booking.numberOfSeats.toString(),
           ),
           const SizedBox(height: 13),
           _InformationRow(
             icon: Icons.luggage_outlined,
             label: l10n.luggage,
-            value: '${(trip['luggage'] as int?) ?? 0}',
+            value: _booking.luggageCount.toString(),
           ),
           const SizedBox(height: 13),
           _InformationRow(
-            icon: _isDoorToDoor
+            icon: _booking.isDoorToDoor
                 ? Icons.home_outlined
                 : Icons.directions_bus_outlined,
             label: l10n.bookingMode,
-            value: l10n.bookingModeLabel(_stringValue('bookingMode')),
+            value: _booking.isDoorToDoor ? 'Door-to-Door' : 'Interurban Only',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPaymentInformation(BuildContext context, AppLocalizations l10n) {
-    final int amount = (trip['amount'] as int?) ?? 0;
+  Widget _buildPaymentInfo(BuildContext context, AppLocalizations l10n) {
+    final BookingPayment? payment = _booking.successfulPayment;
 
     return _SectionCard(
       title: l10n.paymentInformation,
@@ -516,22 +610,39 @@ class TripDetailsScreen extends StatelessWidget {
       child: Column(
         children: [
           _InformationRow(
-            icon: Icons.check_circle_outline,
+            icon: _booking.hasSuccessfulPayment
+                ? Icons.check_circle_outline
+                : Icons.schedule_outlined,
             label: l10n.paymentStatus,
-            value: l10n.paid,
-            valueColor: AppColors.success,
+            value: payment == null
+                ? 'Not paid'
+                : _readableStatus(payment.status),
+            valueColor: payment == null
+                ? AppColors.textSecondary
+                : AppColors.success,
           ),
           const SizedBox(height: 13),
           _InformationRow(
             icon: Icons.account_balance_wallet_outlined,
             label: l10n.paymentMethod,
-            value: _stringValue('paymentMethod', fallback: 'Mobile Money'),
+            value: payment == null ? '—' : _readableStatus(payment.method),
           ),
           const SizedBox(height: 13),
           _InformationRow(
             icon: Icons.payments_outlined,
             label: l10n.amountPaid,
-            value: '${_formatPrice(amount)} FCFA',
+            value: payment == null
+                ? '0 FCFA'
+                : '${_formatPrice(payment.amount)} '
+                      'FCFA',
+          ),
+          const SizedBox(height: 13),
+          _InformationRow(
+            icon: Icons.receipt_long_outlined,
+            label: l10n.amountLabel,
+            value:
+                '${_formatPrice(_booking.totalAmount)} '
+                'FCFA',
           ),
         ],
       ),
@@ -539,8 +650,6 @@ class TripDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildActions(BuildContext context, AppLocalizations l10n) {
-    final int luggageCount = (trip['luggage'] as int?) ?? 0;
-
     return GlassContainer(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -550,28 +659,334 @@ class TripDetailsScreen extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _isCancelled
+              onPressed: _booking.ticket == null || _booking.isCancelled
                   ? null
-                  : () {
-                      _openDigitalTicket(context);
-                    },
+                  : _openDigitalTicket,
               icon: const Icon(Icons.qr_code_2_outlined),
               label: Text(l10n.viewDigitalTicket),
             ),
           ),
-          if (luggageCount > 0 && !_isCancelled) ...[
+          if (_booking.luggageCount > 0) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {
-                  _openLuggage(context);
-                },
+                onPressed: _openLuggage,
                 icon: const Icon(Icons.luggage_outlined),
                 label: Text(l10n.trackLuggage),
               ),
             ),
           ],
+          if (!_booking.isCancelled) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _isCancelling ? null : _cancelBooking,
+                icon: _isCancelling
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.cancel_outlined),
+                label: Text(_isCancelling ? 'Cancelling...' : 'Cancel booking'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TaxiAssignmentCard extends StatelessWidget {
+  final String title;
+
+  final TaxiAssignment? assignment;
+
+  final String Function(String) readableStatus;
+
+  final String Function(double) formatPrice;
+
+  final String Function(DateTime?) formatDateTime;
+
+  final String pendingMessage;
+
+  const _TaxiAssignmentCard({
+    required this.title,
+    required this.assignment,
+    required this.readableStatus,
+    required this.formatPrice,
+    required this.formatDateTime,
+    required this.pendingMessage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final TaxiAssignment? taxi = assignment;
+
+    if (taxi == null) {
+      return _JourneyStageContainer(
+        title: title,
+        icon: Icons.local_taxi_outlined,
+        child: Text(
+          pendingMessage,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      );
+    }
+
+    final bool hasFinalFare = taxi.finalFare != null;
+
+    return _JourneyStageContainer(
+      title: title,
+      icon: Icons.local_taxi_outlined,
+      child: Column(
+        children: [
+          _InformationRow(
+            icon: Icons.info_outline,
+            label: 'Status',
+            value: readableStatus(taxi.status),
+          ),
+          const SizedBox(height: 11),
+          _InformationRow(
+            icon: Icons.business_outlined,
+            label: 'Provider',
+            value: taxi.provider?.name ?? '—',
+          ),
+          const SizedBox(height: 11),
+          _InformationRow(
+            icon: Icons.my_location_outlined,
+            label: 'Pickup',
+            value: taxi.pickupAddress,
+          ),
+          const SizedBox(height: 11),
+          _InformationRow(
+            icon: Icons.location_on_outlined,
+            label: 'Drop-off',
+            value: taxi.dropoffAddress,
+          ),
+          const SizedBox(height: 11),
+          _InformationRow(
+            icon: Icons.payments_outlined,
+            label: hasFinalFare ? 'Final fare' : 'Estimated fare',
+            value:
+                '${formatPrice(hasFinalFare ? taxi.finalFare! : taxi.estimatedFare)} FCFA',
+          ),
+          if (taxi.hasDriver) ...[
+            const SizedBox(height: 14),
+            const Divider(),
+            const SizedBox(height: 10),
+            _InformationRow(
+              icon: Icons.person_outline,
+              label: 'Driver',
+              value: taxi.driverName ?? '—',
+            ),
+            const SizedBox(height: 11),
+            _InformationRow(
+              icon: Icons.phone_outlined,
+              label: 'Driver phone',
+              value: taxi.driverPhone ?? '—',
+            ),
+            const SizedBox(height: 11),
+            _InformationRow(
+              icon: Icons.directions_car_outlined,
+              label: 'Vehicle',
+              value: taxi.vehicleDescription ?? '—',
+            ),
+            const SizedBox(height: 11),
+            _InformationRow(
+              icon: Icons.confirmation_number_outlined,
+              label: 'Registration',
+              value: taxi.vehicleRegistration ?? '—',
+            ),
+          ] else ...[
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.schedule_outlined, size: 18),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      pendingMessage,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (taxi.assignedAt != null) ...[
+            const SizedBox(height: 11),
+            _InformationRow(
+              icon: Icons.schedule_outlined,
+              label: 'Assigned at',
+              value: formatDateTime(taxi.assignedAt),
+            ),
+          ],
+          if (taxi.completedAt != null) ...[
+            const SizedBox(height: 11),
+            _InformationRow(
+              icon: Icons.check_circle_outline,
+              label: 'Completed at',
+              value: formatDateTime(taxi.completedAt),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _InterurbanSegment extends StatelessWidget {
+  final Booking booking;
+
+  final String Function(String) readableStatus;
+
+  const _InterurbanSegment({
+    required this.booking,
+    required this.readableStatus,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _JourneyStageContainer(
+      title: 'Interurban bus journey',
+      icon: Icons.directions_bus_outlined,
+      child: Column(
+        children: [
+          _InformationRow(
+            icon: Icons.business_outlined,
+            label: 'Agency',
+            value: booking.agencyName,
+          ),
+          const SizedBox(height: 11),
+          _InformationRow(
+            icon: Icons.route_outlined,
+            label: 'Route',
+            value:
+                '${booking.originCity} → '
+                '${booking.destinationCity}',
+          ),
+          if (booking.trip != null) ...[
+            const SizedBox(height: 11),
+            _InformationRow(
+              icon: Icons.info_outline,
+              label: 'Trip status',
+              value: readableStatus(booking.trip!.status),
+            ),
+            const SizedBox(height: 11),
+            _InformationRow(
+              icon: Icons.directions_bus_outlined,
+              label: 'Vehicle',
+              value: booking.trip!.vehicleDescription,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _JourneyStageContainer extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  const _JourneyStageContainer({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.45),
+        ),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: AppColors.primary),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _JourneyError extends StatelessWidget {
+  final String message;
+  final Future<void> Function() onRetry;
+
+  const _JourneyError({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(
+          context,
+        ).colorScheme.errorContainer.withValues(alpha: 0.35),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Unable to load detailed '
+            'door-to-door information.',
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 10),
+          TextButton.icon(
+            onPressed: () {
+              onRetry();
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
+          ),
         ],
       ),
     );
@@ -600,15 +1015,7 @@ class _SectionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: Icon(icon, size: 21, color: AppColors.primary),
-              ),
+              Icon(icon, color: AppColors.primary),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -648,15 +1055,10 @@ class _JourneyLocation extends StatelessWidget {
           ? CrossAxisAlignment.end
           : CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
-          style: Theme.of(context).textTheme.labelSmall,
-        ),
+        Text(label, style: Theme.of(context).textTheme.labelSmall),
         const SizedBox(height: 5),
         Text(
           time,
-          textAlign: alignEnd ? TextAlign.end : TextAlign.start,
           style: Theme.of(
             context,
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -715,119 +1117,10 @@ class _InformationRow extends StatelessWidget {
   }
 }
 
-class _JourneyStage extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final String status;
-  final bool first;
-  final bool last;
-
-  const _JourneyStage({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.status,
-    this.first = false,
-    this.last = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: 38,
-            child: Column(
-              children: [
-                if (!first)
-                  Container(
-                    width: 2,
-                    height: 12,
-                    color: Theme.of(context).dividerColor,
-                  ),
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, size: 17, color: Colors.white),
-                ),
-                if (!last)
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      constraints: const BoxConstraints(minHeight: 28),
-                      color: Theme.of(context).dividerColor,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: first ? 3 : 14,
-                bottom: last ? 3 : 17,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(height: 1.4),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    status,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  final String status;
+class _HeaderStatusBadge extends StatelessWidget {
   final String label;
 
-  const _StatusBadge({required this.status, required this.label});
-
-  Color get _color {
-    switch (status) {
-      case 'Upcoming':
-        return Colors.white;
-      case 'Completed':
-        return AppColors.secondaryLight;
-      case 'Cancelled':
-        return const Color(0xFFFFCDD2);
-      default:
-        return Colors.white;
-    }
-  }
+  const _HeaderStatusBadge({required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -839,10 +1132,10 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.w600,
-          color: _color,
+          color: Colors.white,
         ),
       ),
     );

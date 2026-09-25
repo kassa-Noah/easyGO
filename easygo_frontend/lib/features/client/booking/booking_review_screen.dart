@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
-
-
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../bookings/models/booking.dart';
+import '../../bookings/services/booking_service.dart';
+import '../../journeys/services/journey_service.dart';
 import '../../trips/models/trip.dart';
 import 'payment_screen.dart';
 
-class BookingReviewScreen extends StatelessWidget {
+class BookingReviewScreen extends StatefulWidget {
   final Map<String, dynamic> agency;
   final Trip trip;
 
@@ -38,15 +39,25 @@ class BookingReviewScreen extends StatelessWidget {
     this.finalDestination,
   });
 
-  bool get isDoorToDoor => bookingMode == 'door_to_door';
+  @override
+  State<BookingReviewScreen> createState() => _BookingReviewScreenState();
+}
 
-  int get interurbanUnitFare => trip.price.round();
+class _BookingReviewScreenState extends State<BookingReviewScreen> {
+  final BookingService _bookingService = BookingService.instance;
 
-  int get interurbanTotal => interurbanUnitFare * passengers;
+  final JourneyService _journeyService = JourneyService.instance;
 
-  // Temporary frontend estimates.
-  // These will later be replaced by values
-  // returned by the backend/taxi provider.
+  bool _isCreatingBooking = false;
+
+  bool get isDoorToDoor => widget.bookingMode == 'door_to_door';
+
+  int get interurbanUnitFare => widget.trip.price.round();
+
+  int get interurbanTotal => interurbanUnitFare * widget.passengers;
+
+  // Temporary frontend estimates only.
+  // They are not sent to the booking API.
   int get pickupTaxiFare => isDoorToDoor ? 2500 : 0;
 
   int get destinationTaxiFare => isDoorToDoor ? 3000 : 0;
@@ -61,11 +72,11 @@ class BookingReviewScreen extends StatelessWidget {
   }
 
   String _formattedDate() {
-    final String day = travelDate.day.toString().padLeft(2, '0');
+    final String day = widget.travelDate.day.toString().padLeft(2, '0');
 
-    final String month = travelDate.month.toString().padLeft(2, '0');
+    final String month = widget.travelDate.month.toString().padLeft(2, '0');
 
-    return '$day/$month/${travelDate.year}';
+    return '$day/$month/${widget.travelDate.year}';
   }
 
   String _formatTime(DateTime value) {
@@ -80,7 +91,7 @@ class BookingReviewScreen extends StatelessWidget {
 
   String _formatDuration() {
     final int minutes =
-        trip.estimatedDurationMinutes ?? trip.duration.inMinutes;
+        widget.trip.estimatedDurationMinutes ?? widget.trip.duration.inMinutes;
 
     final int hours = minutes ~/ 60;
 
@@ -99,11 +110,148 @@ class BookingReviewScreen extends StatelessWidget {
   }
 
   String _vehicleInformation() {
-    if (trip.vehicleDescription.trim().isNotEmpty) {
-      return trip.vehicleDescription;
+    if (widget.trip.vehicleDescription.trim().isNotEmpty) {
+      return widget.trip.vehicleDescription;
     }
 
     return 'Vehicle information unavailable';
+  }
+
+  bool _validateDoorToDoorAddresses() {
+    if (!isDoorToDoor) {
+      return true;
+    }
+
+    final String pickup = widget.pickupLocation?.trim() ?? '';
+
+    final String destination = widget.finalDestination?.trim() ?? '';
+
+    if (pickup.length < 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Enter a valid pickup address '
+            'before continuing.',
+          ),
+        ),
+      );
+
+      return false;
+    }
+
+    if (destination.length < 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Enter a valid final destination '
+            'before continuing.',
+          ),
+        ),
+      );
+
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _continueToPayment() async {
+    if (_isCreatingBooking) {
+      return;
+    }
+
+    if (!_validateDoorToDoorAddresses()) {
+      return;
+    }
+
+    if (widget.passengers < 1 || widget.passengers > 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'The number of passengers must '
+            'be between 1 and 10.',
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    setState(() {
+      _isCreatingBooking = true;
+    });
+
+    Booking? createdBooking;
+
+    try {
+      createdBooking = await _bookingService.createBooking(
+        tripId: widget.trip.id,
+        numberOfSeats: widget.passengers,
+      );
+
+      if (isDoorToDoor) {
+        await _journeyService.createJourney(
+          bookingId: createdBooking.id,
+          pickupAddress: widget.pickupLocation!.trim(),
+          destinationAddress: widget.finalDestination!.trim(),
+        );
+
+        // Reload the booking so the object
+        // passed forward contains the newly
+        // created nested journey.
+        createdBooking = await _bookingService.getBookingById(
+          createdBooking.id,
+        );
+      }
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PaymentScreen(
+            agency: widget.agency,
+            trip: widget.trip,
+            booking: createdBooking!,
+            bookingMode: widget.bookingMode,
+            departureCity: widget.departureCity,
+            destinationCity: widget.destinationCity,
+            pickupLocation: widget.pickupLocation,
+            finalDestination: widget.finalDestination,
+            travelDate: widget.travelDate,
+            passengers: widget.passengers,
+            luggage: widget.luggage,
+            displayTotalAmount: totalPrice,
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      String message = error.toString();
+
+      if (createdBooking != null && isDoorToDoor) {
+        message =
+            'The interurban booking was created, '
+            'but the door-to-door journey could '
+            'not be created. Please do not press '
+            'Continue again. Error: $message';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), duration: const Duration(seconds: 6)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCreatingBooking = false;
+        });
+      }
+    }
   }
 
   @override
@@ -231,15 +379,15 @@ class BookingReviewScreen extends StatelessWidget {
           _DetailRow(
             icon: Icons.business_outlined,
             label: l10n.agency,
-            value: agency['name']?.toString() ?? l10n.transportAgency,
+            value: widget.agency['name']?.toString() ?? l10n.transportAgency,
           ),
           const Divider(height: 28),
           _DetailRow(
             icon: Icons.route_outlined,
             label: l10n.route,
             value:
-                '$departureCity → '
-                '$destinationCity',
+                '${widget.departureCity} → '
+                '${widget.destinationCity}',
           ),
           const Divider(height: 28),
           _DetailRow(
@@ -262,7 +410,7 @@ class BookingReviewScreen extends StatelessWidget {
               Expanded(
                 child: _TimeBlock(
                   label: l10n.departure,
-                  value: _formatTime(trip.departureTime),
+                  value: _formatTime(widget.trip.departureTime),
                 ),
               ),
               Container(
@@ -281,7 +429,7 @@ class BookingReviewScreen extends StatelessWidget {
               Expanded(
                 child: _TimeBlock(
                   label: l10n.arrival,
-                  value: _formatTime(trip.arrivalTime),
+                  value: _formatTime(widget.trip.arrivalTime),
                   alignEnd: true,
                 ),
               ),
@@ -291,7 +439,7 @@ class BookingReviewScreen extends StatelessWidget {
           _DetailRow(
             icon: Icons.directions_bus_outlined,
             label: l10n.travelClass,
-            value: trip.status,
+            value: widget.trip.status,
           ),
           const Divider(height: 28),
           _DetailRow(
@@ -318,13 +466,13 @@ class BookingReviewScreen extends StatelessWidget {
           _DetailRow(
             icon: Icons.people_outline,
             label: l10n.passengers,
-            value: passengers.toString(),
+            value: widget.passengers.toString(),
           ),
           const Divider(height: 28),
           _DetailRow(
             icon: Icons.luggage_outlined,
             label: l10n.luggageItems,
-            value: luggage.toString(),
+            value: widget.luggage.toString(),
           ),
         ],
       ),
@@ -340,7 +488,7 @@ class BookingReviewScreen extends StatelessWidget {
             number: '1',
             icon: Icons.local_taxi_outlined,
             title: l10n.pickupTaxi,
-            description: pickupLocation ?? l10n.pickupLocation,
+            description: widget.pickupLocation ?? l10n.pickupLocation,
           ),
           _buildVerticalConnector(context),
           _JourneySegment(
@@ -348,15 +496,15 @@ class BookingReviewScreen extends StatelessWidget {
             icon: Icons.directions_bus_outlined,
             title: l10n.interurbanTrip,
             description:
-                '$departureCity → '
-                '$destinationCity',
+                '${widget.departureCity} → '
+                '${widget.destinationCity}',
           ),
           _buildVerticalConnector(context),
           _JourneySegment(
             number: '3',
             icon: Icons.local_taxi_outlined,
             title: l10n.destinationTaxi,
-            description: finalDestination ?? l10n.finalDestination,
+            description: widget.finalDestination ?? l10n.finalDestination,
           ),
         ],
       ),
@@ -385,19 +533,25 @@ class BookingReviewScreen extends StatelessWidget {
       child: Column(
         children: [
           _PriceRow(
-            label: l10n.interurbanFareForPassengers(passengers),
-            value: '${_formatPrice(interurbanTotal)} FCFA',
+            label: l10n.interurbanFareForPassengers(widget.passengers),
+            value:
+                '${_formatPrice(interurbanTotal)} '
+                'FCFA',
           ),
           if (isDoorToDoor) ...[
             const SizedBox(height: 14),
             _PriceRow(
               label: l10n.pickupTaxiFareLabel,
-              value: '${_formatPrice(pickupTaxiFare)} FCFA',
+              value:
+                  '${_formatPrice(pickupTaxiFare)} '
+                  'FCFA',
             ),
             const SizedBox(height: 14),
             _PriceRow(
               label: l10n.destinationTaxiFareLabel,
-              value: '${_formatPrice(destinationTaxiFare)} FCFA',
+              value:
+                  '${_formatPrice(destinationTaxiFare)} '
+                  'FCFA',
             ),
           ],
           const Padding(
@@ -415,7 +569,8 @@ class BookingReviewScreen extends StatelessWidget {
                 ),
               ),
               Text(
-                '${_formatPrice(totalPrice)} FCFA',
+                '${_formatPrice(totalPrice)} '
+                'FCFA',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
@@ -484,7 +639,8 @@ class BookingReviewScreen extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '${_formatPrice(totalPrice)} FCFA',
+                      '${_formatPrice(totalPrice)} '
+                      'FCFA',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -496,29 +652,18 @@ class BookingReviewScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PaymentScreen(
-                            agency: agency,
-                            trip: trip,
-                            bookingMode: bookingMode,
-                            departureCity: departureCity,
-                            destinationCity: destinationCity,
-                            pickupLocation: pickupLocation,
-                            finalDestination: finalDestination,
-                            travelDate: travelDate,
-                            passengers: passengers,
-                            luggage: luggage,
-                            totalAmount: totalPrice,
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.payment_outlined),
+                    onPressed: _isCreatingBooking ? null : _continueToPayment,
+                    icon: _isCreatingBooking
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.payment_outlined),
                     label: Text(
-                      l10n.continueToPayment,
+                      _isCreatingBooking
+                          ? 'Creating booking...'
+                          : l10n.continueToPayment,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

@@ -2,16 +2,27 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
-import 'parcel_service_screen.dart';
+import '../../tracking/models/tracking.dart';
+import '../../tracking/services/parcel_service.dart';
+import 'parcel_confirmation_screen.dart';
 
-class ParcelReviewScreen extends StatelessWidget {
+class ParcelReviewScreen extends StatefulWidget {
   final String recipientName;
   final String recipientPhone;
   final String departureCity;
   final String destinationCity;
   final String description;
   final double weight;
+
+  /// The real agency branch identifiers the parcel is sent
+  /// between. They are what the backend persists.
+  final String originBranchId;
+  final String destinationBranchId;
+
+  final String originAgencyName;
+  final String destinationAgencyName;
 
   const ParcelReviewScreen({
     super.key,
@@ -21,22 +32,75 @@ class ParcelReviewScreen extends StatelessWidget {
     required this.destinationCity,
     required this.description,
     required this.weight,
+    required this.originBranchId,
+    required this.destinationBranchId,
+    required this.originAgencyName,
+    required this.destinationAgencyName,
   });
 
-  void _continueToService(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ParcelServiceScreen(
-          recipientName: recipientName,
-          recipientPhone: recipientPhone,
-          departureCity: departureCity,
-          destinationCity: destinationCity,
-          description: description,
-          weight: weight,
+  @override
+  State<ParcelReviewScreen> createState() => _ParcelReviewScreenState();
+}
+
+class _ParcelReviewScreenState extends State<ParcelReviewScreen> {
+  final ParcelService _parcelService = ParcelService.instance;
+
+  bool _isSubmitting = false;
+
+  Future<void> _submitParcel() async {
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      // The parcel is registered by the backend, which owns the
+      // tracking reference and the initial tracking event.
+      final Parcel parcel = await _parcelService.createParcel(
+        description: widget.description,
+        recipientName: widget.recipientName,
+        recipientPhone: widget.recipientPhone,
+        originBranchId: widget.originBranchId,
+        destinationBranchId: widget.destinationBranchId,
+        weightKg: widget.weight,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ParcelConfirmationScreen(
+            recipientName: widget.recipientName,
+            recipientPhone: widget.recipientPhone,
+            departureCity: parcel.originCity ?? widget.departureCity,
+            destinationCity: parcel.destinationCity ?? widget.destinationCity,
+            description: widget.description,
+            weight: widget.weight,
+            originAgencyName: widget.originAgencyName,
+            destinationAgencyName: widget.destinationAgencyName,
+            trackingReference: parcel.trackingNumber,
+            status: parcel.status,
+            progressPercentage: parcel.progressPercentage,
+          ),
         ),
-      ),
-    );
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 
   @override
@@ -95,11 +159,11 @@ class ParcelReviewScreen extends StatelessWidget {
                               children: [
                                 _ReviewRow(
                                   label: l10n.name,
-                                  value: recipientName,
+                                  value: widget.recipientName,
                                 ),
                                 _ReviewRow(
                                   label: l10n.phone,
-                                  value: recipientPhone,
+                                  value: widget.recipientPhone,
                                 ),
                               ],
                             ),
@@ -112,11 +176,12 @@ class ParcelReviewScreen extends StatelessWidget {
                               children: [
                                 _ReviewRow(
                                   label: l10n.description,
-                                  value: description,
+                                  value: widget.description,
                                 ),
                                 _ReviewRow(
                                   label: l10n.weight,
-                                  value: '${weight.toStringAsFixed(1)} kg',
+                                  value:
+                                      '${widget.weight.toStringAsFixed(1)} kg',
                                 ),
                               ],
                             ),
@@ -213,7 +278,7 @@ class ParcelReviewScreen extends StatelessWidget {
                     const SizedBox(height: 5),
 
                     Text(
-                      departureCity,
+                      widget.departureCity,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -254,7 +319,7 @@ class ParcelReviewScreen extends StatelessWidget {
                     const SizedBox(height: 5),
 
                     Text(
-                      destinationCity,
+                      widget.destinationCity,
                       textAlign: TextAlign.end,
                       style: const TextStyle(
                         fontSize: 20,
@@ -328,12 +393,16 @@ class ParcelReviewScreen extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  _continueToService(context);
-                },
-                icon: const Icon(Icons.arrow_forward),
+                onPressed: _isSubmitting ? null : _submitParcel,
+                icon: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.send_outlined),
                 label: Text(
-                  l10n.continueToParcelService,
+                  l10n.sendParcel,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,

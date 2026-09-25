@@ -799,6 +799,44 @@ class AppLocalizations {
       case 'Delivered':
         return isFrench ? 'Livré' : 'Delivered';
 
+      // Backend status values.
+      case 'REGISTERED':
+        return isFrench ? 'Enregistré' : 'Registered';
+
+      case 'RECEIVED_AT_AGENCY':
+        return isFrench ? 'Reçu par l’agence' : 'Received by Agency';
+
+      case 'RECEIVED_AT_ORIGIN_AGENCY':
+        return isFrench
+            ? 'Reçu à l’agence de départ'
+            : 'Received at Origin Agency';
+
+      case 'LOADED':
+        return isFrench ? 'Chargé' : 'Loaded';
+
+      case 'IN_TRANSIT':
+        return isFrench ? 'En transit' : 'In Transit';
+
+      case 'ARRIVED_AT_DESTINATION_AGENCY':
+        return isFrench
+            ? 'Arrivé à l’agence d’arrivée'
+            : 'Arrived at Destination Agency';
+
+      case 'READY_FOR_COLLECTION':
+        return isFrench ? 'Prêt pour le retrait' : 'Ready for Collection';
+
+      case 'COLLECTED':
+        return isFrench ? 'Retiré' : 'Collected';
+
+      case 'DELIVERED':
+        return isFrench ? 'Livré' : 'Delivered';
+
+      case 'LOST':
+        return isFrench ? 'Perdu' : 'Lost';
+
+      case 'CANCELLED':
+        return isFrench ? 'Annulé' : 'Cancelled';
+
       default:
         return status;
     }

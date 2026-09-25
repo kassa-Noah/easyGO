@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../bookings/models/booking.dart';
+import '../../bookings/services/booking_service.dart';
 import 'trip_details_screen.dart';
 
 class MyTripsScreen extends StatefulWidget {
@@ -17,149 +19,130 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
   static const String _completed = 'Completed';
   static const String _cancelled = 'Cancelled';
 
-  String _selectedFilter = _upcoming;
-
   static const List<String> _filters = [_upcoming, _completed, _cancelled];
 
-  /*
-   * DEMONSTRATION DATA ONLY.
-   *
-   * Production records will be retrieved from
-   * the backend for the authenticated client.
-   *
-   * Status and bookingMode remain canonical
-   * internal values. Localization is applied
-   * only when values are displayed.
-   */
-  final List<Map<String, dynamic>> _trips = [
-    {
-      'bookingReference': 'DEMO-BOOKING-001',
-      'ticketReference': 'DEMO-TICKET-001',
-      'agency': 'General Express',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'date': '20 Sep 2026',
-      'departureTime': '07:00',
-      'arrivalTime': '11:00',
-      'travelClass': 'VIP',
-      'bookingMode': 'Door-to-Door',
-      'status': 'Upcoming',
-      'passengers': 1,
-      'luggage': 1,
-      'amount': 12500,
-      'paymentMethod': 'MTN Mobile Money',
-      'pickupLocation': 'Traveler pickup address, Yaoundé',
-      'finalDestination': 'Traveler destination address, Douala',
-      'luggageItems': [
-        {
-          'trackingReference': 'LUG-DEMO-001',
-          'description': 'Traveler suitcase',
-          'weight': '18 kg',
-          'status': 'In Transit',
-        },
-      ],
-    },
-    {
-      'bookingReference': 'DEMO-BOOKING-002',
-      'ticketReference': 'DEMO-TICKET-002',
-      'agency': 'Finexs Voyage',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'date': '25 Sep 2026',
-      'departureTime': '09:30',
-      'arrivalTime': '13:30',
-      'travelClass': 'Classic',
-      'bookingMode': 'Interurban Only',
-      'status': 'Upcoming',
-      'passengers': 1,
-      'luggage': 2,
-      'amount': 5000,
-      'paymentMethod': 'Orange Money',
-      'pickupLocation': null,
-      'finalDestination': null,
-      'luggageItems': [
-        {
-          'trackingReference': 'LUG-DEMO-002',
-          'description': 'Medium blue travel bag',
-          'weight': '12 kg',
-          'status': 'Received by Agency',
-        },
-        {
-          'trackingReference': 'LUG-DEMO-003',
-          'description': 'Traveler suitcase',
-          'weight': '15 kg',
-          'status': 'Received by Agency',
-        },
-      ],
-    },
-    {
-      'bookingReference': 'DEMO-BOOKING-003',
-      'ticketReference': 'DEMO-TICKET-003',
-      'agency': 'Touristique Express',
-      'departureCity': 'Douala',
-      'destinationCity': 'Yaoundé',
-      'date': '04 Aug 2026',
-      'departureTime': '08:00',
-      'arrivalTime': '12:00',
-      'travelClass': 'VIP',
-      'bookingMode': 'Interurban Only',
-      'status': 'Completed',
-      'passengers': 1,
-      'luggage': 1,
-      'amount': 7000,
-      'paymentMethod': 'MTN Mobile Money',
-      'pickupLocation': null,
-      'finalDestination': null,
-      'luggageItems': [
-        {
-          'trackingReference': 'LUG-DEMO-004',
-          'description': 'Traveler suitcase',
-          'weight': '16 kg',
-          'status': 'Delivered',
-        },
-      ],
-    },
-    {
-      'bookingReference': 'DEMO-BOOKING-004',
-      'ticketReference': 'DEMO-TICKET-004',
-      'agency': 'General Express',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Buea',
-      'date': '18 Jul 2026',
-      'departureTime': '06:30',
-      'arrivalTime': '12:30',
-      'travelClass': 'Classic',
-      'bookingMode': 'Interurban Only',
-      'status': 'Cancelled',
-      'passengers': 1,
-      'luggage': 0,
-      'amount': 7000,
-      'paymentMethod': 'Orange Money',
-      'pickupLocation': null,
-      'finalDestination': null,
-      'luggageItems': <Map<String, dynamic>>[],
-    },
-  ];
+  final BookingService _bookingService = BookingService.instance;
 
-  List<Map<String, dynamic>> get _filteredTrips {
-    return _trips.where((trip) => trip['status'] == _selectedFilter).toList();
+  String _selectedFilter = _upcoming;
+
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  List<Booking> _bookings = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBookings();
   }
 
-  String _formatPrice(int value) {
-    return value.toString().replaceAllMapped(
+  Future<void> _loadBookings() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final List<Booking> bookings = await _bookingService.getMyBookings();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _bookings = bookings;
+        _isLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isLoading = false;
+        _errorMessage = error.toString();
+      });
+    }
+  }
+
+  String _displayStatus(Booking booking) {
+    if (booking.isCancelled) {
+      return _cancelled;
+    }
+
+    final DateTime? arrivalTime = booking.arrivalTime;
+
+    if (arrivalTime != null && arrivalTime.isBefore(DateTime.now().toUtc())) {
+      return _completed;
+    }
+
+    return _upcoming;
+  }
+
+  List<Booking> get _filteredBookings {
+    return _bookings.where((booking) {
+      return _displayStatus(booking) == _selectedFilter;
+    }).toList();
+  }
+
+  String _formatPrice(double value) {
+    return value.round().toString().replaceAllMapped(
       RegExp(r'(?=(\d{3})+(?!\d))'),
       (match) => ',',
     );
+  }
+
+  String _formatDate(DateTime? value) {
+    if (value == null) {
+      return '—';
+    }
+
+    final DateTime date = value.toLocal();
+
+    const List<String> months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    return '${date.day.toString().padLeft(2, '0')} '
+        '${months[date.month - 1]} '
+        '${date.year}';
+  }
+
+  String _formatTime(DateTime? value) {
+    if (value == null) {
+      return '—';
+    }
+
+    final DateTime time = value.toLocal();
+
+    return '${time.hour.toString().padLeft(2, '0')}:'
+        '${time.minute.toString().padLeft(2, '0')}';
   }
 
   Color _statusColor(String status) {
     switch (status) {
       case _upcoming:
         return AppColors.primary;
+
       case _completed:
         return AppColors.success;
+
       case _cancelled:
         return AppColors.error;
+
       default:
         return Theme.of(context).colorScheme.onSurfaceVariant;
     }
@@ -169,10 +152,13 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
     switch (status) {
       case _upcoming:
         return Icons.schedule_outlined;
+
       case _completed:
         return Icons.check_circle_outline;
+
       case _cancelled:
         return Icons.cancel_outlined;
+
       default:
         return Icons.confirmation_num_outlined;
     }
@@ -184,12 +170,17 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
 
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final List<Map<String, dynamic>> trips = _filteredTrips;
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Text(l10n.myTrips),
+        actions: [
+          IconButton(
+            tooltip: 'Refresh',
+            onPressed: _isLoading ? null : _loadBookings,
+            icon: const Icon(Icons.refresh_outlined),
+          ),
+        ],
       ),
       body: Container(
         width: double.infinity,
@@ -220,28 +211,36 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
           child: Column(
             children: [
               _buildFilters(context, l10n),
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  switchInCurve: Curves.easeOut,
-                  switchOutCurve: Curves.easeIn,
-                  child: trips.isEmpty
-                      ? _buildEmptyState(
-                          context,
-                          l10n,
-                          key: ValueKey('empty-$_selectedFilter'),
-                        )
-                      : _buildTripList(
-                          trips,
-                          l10n,
-                          key: ValueKey(_selectedFilter),
-                        ),
-                ),
-              ),
+              Expanded(child: _buildBody(context, l10n)),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, AppLocalizations l10n) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      return _buildErrorState(context);
+    }
+
+    final List<Booking> bookings = _filteredBookings;
+
+    if (bookings.isEmpty) {
+      return _buildEmptyState(
+        context,
+        l10n,
+        key: ValueKey('empty-$_selectedFilter'),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadBookings,
+      child: _buildBookingList(bookings, l10n, key: ValueKey(_selectedFilter)),
     );
   }
 
@@ -267,7 +266,6 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                     padding: const EdgeInsets.only(right: 8),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOut,
                       decoration: BoxDecoration(
                         color: selected
                             ? color.withValues(alpha: 0.14)
@@ -288,19 +286,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                         side: BorderSide.none,
                         backgroundColor: Colors.transparent,
                         selectedColor: Colors.transparent,
-                        labelStyle: TextStyle(
-                          fontWeight: selected
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          color: selected
-                              ? color
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
                         onSelected: (_) {
-                          if (_selectedFilter == filter) {
-                            return;
-                          }
-
                           setState(() {
                             _selectedFilter = filter;
                           });
@@ -317,22 +303,23 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
     );
   }
 
-  Widget _buildTripList(
-    List<Map<String, dynamic>> trips,
+  Widget _buildBookingList(
+    List<Booking> bookings,
     AppLocalizations l10n, {
     required Key key,
   }) {
     return ListView.builder(
       key: key,
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-      itemCount: trips.length,
+      itemCount: bookings.length,
       itemBuilder: (context, index) {
         return Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 900),
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
-              child: _buildTripCard(context, trips[index], l10n),
+              child: _buildBookingCard(context, bookings[index], l10n),
             ),
           ),
         );
@@ -340,34 +327,28 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
     );
   }
 
-  Widget _buildTripCard(
+  Widget _buildBookingCard(
     BuildContext context,
-    Map<String, dynamic> trip,
+    Booking booking,
     AppLocalizations l10n,
   ) {
-    final String status = trip['status']?.toString() ?? '';
-
-    final String bookingMode = trip['bookingMode']?.toString() ?? '';
-
-    final bool isDoorToDoor = bookingMode == 'Door-to-Door';
-
-    final int passengers = (trip['passengers'] as int?) ?? 0;
-
-    final int luggage = (trip['luggage'] as int?) ?? 0;
-
-    final int amount = (trip['amount'] as int?) ?? 0;
+    final String status = _displayStatus(booking);
 
     return GlassContainer(
       width: double.infinity,
       padding: EdgeInsets.zero,
       borderRadius: 20,
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TripDetailsScreen(trip: trip),
+            builder: (context) => TripDetailsScreen(booking: booking),
           ),
         );
+
+        if (mounted) {
+          await _loadBookings();
+        }
       },
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -395,13 +376,15 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        trip['agency']?.toString() ?? '',
+                        booking.agencyName.isEmpty
+                            ? 'Transport agency'
+                            : booking.agencyName,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       SelectableText(
-                        trip['bookingReference']?.toString() ?? '',
+                        booking.bookingReference,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -422,8 +405,8 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
               children: [
                 Expanded(
                   child: _TripLocation(
-                    time: trip['departureTime']?.toString() ?? '',
-                    city: trip['departureCity']?.toString() ?? '',
+                    time: _formatTime(booking.departureTime),
+                    city: booking.originCity,
                   ),
                 ),
                 Expanded(
@@ -448,8 +431,8 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                 ),
                 Expanded(
                   child: _TripLocation(
-                    time: trip['arrivalTime']?.toString() ?? '',
-                    city: trip['destinationCity']?.toString() ?? '',
+                    time: _formatTime(booking.arrivalTime),
+                    city: booking.destinationCity,
                     alignEnd: true,
                   ),
                 ),
@@ -461,16 +444,12 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
             Wrap(
               spacing: 14,
               runSpacing: 10,
-              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 _MetadataItem(
                   icon: Icons.calendar_today_outlined,
-                  value: trip['date']?.toString() ?? '',
+                  value: _formatDate(booking.departureTime),
                 ),
-                _MetadataItem(
-                  icon: Icons.event_seat_outlined,
-                  value: trip['travelClass']?.toString() ?? '',
-                ),
+                _MetadataItem(icon: Icons.info_outline, value: booking.status),
               ],
             ),
             const SizedBox(height: 14),
@@ -479,18 +458,20 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
               runSpacing: 8,
               children: [
                 _InformationChip(
-                  icon: isDoorToDoor
+                  icon: booking.isDoorToDoor
                       ? Icons.home_outlined
                       : Icons.directions_bus_outlined,
-                  label: l10n.bookingModeLabel(bookingMode),
+                  label: booking.isDoorToDoor
+                      ? 'Door-to-Door'
+                      : 'Interurban Only',
                 ),
                 _InformationChip(
                   icon: Icons.person_outline,
-                  label: l10n.passengerCount(passengers),
+                  label: l10n.passengerCount(booking.numberOfSeats),
                 ),
                 _InformationChip(
                   icon: Icons.luggage_outlined,
-                  label: l10n.luggageItemCount(luggage),
+                  label: l10n.luggageItemCount(booking.luggageCount),
                 ),
               ],
             ),
@@ -503,7 +484,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                 ),
                 const Spacer(),
                 Text(
-                  '${_formatPrice(amount)} FCFA',
+                  '${_formatPrice(booking.totalAmount)} FCFA',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
@@ -517,6 +498,49 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: GlassContainer(
+            width: double.infinity,
+            padding: const EdgeInsets.all(28),
+            borderRadius: 20,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.error_outline_rounded,
+                  size: 46,
+                  color: AppColors.error,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Unable to load bookings',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _errorMessage ?? 'Unknown error.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 18),
+                ElevatedButton.icon(
+                  onPressed: _loadBookings,
+                  icon: const Icon(Icons.refresh_outlined),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -540,20 +564,10 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: _statusColor(
-                      _selectedFilter,
-                    ).withValues(alpha: 0.10),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _statusIcon(_selectedFilter),
-                    size: 34,
-                    color: _statusColor(_selectedFilter),
-                  ),
+                Icon(
+                  _statusIcon(_selectedFilter),
+                  size: 42,
+                  color: _statusColor(_selectedFilter),
                 ),
                 const SizedBox(height: 18),
                 Text(
@@ -567,9 +581,6 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                 Text(
                   l10n.emptyTripsDescription(_selectedFilter),
                   textAlign: TextAlign.center,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(height: 1.45),
                 ),
               ],
             ),
@@ -649,25 +660,15 @@ class _StatusBadge extends StatelessWidget {
     switch (status) {
       case 'Upcoming':
         return AppColors.primary;
+
       case 'Completed':
         return AppColors.success;
+
       case 'Cancelled':
         return AppColors.error;
+
       default:
         return AppColors.textSecondary;
-    }
-  }
-
-  IconData get _icon {
-    switch (status) {
-      case 'Upcoming':
-        return Icons.schedule_outlined;
-      case 'Completed':
-        return Icons.check_circle_outline;
-      case 'Cancelled':
-        return Icons.cancel_outlined;
-      default:
-        return Icons.info_outline;
     }
   }
 
@@ -679,20 +680,13 @@ class _StatusBadge extends StatelessWidget {
         color: _color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(18),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(_icon, size: 13, color: _color),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: _color,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: _color,
+        ),
       ),
     );
   }
@@ -716,11 +710,7 @@ class _InformationChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          Icon(icon, size: 14),
           const SizedBox(width: 5),
           Text(label, style: Theme.of(context).textTheme.labelSmall),
         ],

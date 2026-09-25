@@ -2,47 +2,81 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../tracking/models/tracking.dart';
+import '../../tracking/services/parcel_service.dart';
 import 'tracking_details_screen.dart';
 
-class MyParcelsScreen extends StatelessWidget {
+class MyParcelsScreen extends StatefulWidget {
   const MyParcelsScreen({super.key});
 
-  /*
-   * FRONTEND DEMONSTRATION DATA ONLY.
-   *
-   * In production, these records must come
-   * from the authenticated client's backend
-   * parcel shipments.
-   *
-   * Creating a parcel in the current prototype
-   * does not persist a new record into this
-   * demonstration list.
-   */
-  List<Map<String, dynamic>> get _parcels => [
-    {
-      'trackingReference': 'PAR-DEMO-001',
-      'recipientName': 'John Doe',
-      'recipientPhone': '677123456',
-      'agency': 'General Express',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'description': 'Clothes in a medium box',
-      'weight': '8.5 kg',
-      'status': 'In Transit',
-    },
-    {
-      'trackingReference': 'PAR-DEMO-002',
-      'recipientName': 'Mary Example',
-      'recipientPhone': '699123456',
-      'agency': 'Finexs Voyage',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'description': 'Personal items',
-      'weight': '5.0 kg',
-      'status': 'Received by Agency',
-    },
-  ];
+  @override
+  State<MyParcelsScreen> createState() => _MyParcelsScreenState();
+}
+
+class _MyParcelsScreenState extends State<MyParcelsScreen> {
+  final ParcelService _parcelService = ParcelService.instance;
+
+  List<Parcel> _parcels = const <Parcel>[];
+
+  bool _isLoading = true;
+
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadParcels();
+  }
+
+  Future<void> _loadParcels() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final List<Parcel> parcels = await _parcelService.getMyParcels();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _parcels = parcels;
+        _isLoading = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// `_ParcelCard` keeps its simple map contract, so each backend
+  /// parcel is projected into the values the card renders.
+  Map<String, dynamic> _toCardData(Parcel parcel) {
+    return <String, dynamic>{
+      'trackingReference': parcel.trackingNumber,
+      'recipientName': parcel.recipientName,
+      'recipientPhone': parcel.recipientPhone,
+      'agency': parcel.originAgencyName ?? '—',
+      'departureCity': parcel.originCity ?? '—',
+      'destinationCity': parcel.destinationCity ?? '—',
+      'description': parcel.description,
+      'weight': parcel.weightKg == null
+          ? '—'
+          : '${parcel.weightKg!.toStringAsFixed(1)} kg',
+      'status': parcel.status,
+    };
+  }
 
   bool _isFrench(BuildContext context) {
     return Localizations.localeOf(context).languageCode == 'fr';
@@ -98,8 +132,6 @@ class MyParcelsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n = AppLocalizations.of(context);
-
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -179,37 +211,18 @@ class MyParcelsScreen extends StatelessWidget {
 
                       const SizedBox(height: 16),
 
-                      ..._parcels.map(
-                        (parcel) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _ParcelCard(
-                            parcel: parcel,
-                            agencyLabel: _agency(context),
-                            routeLabel: _route(context),
-                            recipientLabel: _recipient(context),
-                            weightLabel: _weight(context),
-                            trackLabel: _trackParcel(context),
-                            localizedStatus: l10n.trackingStatusLabel(
-                              parcel['status'],
-                            ),
-                            onTrack: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TrackingDetailsScreen(
-                                    trackingReference:
-                                        parcel['trackingReference'],
-                                    itemType: 'parcel',
-                                    departureCity: parcel['departureCity'],
-                                    destinationCity: parcel['destinationCity'],
-                                    currentStatus: parcel['status'],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                      if (_isLoading) ...[
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: CircularProgressIndicator()),
                         ),
-                      ),
+                      ] else if (_errorMessage != null) ...[
+                        _buildError(context),
+                      ] else if (_parcels.isEmpty) ...[
+                        _buildEmpty(context),
+                      ] else ...[
+                        ..._parcels.map(_buildParcelCard),
+                      ],
 
                       const SizedBox(height: 8),
                     ],
@@ -219,6 +232,97 @@ class MyParcelsScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildParcelCard(Parcel parcel) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: _ParcelCard(
+        parcel: _toCardData(parcel),
+        agencyLabel: _agency(context),
+        routeLabel: _route(context),
+        recipientLabel: _recipient(context),
+        weightLabel: _weight(context),
+        trackLabel: _trackParcel(context),
+        localizedStatus: l10n.trackingStatusLabel(parcel.status),
+        onTrack: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TrackingDetailsScreen(
+                trackingReference: parcel.trackingNumber,
+                itemType: 'parcel',
+                departureCity: parcel.originCity ?? '',
+                destinationCity: parcel.destinationCity ?? '',
+                status: parcel.status,
+                progressPercentage: parcel.progressPercentage,
+                events: parcel.trackingEvents,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(20),
+      borderRadius: 16,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: AppColors.textSecondary,
+            size: 34,
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            _errorMessage ?? '',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+
+          const SizedBox(height: 14),
+
+          OutlinedButton.icon(
+            onPressed: _loadParcels,
+            icon: const Icon(Icons.refresh),
+            label: Text(_isFrench(context) ? 'Réessayer' : 'Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty(BuildContext context) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(24),
+      borderRadius: 16,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.inventory_2_outlined,
+            color: AppColors.textSecondary,
+            size: 34,
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            _isFrench(context)
+                ? 'Aucun colis pour le moment. Les colis que vous envoyez apparaîtront ici.'
+                : 'No parcels yet. Parcels you send will appear here.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
       ),
     );
   }
@@ -318,20 +422,29 @@ class _ParcelCard extends StatelessWidget {
   Color _statusColor() {
     switch (parcel['status']) {
       case 'Delivered':
+      case 'DELIVERED':
+      case 'Collected':
+      case 'COLLECTED':
         return AppColors.success;
 
       case 'In Transit':
+      case 'IN_TRANSIT':
+      case 'Loaded':
+      case 'LOADED':
         return AppColors.primary;
 
       case 'Arrived':
+      case 'ARRIVED_AT_DESTINATION_AGENCY':
       case 'Ready for Collection':
+      case 'READY_FOR_COLLECTION':
         return AppColors.secondary;
 
-      case 'Loaded':
-        return AppColors.primary;
-
       case 'Registered':
+      case 'REGISTERED':
       case 'Received by Agency':
+      case 'RECEIVED_AT_AGENCY':
+      case 'Received at Origin Agency':
+      case 'RECEIVED_AT_ORIGIN_AGENCY':
       default:
         return AppColors.textSecondary;
     }

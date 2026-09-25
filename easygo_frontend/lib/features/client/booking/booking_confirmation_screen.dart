@@ -24,6 +24,14 @@ class BookingConfirmationScreen extends StatelessWidget {
   final int totalAmount;
   final String paymentMethod;
 
+  // The real backend booking reference
+  // returned once the booking is created.
+  final String bookingReference;
+
+  // The digital ticket number issued for the
+  // confirmed booking.
+  final String ticketNumber;
+
   const BookingConfirmationScreen({
     super.key,
     required this.agency,
@@ -36,6 +44,8 @@ class BookingConfirmationScreen extends StatelessWidget {
     required this.luggage,
     required this.totalAmount,
     required this.paymentMethod,
+    required this.bookingReference,
+    required this.ticketNumber,
     this.pickupLocation,
     this.finalDestination,
   });
@@ -85,12 +95,9 @@ class BookingConfirmationScreen extends StatelessWidget {
           totalAmount: totalAmount,
           paymentMethod: paymentMethod,
 
-          // Temporary references.
-          // These will be replaced by
-          // backend booking/ticket data
-          // during their integration steps.
-          bookingReference: 'DEMO-BOOKING-001',
-          ticketReference: 'DEMO-TICKET-001',
+          // Both references now come from the backend.
+          bookingReference: bookingReference,
+          ticketReference: ticketNumber,
         ),
       ),
     );

@@ -13,10 +13,15 @@ class ParcelConfirmationScreen extends StatelessWidget {
   final String destinationCity;
   final String description;
   final double weight;
-  final String agencyName;
-  final int amount;
-  final String paymentMethod;
+
+  final String originAgencyName;
+  final String destinationAgencyName;
+
   final String trackingReference;
+
+  /// The backend status and progress of the registered parcel.
+  final String status;
+  final int progressPercentage;
 
   const ParcelConfirmationScreen({
     super.key,
@@ -26,31 +31,12 @@ class ParcelConfirmationScreen extends StatelessWidget {
     required this.destinationCity,
     required this.description,
     required this.weight,
-    required this.agencyName,
-    required this.amount,
-    required this.paymentMethod,
+    required this.originAgencyName,
+    required this.destinationAgencyName,
     required this.trackingReference,
+    required this.status,
+    required this.progressPercentage,
   });
-
-  String _formatPrice(int value) {
-    return value.toString().replaceAllMapped(
-      RegExp(r'(?=(\d{3})+(?!\d))'),
-      (match) => ',',
-    );
-  }
-
-  String _paymentMethodLabel(AppLocalizations l10n) {
-    switch (paymentMethod) {
-      case 'MTN Mobile Money':
-        return l10n.mtnMobileMoney;
-
-      case 'Orange Money':
-        return l10n.orangeMoney;
-
-      default:
-        return paymentMethod;
-    }
-  }
 
   void _openTracking(BuildContext context) {
     Navigator.push(
@@ -61,7 +47,8 @@ class ParcelConfirmationScreen extends StatelessWidget {
           itemType: 'parcel',
           departureCity: departureCity,
           destinationCity: destinationCity,
-          currentStatus: 'Registered',
+          status: status,
+          progressPercentage: progressPercentage,
         ),
       ),
     );
@@ -259,7 +246,7 @@ class ParcelConfirmationScreen extends StatelessWidget {
           const SizedBox(height: 10),
 
           Text(
-            l10n.demoTrackingReferenceNotice,
+            l10n.parcelReceptionNotice,
             textAlign: TextAlign.center,
             style: Theme.of(
               context,
@@ -279,7 +266,7 @@ class ParcelConfirmationScreen extends StatelessWidget {
           _DetailRow(
             icon: Icons.business_outlined,
             label: l10n.agency,
-            value: agencyName,
+            value: originAgencyName,
           ),
 
           _DetailRow(
@@ -312,18 +299,6 @@ class ParcelConfirmationScreen extends StatelessWidget {
             icon: Icons.scale_outlined,
             label: l10n.weight,
             value: '${weight.toStringAsFixed(1)} kg',
-          ),
-
-          _DetailRow(
-            icon: Icons.account_balance_wallet_outlined,
-            label: l10n.paymentMethod,
-            value: _paymentMethodLabel(l10n),
-          ),
-
-          _DetailRow(
-            icon: Icons.payments_outlined,
-            label: l10n.amount,
-            value: '${_formatPrice(amount)} FCFA',
             last: true,
           ),
         ],

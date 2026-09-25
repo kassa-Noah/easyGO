@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../tracking/models/tracking.dart';
+import '../../tracking/services/luggage_service.dart';
+import '../../tracking/services/parcel_service.dart';
 import 'parcel_home_screen.dart';
 import 'tracking_details_screen.dart';
 import 'traveler_luggage_screen.dart';
@@ -15,9 +19,15 @@ class TrackingHomeScreen extends StatefulWidget {
 }
 
 class _TrackingHomeScreenState extends State<TrackingHomeScreen> {
+  final LuggageService _luggageService = LuggageService.instance;
+
+  final ParcelService _parcelService = ParcelService.instance;
+
   final TextEditingController _referenceController = TextEditingController();
 
   final FocusNode _referenceFocusNode = FocusNode();
+
+  bool _isTracking = false;
 
   @override
   void dispose() {
@@ -27,7 +37,7 @@ class _TrackingHomeScreenState extends State<TrackingHomeScreen> {
     super.dispose();
   }
 
-  void _trackReference() {
+  Future<void> _trackReference() async {
     final AppLocalizations l10n = AppLocalizations.of(context);
 
     final String reference = _referenceController.text.trim().toUpperCase();
@@ -42,60 +52,103 @@ class _TrackingHomeScreenState extends State<TrackingHomeScreen> {
 
     _referenceFocusNode.unfocus();
 
-    String itemType;
-    String departureCity;
-    String destinationCity;
-    String currentStatus;
+    setState(() {
+      _isTracking = true;
+    });
 
-    /*
-     * FRONTEND DEMONSTRATION DATA
-     *
-     * The reference prefix is used temporarily
-     * to determine the type of tracked item.
-     *
-     * LUG- = Traveler luggage
-     * PAR- = Independent parcel
-     *
-     * During backend integration, Flutter will
-     * send the tracking reference to the backend.
-     * The backend will return the authoritative
-     * item type, route and tracking status.
-     */
+    try {
+      // A luggage reference and a parcel reference are both
+      // unknown to the user up front, so each lookup is tried
+      // in turn and the backend decides what the reference is.
+      final Luggage? luggage = await _findLuggage(reference);
 
-    if (reference.startsWith('PAR-')) {
-      itemType = 'parcel';
-      departureCity = 'Yaoundé';
-      destinationCity = 'Douala';
-      currentStatus = 'In Transit';
-    } else {
-      itemType = 'luggage';
-      departureCity = 'Yaoundé';
-      destinationCity = 'Douala';
-      currentStatus = 'In Transit';
+      if (luggage != null) {
+        if (!mounted) {
+          return;
+        }
+
+        _openTrackingDetails(
+          trackingReference: luggage.trackingNumber,
+          itemType: 'luggage',
+          departureCity: luggage.originCity ?? '',
+          destinationCity: luggage.destinationCity ?? '',
+          status: luggage.status,
+          progressPercentage: luggage.progressPercentage,
+          events: luggage.trackingEvents,
+        );
+
+        return;
+      }
+
+      final Parcel parcel = await _parcelService.trackParcel(reference);
+
+      if (!mounted) {
+        return;
+      }
+
+      _openTrackingDetails(
+        trackingReference: parcel.trackingNumber,
+        itemType: 'parcel',
+        departureCity: parcel.originCity ?? '',
+        destinationCity: parcel.destinationCity ?? '',
+        status: parcel.status,
+        progressPercentage: parcel.progressPercentage,
+        events: parcel.trackingEvents,
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTracking = false;
+        });
+      }
     }
+  }
 
+  /// Returns the luggage for the reference, or `null` when the
+  /// reference is not a luggage tracking number.
+  Future<Luggage?> _findLuggage(String reference) async {
+    try {
+      return await _luggageService.trackLuggage(reference);
+    } on ApiException catch (error) {
+      if (error.statusCode == 404) {
+        return null;
+      }
+
+      rethrow;
+    }
+  }
+
+  void _openTrackingDetails({
+    required String trackingReference,
+    required String itemType,
+    required String departureCity,
+    required String destinationCity,
+    required String status,
+    required int progressPercentage,
+    required List<TrackingEvent> events,
+  }) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => TrackingDetailsScreen(
-          trackingReference: reference,
+          trackingReference: trackingReference,
           itemType: itemType,
           departureCity: departureCity,
           destinationCity: destinationCity,
-          currentStatus: currentStatus,
+          status: status,
+          progressPercentage: progressPercentage,
+          events: events,
         ),
       ),
     );
-  }
-
-  void _useDemoReference(String reference) {
-    setState(() {
-      _referenceController.text = reference;
-
-      _referenceController.selection = TextSelection.fromPosition(
-        TextPosition(offset: _referenceController.text.length),
-      );
-    });
   }
 
   void _openTravelerLuggage() {
@@ -339,53 +392,15 @@ class _TrackingHomeScreenState extends State<TrackingHomeScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _trackReference,
-              icon: const Icon(Icons.search),
+              onPressed: _isTracking ? null : _trackReference,
+              icon: _isTracking
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.search),
               label: Text(l10n.trackItem),
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              color: Theme.of(
-                context,
-              ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.demoReferences,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                _DemoReferenceButton(
-                  reference: l10n.travelerLuggageDemoReference,
-                  description: l10n.travelerLuggage,
-                  onTap: () {
-                    _useDemoReference(l10n.travelerLuggageDemoReference);
-                  },
-                ),
-
-                const SizedBox(height: 5),
-
-                _DemoReferenceButton(
-                  reference: l10n.parcelDemoReference,
-                  description: l10n.independentParcel,
-                  onTap: () {
-                    _useDemoReference(l10n.parcelDemoReference);
-                  },
-                ),
-              ],
             ),
           ),
         ],
@@ -542,48 +557,3 @@ class _TrackingOptionCard extends StatelessWidget {
   }
 }
 
-class _DemoReferenceButton extends StatelessWidget {
-  final String reference;
-  final String description;
-  final VoidCallback onTap;
-
-  const _DemoReferenceButton({
-    required this.reference,
-    required this.description,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 3),
-          child: Row(
-            children: [
-              const Icon(
-                Icons.touch_app_outlined,
-                size: 15,
-                color: AppColors.primary,
-              ),
-
-              const SizedBox(width: 7),
-
-              Expanded(
-                child: Text(
-                  '$reference — $description',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontSize: 11),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

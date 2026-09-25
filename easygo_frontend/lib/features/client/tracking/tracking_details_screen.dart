@@ -3,13 +3,23 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../tracking/models/tracking.dart';
 
 class TrackingDetailsScreen extends StatelessWidget {
   final String trackingReference;
   final String itemType;
   final String departureCity;
   final String destinationCity;
-  final String currentStatus;
+
+  /// The backend status value, for example `IN_TRANSIT`.
+  final String status;
+
+  /// The backend progress value. Falls back to the standard
+  /// stage sequence when the caller has no progress information.
+  final int progressPercentage;
+
+  /// The recorded tracking events, oldest first.
+  final List<TrackingEvent> events;
 
   const TrackingDetailsScreen({
     super.key,
@@ -17,34 +27,74 @@ class TrackingDetailsScreen extends StatelessWidget {
     required this.itemType,
     required this.departureCity,
     required this.destinationCity,
-    required this.currentStatus,
+    required this.status,
+    this.progressPercentage = 0,
+    this.events = const <TrackingEvent>[],
   });
 
-  static const List<String> _statuses = [
-    'Registered',
-    'Received by Agency',
-    'Loaded',
-    'In Transit',
-    'Arrived',
-    'Ready for Collection',
-    'Delivered',
+  /// The canonical progression used when no tracking events are
+  /// available to the caller.
+  static const List<String> _stages = [
+    'REGISTERED',
+    'RECEIVED_AT_AGENCY',
+    'LOADED',
+    'IN_TRANSIT',
+    'ARRIVED_AT_DESTINATION_AGENCY',
+    'READY_FOR_COLLECTION',
+    'DELIVERED',
   ];
 
-  int get _currentStatusIndex {
-    final int index = _statuses.indexOf(currentStatus);
+  int get _stageIndex {
+    final int index = _stages.indexOf(status);
 
     return index < 0 ? 0 : index;
   }
 
   double get _progress {
-    if (_statuses.length <= 1) {
+    if (progressPercentage > 0) {
+      return (progressPercentage / 100).clamp(0.0, 1.0);
+    }
+
+    if (_stages.length <= 1) {
       return 0;
     }
 
-    return _currentStatusIndex / (_statuses.length - 1);
+    return _stageIndex / (_stages.length - 1);
   }
 
   bool get _isParcel => itemType.toLowerCase() == 'parcel';
+
+  String _formatDateTime(DateTime value) {
+    final DateTime local = value.toLocal();
+
+    final String day = local.day.toString().padLeft(2, '0');
+
+    final String month = local.month.toString().padLeft(2, '0');
+
+    final String hour = local.hour.toString().padLeft(2, '0');
+
+    final String minute = local.minute.toString().padLeft(2, '0');
+
+    return '$day/$month/${local.year} $hour:$minute';
+  }
+
+  String _eventDetail(TrackingEvent event) {
+    final List<String> parts = <String>[];
+
+    if (event.location != null && event.location!.isNotEmpty) {
+      parts.add(event.location!);
+    }
+
+    if (event.createdAt != null) {
+      parts.add(_formatDateTime(event.createdAt!));
+    }
+
+    if (event.description != null && event.description!.isNotEmpty) {
+      parts.add(event.description!);
+    }
+
+    return parts.join(' • ');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -253,7 +303,7 @@ class TrackingDetailsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              l10n.trackingStatusLabel(currentStatus).toUpperCase(),
+              l10n.trackingStatusLabel(status).toUpperCase(),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12,
@@ -349,22 +399,46 @@ class TrackingDetailsScreen extends StatelessWidget {
 
           const SizedBox(height: 22),
 
-          ...List.generate(_statuses.length, (index) {
-            final bool completed = index < _currentStatusIndex;
-
-            final bool current = index == _currentStatusIndex;
-
-            return _TimelineItem(
-              title: l10n.trackingStatusLabel(_statuses[index]),
-              currentStatusLabel: l10n.currentStatus,
-              completed: completed,
-              current: current,
-              showLine: index < _statuses.length - 1,
-            );
-          }),
+          ..._buildTimelineItems(context, l10n),
         ],
       ),
     );
+  }
+
+  /// Uses the tracking events recorded by the responsible agency.
+  /// When the caller has no event history, the standard stage
+  /// sequence is shown so that progress is still communicated.
+  List<Widget> _buildTimelineItems(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    if (events.isNotEmpty) {
+      final int lastIndex = events.length - 1;
+
+      return List<Widget>.generate(events.length, (int index) {
+        final TrackingEvent event = events[index];
+
+        final bool isCurrent = index == lastIndex;
+
+        return _TimelineItem(
+          title: l10n.trackingStatusLabel(event.status),
+          currentStatusLabel: _eventDetail(event),
+          completed: !isCurrent,
+          current: isCurrent,
+          showLine: index < lastIndex,
+        );
+      });
+    }
+
+    return List<Widget>.generate(_stages.length, (int index) {
+      return _TimelineItem(
+        title: l10n.trackingStatusLabel(_stages[index]),
+        currentStatusLabel: l10n.currentStatus,
+        completed: index < _stageIndex,
+        current: index == _stageIndex,
+        showLine: index < _stages.length - 1,
+      );
+    });
   }
 
   Widget _buildTrackingNotice(BuildContext context, AppLocalizations l10n) {
