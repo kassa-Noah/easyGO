@@ -485,12 +485,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'This payment is currently '
-              'simulated for the easyGO '
-              'demonstration. The real '
-              'backend payment endpoint '
-              'will be connected in the '
-              'next integration step.',
+              'Your booking and payment '
+              'are recorded by the easyGO '
+              'backend. The mobile money '
+              'providers are not connected '
+              'yet, so the transfer itself '
+              'is settled by a simulated '
+              'payment adapter.',
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(height: 1.5),

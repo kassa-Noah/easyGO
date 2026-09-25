@@ -24,9 +24,8 @@ class DigitalTicketScreen extends StatelessWidget {
   final int totalAmount;
   final String paymentMethod;
 
-  // Temporary demonstration references.
-  // These will be replaced by backend-generated
-  // references during booking/ticket integration.
+  // Issued by the backend: the booking reference comes from the stored booking
+  // and the ticket reference from the ticket created for it.
   final String bookingReference;
   final String ticketReference;
 
