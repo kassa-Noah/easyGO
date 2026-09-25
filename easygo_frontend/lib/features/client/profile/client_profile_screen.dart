@@ -5,6 +5,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../auth/models/auth_user.dart';
+import '../../auth/screens/change_password_screen.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../auth/services/auth_service.dart';
 import '../notifications/notifications_screen.dart';
@@ -86,6 +87,13 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SettingsScreen()),
+    );
+  }
+
+  void _openChangePassword() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
     );
   }
 
@@ -324,6 +332,13 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
                         title: l10n.settings,
                         subtitle: l10n.settingsSubtitle,
                         onTap: _openSettings,
+                      ),
+                      const _MenuDivider(),
+                      _ProfileMenuItem(
+                        icon: Icons.lock_outline,
+                        title: l10n.changePassword,
+                        subtitle: l10n.changePasswordSubtitle,
+                        onTap: _openChangePassword,
                       ),
                     ],
                   ),

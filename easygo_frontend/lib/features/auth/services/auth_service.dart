@@ -144,6 +144,25 @@ class AuthService {
     return AuthUser.fromJson(Map<String, dynamic>.from(data));
   }
 
+  /// Replaces the signed-in account's password.
+  ///
+  /// The account is taken from the access token on the server, so this can only
+  /// ever change the caller's own password. The current password is required as
+  /// proof that the caller is the account holder and not a borrowed session.
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _apiClient.post(
+      '/auth/change-password',
+      authenticated: true,
+      body: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      },
+    );
+  }
+
   Future<bool> isLoggedIn() {
     return _tokenStorage.hasToken();
   }

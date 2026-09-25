@@ -60,7 +60,17 @@ class GlassContainer extends StatelessWidget {
               ),
             ],
           ),
-          child: child,
+          // Material widgets paint their background and ink splashes on the
+          // nearest Material ancestor rather than on the nearest decorated box.
+          // Without this transparent surface a ListTile inside the panel would
+          // have its ripples painted behind the glass colour, and Flutter warns
+          // about it in debug builds. The ambient text style is passed through
+          // so wrapping the child changes nothing else about it.
+          child: Material(
+            type: MaterialType.transparency,
+            textStyle: DefaultTextStyle.of(context).style,
+            child: child,
+          ),
         ),
       ),
     );

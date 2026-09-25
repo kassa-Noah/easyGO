@@ -274,24 +274,23 @@ class AppLocalizations {
 
   String get agencyStaff => isFrench ? 'Personnel de l’agence' : 'Agency Staff';
 
-  String get agencyMessagingDemoInfo => isFrench
-      ? 'Mode démonstration : les messages sont actuellement conservés uniquement sur cet écran. Le backend assurera ensuite la persistance, l’authentification, les accusés de lecture et la communication en temps réel.'
-      : 'Demo mode: messages are currently stored only on this screen. The backend will later provide persistence, authentication, read status and real-time delivery.';
-
   String get typeMessage =>
       isFrench ? 'Écrire un message...' : 'Type a message...';
 
-  String get demoAgencyGreeting => isFrench
-      ? 'Bonjour. Comment pouvons-nous vous aider concernant votre voyage ?'
-      : 'Hello. How can we assist you with your journey?';
+  String get noConversationsYet => isFrench
+      ? 'Aucune conversation pour le moment.'
+      : 'No conversations yet.';
 
-  String get demoClientQuestion => isFrench
-      ? 'Bonjour, je voudrais obtenir plus d’informations sur le service porte-à-porte.'
-      : 'Hello, I would like more information about the door-to-door service.';
+  // ==================================================
+  // ACCOUNT SECURITY
+  // ==================================================
 
-  String get demoAgencyResponse => isFrench
-      ? 'Bien sûr. Vous pouvez sélectionner le mode porte-à-porte lorsque vous commencez votre réservation.'
-      : 'Certainly. You can select Door-to-Door mode when you start your booking.';
+  String get changePassword =>
+      isFrench ? 'Modifier le mot de passe' : 'Change Password';
+
+  String get changePasswordSubtitle => isFrench
+      ? 'Modifier votre mot de passe de connexion'
+      : 'Update your sign-in password';
 
   // ==================================================
   // BOOKING MODE
@@ -712,17 +711,15 @@ class AppLocalizations {
   String get trackingReference =>
       isFrench ? 'Référence de suivi' : 'Tracking Reference';
 
-  String get trackingReferenceExample =>
-      isFrench ? 'Exemple : LUG-DEMO-001' : 'Example: LUG-DEMO-001';
+  String get trackingReferenceExample => isFrench
+      ? 'Exemple : LUG-MUGZCQ0H-20LB45'
+      : 'Example: LUG-MUGZCQ0H-20LB45';
 
   String get trackingReferenceRequired => isFrench
       ? 'Veuillez entrer une référence de suivi.'
       : 'Please enter a tracking reference.';
 
   String get trackItem => isFrench ? 'Suivre l’article' : 'Track Item';
-
-  String get demoReferences =>
-      isFrench ? 'Références de démonstration' : 'Demo References';
 
   String get travelerLuggage =>
       isFrench ? 'Bagages du voyageur' : 'Traveler Luggage';
@@ -749,10 +746,6 @@ class AppLocalizations {
   String get trackingExplanation => isFrench
       ? 'L’indicateur de progression représente les étapes opérationnelles du transport : Enregistré, Reçu par l’agence, Chargé, En transit, Arrivé, Prêt pour le retrait et Livré. Il ne représente pas le déplacement GPS en temps réel.'
       : 'The progress indicator represents operational transport stages such as Registered, Received by Agency, Loaded, In Transit, Arrived, Ready for Collection and Delivered. It does not represent real-time GPS movement.';
-
-  String get travelerLuggageDemoReference => 'LUG-DEMO-001';
-
-  String get parcelDemoReference => 'PAR-DEMO-001';
 
   // ==================================================
   // TRACKING DETAILS
@@ -1034,10 +1027,6 @@ class AppLocalizations {
       ? 'Veuillez sélectionner un service de transport de colis.'
       : 'Please select a parcel transport service.';
 
-  String get parcelServiceDemoNotice => isFrench
-      ? 'Les agences et les tarifs affichés sont des données de démonstration. Dans le système final, easyGO obtiendra du backend les services de colis éligibles ainsi que le tarif officiel.'
-      : 'The displayed agencies and prices are demonstration data. In the final system, easyGO will obtain eligible parcel services and the authoritative quote from the backend.';
-
   String get parcelFee => isFrench ? 'Frais du colis' : 'Parcel Fee';
 
   String parcelDurationLabel(String duration) {
@@ -1066,10 +1055,6 @@ class AppLocalizations {
   String get enterValidPaymentPhoneNumber => isFrench
       ? 'Veuillez entrer un numéro de téléphone valide.'
       : 'Enter a valid phone number.';
-
-  String get parcelPrototypePaymentNotice => isFrench
-      ? 'Mode prototype : ce paiement est simulé. Aucune transaction Mobile Money réelle ne sera effectuée.'
-      : 'Prototype mode: this payment is simulated. No real mobile money transaction will be performed.';
 
   String payParcelAmount(String amount) {
     return isFrench ? 'Payer $amount FCFA' : 'Pay $amount FCFA';

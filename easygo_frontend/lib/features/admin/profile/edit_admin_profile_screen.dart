@@ -1,30 +1,51 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/network/api_exception.dart';
 import '../../../core/settings/app_settings_controller.dart';
 import '../../../core/settings/app_settings_scope.dart';
 import '../../../shared/widgets/glass_container.dart';
+import '../models/admin_console.dart';
+import '../services/admin_service.dart';
 
+/// The account as it stands after a successful save.
 class AdminProfileData {
-  final String name;
+  final String firstName;
+  final String lastName;
   final String email;
   final String phone;
 
   const AdminProfileData({
-    required this.name,
+    required this.firstName,
+    required this.lastName,
     required this.email,
     required this.phone,
   });
+
+  factory AdminProfileData.fromAccount(AdminAccount account) {
+    return AdminProfileData(
+      firstName: account.firstName,
+      lastName: account.lastName,
+      email: account.email,
+      phone: account.phone ?? '',
+    );
+  }
 }
 
 class EditAdminProfileScreen extends StatefulWidget {
-  final String initialName;
-  final String initialEmail;
+  final String initialFirstName;
+  final String initialLastName;
+
+  /// Shown because it identifies the account, but not editable here: the
+  /// backend's profile route accepts a name and phone only.
+  final String email;
+
   final String initialPhone;
 
   const EditAdminProfileScreen({
     super.key,
-    required this.initialName,
-    required this.initialEmail,
+    required this.initialFirstName,
+    required this.initialLastName,
+    required this.email,
     required this.initialPhone,
   });
 
@@ -35,9 +56,11 @@ class EditAdminProfileScreen extends StatefulWidget {
 class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  late final TextEditingController _nameController;
-  late final TextEditingController _emailController;
+  late final TextEditingController _firstNameController;
+  late final TextEditingController _lastNameController;
   late final TextEditingController _phoneController;
+
+  bool _isSaving = false;
 
   String _t(AppSettingsController settings, String en, String fr) =>
       settings.isFrench ? fr : en;
@@ -45,30 +68,45 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.initialName);
-    _emailController = TextEditingController(text: widget.initialEmail);
+    _firstNameController = TextEditingController(text: widget.initialFirstName);
+    _lastNameController = TextEditingController(text: widget.initialLastName);
     _phoneController = TextEditingController(text: widget.initialPhone);
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
+    if (_isSaving) return;
+
     if (!_formKey.currentState!.validate()) return;
 
-    Navigator.pop(
-      context,
-      AdminProfileData(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
+    setState(() => _isSaving = true);
+
+    try {
+      final AdminAccount updated = await AdminService.instance.updateMyAccount(
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
         phone: _phoneController.text.trim(),
-      ),
-    );
+      );
+
+      if (!mounted) return;
+
+      Navigator.pop(context, AdminProfileData.fromAccount(updated));
+    } on ApiException catch (error) {
+      if (!mounted) return;
+
+      setState(() => _isSaving = false);
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    }
   }
 
   @override
@@ -98,17 +136,24 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
                     child: Column(
                       children: [
                         TextFormField(
-                          controller: _nameController,
+                          controller: _firstNameController,
                           decoration: InputDecoration(
-                            labelText: _t(settings, 'Full name', 'Nom complet'),
+                            labelText: _t(settings, 'First name', 'Prénom'),
                             prefixIcon: const Icon(Icons.person_outline),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return _t(
                                 settings,
-                                'Please enter the administrator name.',
-                                'Veuillez saisir le nom de l’administrateur.',
+                                'Please enter your first name.',
+                                'Veuillez saisir votre prénom.',
+                              );
+                            }
+                            if (value.trim().length < 2) {
+                              return _t(
+                                settings,
+                                'The first name is too short.',
+                                'Le prénom est trop court.',
                               );
                             }
                             return null;
@@ -116,30 +161,41 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
                         ),
                         const SizedBox(height: 18),
                         TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: Icon(Icons.email_outlined),
+                          controller: _lastNameController,
+                          decoration: InputDecoration(
+                            labelText: _t(settings, 'Last name', 'Nom'),
+                            prefixIcon: const Icon(Icons.person_outline),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return _t(
                                 settings,
-                                'Please enter an email address.',
-                                'Veuillez saisir une adresse e-mail.',
+                                'Please enter your last name.',
+                                'Veuillez saisir votre nom.',
                               );
                             }
-                            final regex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
-                            if (!regex.hasMatch(value.trim())) {
+                            if (value.trim().length < 2) {
                               return _t(
                                 settings,
-                                'Please enter a valid email address.',
-                                'Veuillez saisir une adresse e-mail valide.',
+                                'The last name is too short.',
+                                'Le nom est trop court.',
                               );
                             }
                             return null;
                           },
+                        ),
+                        const SizedBox(height: 18),
+                        TextFormField(
+                          initialValue: widget.email,
+                          enabled: false,
+                          decoration: InputDecoration(
+                            labelText: _t(
+                              settings,
+                              'Email (sign-in address)',
+                              'E-mail (adresse de connexion)',
+                            ),
+                            prefixIcon: const Icon(Icons.email_outlined),
+                          ),
                         ),
                         const SizedBox(height: 18),
                         TextFormField(
@@ -161,6 +217,13 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
                                 'Veuillez saisir un numéro de téléphone.',
                               );
                             }
+                            if (value.trim().length < 8) {
+                              return _t(
+                                settings,
+                                'Please enter a valid phone number.',
+                                'Veuillez saisir un numéro de téléphone valide.',
+                              );
+                            }
                             return null;
                           },
                         ),
@@ -178,8 +241,8 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
                           child: Text(
                             _t(
                               settings,
-                              'Prototype mode: changes are kept only for the current frontend session. The backend will persist administrator information in production.',
-                              'Mode prototype : les modifications sont conservées uniquement pendant la session frontend actuelle. Le backend enregistrera les informations administrateur en production.',
+                              'Your name and phone number are saved to your account. The email address identifies the account and is not changed here.',
+                              'Votre nom et votre numéro de téléphone sont enregistrés sur votre compte. L’adresse e-mail identifie le compte et n’est pas modifiée ici.',
                             ),
                           ),
                         ),
@@ -190,8 +253,14 @@ class _EditAdminProfileScreenState extends State<EditAdminProfileScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
-                      onPressed: _save,
-                      icon: const Icon(Icons.save_outlined),
+                      onPressed: _isSaving ? null : _save,
+                      icon: _isSaving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save_outlined),
                       label: Text(
                         _t(
                           settings,

@@ -217,7 +217,7 @@ class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
                       const SizedBox(height: 18),
                       _buildLocationInformation(localizations),
                       const SizedBox(height: 18),
-                      _buildPrototypeNotice(context, localizations),
+                      _buildSaveNotice(context, localizations),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
@@ -371,7 +371,7 @@ class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
     );
   }
 
-  Widget _buildPrototypeNotice(
+  Widget _buildSaveNotice(
     BuildContext context,
     AppLocalizations localizations,
   ) {
