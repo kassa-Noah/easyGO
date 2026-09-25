@@ -342,7 +342,7 @@ class AgencyParcelDetailsScreen extends StatelessWidget {
           _DetailRow(
             icon: Icons.business_outlined,
             label: 'Transport Agency',
-            value: 'General Express',
+            value: parcel['agencyName'] as String? ?? '—',
           ),
           const SizedBox(height: 14),
           _DetailRow(

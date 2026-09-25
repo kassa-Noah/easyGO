@@ -11,13 +11,32 @@ class AgencyConsoleService {
 
   final ApiClient _apiClient = ApiClient.instance;
 
-  Future<StaffAgencyProfile> getMyAgency() async {
+  StaffAgencyProfile? _cachedAgency;
+
+  /// The agency the signed-in staff member belongs to.
+  ///
+  /// Cached for the session: several screens only need it to label themselves,
+  /// and re-reading it for every rebuild would be wasteful. Pass `refresh: true`
+  /// after the agency has been edited.
+  Future<StaffAgencyProfile> getMyAgency({bool refresh = false}) async {
+    final StaffAgencyProfile? cached = _cachedAgency;
+
+    if (!refresh && cached != null) {
+      return cached;
+    }
+
     final dynamic response = await _apiClient.get(
       '/staff/agency',
       authenticated: true,
     );
 
-    return StaffAgencyProfile.fromJson(_extractData(response));
+    final StaffAgencyProfile profile = StaffAgencyProfile.fromJson(
+      _extractData(response),
+    );
+
+    _cachedAgency = profile;
+
+    return profile;
   }
 
   Future<AgencyDashboard> getDashboard() async {

@@ -2,14 +2,59 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../bookings/agency_bookings_screen.dart';
 import '../luggage/agency_luggage_screen.dart';
+import '../models/agency_console.dart';
 import '../parcels/agency_parcels_screen.dart';
+import '../services/agency_console_service.dart';
 import '../trips/agency_trips_screen.dart';
 
-class AgencyOperationsScreen extends StatelessWidget {
+class AgencyOperationsScreen extends StatefulWidget {
   const AgencyOperationsScreen({super.key});
+
+  @override
+  State<AgencyOperationsScreen> createState() =>
+      _AgencyOperationsScreenState();
+}
+
+class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
+
+  String? _agencyName;
+  String? _staffRole;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAgency();
+  }
+
+  Future<void> _loadAgency() async {
+    try {
+      final StaffAgencyProfile profile = await _console.getMyAgency();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _agencyName = profile.name;
+        _staffRole = profile.staffRole;
+        _errorMessage = null;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+      });
+    }
+  }
 
   void _openTrips(BuildContext context) {
     Navigator.push(
@@ -134,12 +179,28 @@ class AgencyOperationsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'General Express',
+                  _agencyName ?? 'Your agency',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                if (_staffRole != null && _staffRole!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    _staffRole!,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _errorMessage!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.error,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -276,7 +337,9 @@ class AgencyOperationsScreen extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Agency operations must be restricted to records belonging to the authenticated agency. The backend will enforce this authorization using the authenticated agency identity.',
+              'These screens are scoped by the backend to the agency your '
+              'staff account belongs to, so the trips, bookings, luggage and '
+              'parcels you see are only your own.',
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(height: 1.45),

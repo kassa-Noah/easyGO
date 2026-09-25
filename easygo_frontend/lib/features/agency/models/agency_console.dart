@@ -263,6 +263,10 @@ class ConsoleBooking {
   final String? finalDestination;
   final String? vehicleDescription;
 
+  /// The agency operating the trip. The staff payload nests it under
+  /// `trip.agency`, so the console can label a record without a second request.
+  final String? agencyName;
+
   const ConsoleBooking({
     required this.id,
     required this.bookingReference,
@@ -284,6 +288,7 @@ class ConsoleBooking {
     required this.pickupAddress,
     required this.finalDestination,
     required this.vehicleDescription,
+    required this.agencyName,
   });
 
   factory ConsoleBooking.fromJson(Map<String, dynamic> json) {
@@ -292,6 +297,8 @@ class ConsoleBooking {
     final Map<String, dynamic>? trip = _toMap(json['trip']);
 
     final Map<String, dynamic>? route = _toMap(trip?['route']);
+
+    final Map<String, dynamic>? agency = _toMap(trip?['agency']);
 
     final List<dynamic> payments = json['payments'] is List
         ? json['payments'] as List<dynamic>
@@ -352,6 +359,7 @@ class ConsoleBooking {
       vehicleDescription: vehicleDescription.isEmpty
           ? null
           : vehicleDescription,
+      agencyName: _toNullableString(agency?['name']),
     );
   }
 
@@ -451,6 +459,9 @@ class ConsoleParcel {
   final String destinationCity;
   final List<TrackingEvent> trackingEvents;
 
+  /// The agency operating the branch the shipment was dropped at.
+  final String? agencyName;
+
   const ConsoleParcel({
     required this.id,
     required this.trackingNumber,
@@ -467,6 +478,7 @@ class ConsoleParcel {
     required this.originCity,
     required this.destinationCity,
     required this.trackingEvents,
+    required this.agencyName,
   });
 
   factory ConsoleParcel.fromJson(Map<String, dynamic> json) {
@@ -494,6 +506,7 @@ class ConsoleParcel {
       originCity: originBranch?['city']?.toString() ?? '',
       destinationCity: destinationBranch?['city']?.toString() ?? '',
       trackingEvents: _toEvents(json['trackingEvents']),
+      agencyName: _toNullableString(_toMap(originBranch?['agency'])?['name']),
     );
   }
 

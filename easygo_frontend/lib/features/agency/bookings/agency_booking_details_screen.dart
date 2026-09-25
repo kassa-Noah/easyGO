@@ -207,7 +207,7 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
               ),
               const SizedBox(width: 7),
               Text(
-                'General Express',
+                booking['agencyName'] as String? ?? '—',
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -344,10 +344,10 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
             value: 'External provider assignment',
           ),
           _buildJourneyConnector(),
-          const _JourneyStage(
+          _JourneyStage(
             icon: Icons.business_outlined,
             title: 'Departure Agency',
-            value: 'General Express',
+            value: booking['agencyName'] as String? ?? '—',
           ),
           _buildJourneyConnector(),
           _JourneyStage(
@@ -358,10 +358,10 @@ class AgencyBookingDetailsScreen extends StatelessWidget {
                 '${booking['destinationCity']}',
           ),
           _buildJourneyConnector(),
-          const _JourneyStage(
+          _JourneyStage(
             icon: Icons.business_outlined,
             title: 'Arrival Agency',
-            value: 'General Express',
+            value: booking['agencyName'] as String? ?? '—',
           ),
           _buildJourneyConnector(),
           const _JourneyStage(

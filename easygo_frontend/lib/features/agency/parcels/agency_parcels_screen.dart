@@ -107,6 +107,7 @@ class _AgencyParcelsScreenState extends State<AgencyParcelsScreen> {
           ? '—'
           : formatConsoleDate(registered),
       'status': parcel.statusLabel,
+      'agencyName': parcel.agencyName,
     };
   }
 

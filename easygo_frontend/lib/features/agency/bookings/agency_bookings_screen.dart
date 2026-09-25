@@ -101,6 +101,7 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
         'status': booking.statusLabel,
         'pickupLocation': booking.pickupAddress,
         'finalDestination': booking.finalDestination,
+        'agencyName': booking.agencyName,
       };
     }).toList();
   }

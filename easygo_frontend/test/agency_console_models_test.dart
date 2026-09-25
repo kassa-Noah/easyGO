@@ -375,6 +375,47 @@ void main() {
     });
   });
 
+  group('agency labelling', () {
+    test('reads the agency the booking payload nests under trip.agency', () {
+      final Map<String, dynamic> trip =
+          realBooking['trip'] as Map<String, dynamic>;
+
+      final ConsoleBooking booking = ConsoleBooking.fromJson(<String, dynamic>{
+        ...realBooking,
+        'trip': <String, dynamic>{
+          ...trip,
+          'agency': <String, dynamic>{
+            'id': '912184dc-5b52-4a80-b6bd-177fd01d56ea',
+            'name': 'Finexs Voyages',
+          },
+        },
+      });
+
+      expect(booking.agencyName, 'Finexs Voyages');
+    });
+
+    test('reads the parcel agency from its origin branch', () {
+      final ConsoleParcel parcel = ConsoleParcel.fromJson(<String, dynamic>{
+        'id': 'p1',
+        'trackingNumber': 'PAR-1',
+        'description': 'Books',
+        'originBranch': <String, dynamic>{
+          'city': 'Yaounde',
+          'agency': <String, dynamic>{'name': 'Finexs Voyages'},
+        },
+        'destinationBranch': <String, dynamic>{'city': 'Douala'},
+      });
+
+      expect(parcel.agencyName, 'Finexs Voyages');
+    });
+
+    test('reports no agency name when the payload omits it', () {
+      // The console must fall back to a dash rather than inventing a name.
+      expect(ConsoleBooking.fromJson(realBooking).agencyName, isNull);
+      expect(ConsoleParcel.fromJson(<String, dynamic>{}).agencyName, isNull);
+    });
+  });
+
   group('ConsoleParcel', () {
     test('maps the sender, recipient and route', () {
       final ConsoleParcel parcel = ConsoleParcel.fromJson(<String, dynamic>{

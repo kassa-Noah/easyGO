@@ -40,7 +40,11 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
     }
 
     try {
-      final StaffAgencyProfile profile = await _console.getMyAgency();
+      // The profile may have just been edited, so force a re-read rather than
+      // serving the cached record.
+      final StaffAgencyProfile profile = await _console.getMyAgency(
+        refresh: true,
+      );
 
       if (!mounted) {
         return;
