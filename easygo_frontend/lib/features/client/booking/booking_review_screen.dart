@@ -544,10 +544,21 @@ class _BookingReviewScreenState extends State<BookingReviewScreen> {
                 '${_formatPrice(interurbanTotal)} '
                 'FCFA',
           ),
+          if (isDoorToDoor) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Divider(),
+            ),
+            _buildTaxiEstimates(context, l10n),
+          ],
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Divider(),
           ),
+          // The amount payable closes the summary and sits directly above the
+          // button that charges it, so it is the last amount the eye lands on.
+          // The taxi fares above are paid to the driver and are never part of
+          // this amount, which is why they do not appear after it.
           Row(
             children: [
               Expanded(
@@ -568,71 +579,75 @@ class _BookingReviewScreenState extends State<BookingReviewScreen> {
               ),
             ],
           ),
-          if (isDoorToDoor) ...[
-            const SizedBox(height: 18),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    l10n.estimatedTaxiFares,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTaxiEstimates(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.estimatedTaxiFares,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                Text(
-                  '${_formatPrice(taxiEstimatesTotal)} '
-                  'FCFA',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _PriceRow(
-              label: l10n.pickupTaxiFareLabel,
-              value:
-                  '${_formatPrice(pickupTaxiFare)} '
-                  'FCFA',
-            ),
-            const SizedBox(height: 10),
-            _PriceRow(
-              label: l10n.destinationTaxiFareLabel,
-              value:
-                  '${_formatPrice(destinationTaxiFare)} '
-                  'FCFA',
-            ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.info_outline,
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 9),
-                  Expanded(
-                    child: Text(
-                      l10n.temporaryTaxiEstimate,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(height: 1.4),
-                    ),
-                  ),
-                ],
+            ),
+            Text(
+              '${_formatPrice(taxiEstimatesTotal)} '
+              'FCFA',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
-        ],
-      ),
+        ),
+        const SizedBox(height: 10),
+        _PriceRow(
+          label: l10n.pickupTaxiFareLabel,
+          value:
+              '${_formatPrice(pickupTaxiFare)} '
+              'FCFA',
+        ),
+        const SizedBox(height: 10),
+        _PriceRow(
+          label: l10n.destinationTaxiFareLabel,
+          value:
+              '${_formatPrice(destinationTaxiFare)} '
+              'FCFA',
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(
+                Icons.info_outline,
+                size: 18,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  l10n.temporaryTaxiEstimate,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(height: 1.4),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
