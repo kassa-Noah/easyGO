@@ -19,6 +19,10 @@ import {
   simulatePaymentSchema,
 } from "./payment.schema";
 
+import {
+  requestFirstMileTaxiAssignment,
+} from "../taxi/taxi.service";
+
 export const initiatePayment =
   async (
     req: Request,
@@ -360,6 +364,27 @@ export const simulatePayment =
           paymentId,
           validatedData.result
         );
+
+      // Requesting the first-mile ride is a separate operational
+      // step that follows settlement. A mock taxi provider failure
+      // must never invalidate a payment that has already been
+      // taken, so the failure is logged and the settlement result
+      // is still returned to the customer.
+      if (
+        updatedPayment?.status ===
+        "SUCCESSFUL"
+      ) {
+        try {
+          await requestFirstMileTaxiAssignment(
+            updatedPayment.bookingId
+          );
+        } catch (error) {
+          console.error(
+            "Unable to request the first-mile taxi assignment:",
+            error
+          );
+        }
+      }
 
       return res.status(200).json({
         success: true,

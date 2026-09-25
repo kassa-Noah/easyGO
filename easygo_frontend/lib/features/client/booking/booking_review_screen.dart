@@ -56,13 +56,20 @@ class _BookingReviewScreenState extends State<BookingReviewScreen> {
 
   int get interurbanTotal => interurbanUnitFare * widget.passengers;
 
-  // Temporary frontend estimates only.
-  // They are not sent to the booking API.
+  // The traveller pays the interurban fare through the application,
+  // which is the amount the backend stores as the booking total.
+  // The rides are estimated separately and paid to the driver, so
+  // they are never added to this amount.
+  int get amountPayable => interurbanTotal;
+
+  // Estimates shown for information only. They mirror the simulated
+  // fares the backend applies when it requests each ride after
+  // payment and on arrival.
   int get pickupTaxiFare => isDoorToDoor ? 2500 : 0;
 
   int get destinationTaxiFare => isDoorToDoor ? 3000 : 0;
 
-  int get totalPrice => interurbanTotal + pickupTaxiFare + destinationTaxiFare;
+  int get taxiEstimatesTotal => pickupTaxiFare + destinationTaxiFare;
 
   String _formatPrice(int value) {
     return value.toString().replaceAllMapped(
@@ -223,7 +230,6 @@ class _BookingReviewScreenState extends State<BookingReviewScreen> {
             travelDate: widget.travelDate,
             passengers: widget.passengers,
             luggage: widget.luggage,
-            displayTotalAmount: totalPrice,
           ),
         ),
       );
@@ -538,22 +544,6 @@ class _BookingReviewScreenState extends State<BookingReviewScreen> {
                 '${_formatPrice(interurbanTotal)} '
                 'FCFA',
           ),
-          if (isDoorToDoor) ...[
-            const SizedBox(height: 14),
-            _PriceRow(
-              label: l10n.pickupTaxiFareLabel,
-              value:
-                  '${_formatPrice(pickupTaxiFare)} '
-                  'FCFA',
-            ),
-            const SizedBox(height: 14),
-            _PriceRow(
-              label: l10n.destinationTaxiFareLabel,
-              value:
-                  '${_formatPrice(destinationTaxiFare)} '
-                  'FCFA',
-            ),
-          ],
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 16),
             child: Divider(),
@@ -562,14 +552,14 @@ class _BookingReviewScreenState extends State<BookingReviewScreen> {
             children: [
               Expanded(
                 child: Text(
-                  l10n.total,
+                  l10n.amountPayable,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               Text(
-                '${_formatPrice(totalPrice)} '
+                '${_formatPrice(amountPayable)} '
                 'FCFA',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -579,6 +569,40 @@ class _BookingReviewScreenState extends State<BookingReviewScreen> {
             ],
           ),
           if (isDoorToDoor) ...[
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.estimatedTaxiFares,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${_formatPrice(taxiEstimatesTotal)} '
+                  'FCFA',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _PriceRow(
+              label: l10n.pickupTaxiFareLabel,
+              value:
+                  '${_formatPrice(pickupTaxiFare)} '
+                  'FCFA',
+            ),
+            const SizedBox(height: 10),
+            _PriceRow(
+              label: l10n.destinationTaxiFareLabel,
+              value:
+                  '${_formatPrice(destinationTaxiFare)} '
+                  'FCFA',
+            ),
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(12),
@@ -634,12 +658,12 @@ class _BookingReviewScreenState extends State<BookingReviewScreen> {
                 Row(
                   children: [
                     Text(
-                      l10n.total,
+                      l10n.amountPayable,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const Spacer(),
                     Text(
-                      '${_formatPrice(totalPrice)} '
+                      '${_formatPrice(amountPayable)} '
                       'FCFA',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,

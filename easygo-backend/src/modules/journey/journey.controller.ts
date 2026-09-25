@@ -13,6 +13,10 @@ import {
   updateJourneyStatusSchema,
 } from "./journey.schema";
 
+import {
+  requestLastMileTaxiAssignment,
+} from "../taxi/taxi.service";
+
 export const addJourney = async (
   req: Request,
   res: Response
@@ -170,10 +174,38 @@ export const changeJourneyStatus = async (
     const validatedData =
       updateJourneyStatusSchema.parse(req.body);
 
-    const journey = await updateJourneyStatus(
+    let journey = await updateJourneyStatus(
       journeyId,
       validatedData.status
     );
+
+    // Marking the journey as DROPOFF_ASSIGNED means the traveller
+    // has reached the arrival agency, so the last-mile ride is
+    // requested at that point. A mock provider failure must never
+    // fail the status change itself, and the refreshed journey is
+    // returned so the response already carries the new driver.
+    if (
+      validatedData.status ===
+      "DROPOFF_ASSIGNED"
+    ) {
+      try {
+        await requestLastMileTaxiAssignment(
+          journeyId
+        );
+
+        const refreshedJourney =
+          await getJourneyById(journeyId);
+
+        if (refreshedJourney) {
+          journey = refreshedJourney;
+        }
+      } catch (error) {
+        console.error(
+          "Unable to request the last-mile taxi assignment:",
+          error
+        );
+      }
+    }
 
     return res.status(200).json({
       success: true,

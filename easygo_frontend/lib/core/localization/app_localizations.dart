@@ -528,9 +528,15 @@ class AppLocalizations {
 
   String get total => 'Total';
 
+  String get estimatedTaxiFares =>
+      isFrench ? 'Tarifs de taxi estimés' : 'Estimated taxi fares';
+
+  String get amountPayable =>
+      isFrench ? 'Montant à payer' : 'Amount payable';
+
   String get temporaryTaxiEstimate => isFrench
-      ? 'Les montants des taxis affichés pendant le développement frontend sont des estimations temporaires.'
-      : 'Taxi amounts shown during frontend development are temporary estimates.';
+      ? 'Les tarifs de taxi de prise en charge et vers la destination sont des estimations pour le premier et le dernier kilomètre. Ils sont payés directement au chauffeur et ne font pas partie du montant débité dans l’application.'
+      : 'Pickup and destination taxi fares are estimates for the first and last mile. They are paid directly to the driver and are not part of the amount charged in the application.';
 
   String get continueToPayment =>
       isFrench ? 'Continuer vers le paiement' : 'Continue to Payment';

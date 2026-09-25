@@ -28,10 +28,6 @@ class PaymentScreen extends StatefulWidget {
   final int passengers;
   final int luggage;
 
-  // This remains a frontend display amount
-  // until the payment API is integrated.
-  final int displayTotalAmount;
-
   const PaymentScreen({
     super.key,
     required this.agency,
@@ -43,10 +39,14 @@ class PaymentScreen extends StatefulWidget {
     required this.travelDate,
     required this.passengers,
     required this.luggage,
-    required this.displayTotalAmount,
     this.pickupLocation,
     this.finalDestination,
   });
+
+  /// The amount the backend stored for this booking. It is the
+  /// authoritative figure, so the screen never shows an amount the
+  /// server did not record.
+  int get payableAmount => booking.totalAmount.round();
 
   @override
   State<PaymentScreen> createState() => _PaymentScreenState();
@@ -301,12 +301,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          Text('Amount to pay', style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            AppLocalizations.of(context).amountPayable,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
           const SizedBox(height: 6),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              '${_formatPrice(widget.displayTotalAmount)} '
+              '${_formatPrice(widget.payableAmount)} '
               'FCFA',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
@@ -519,9 +522,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
               children: [
                 Row(
                   children: [
-                    const Expanded(child: Text('Total amount')),
+                    Expanded(
+                      child: Text(
+                        AppLocalizations.of(context).amountPayable,
+                      ),
+                    ),
                     Text(
-                      '${_formatPrice(widget.displayTotalAmount)} '
+                      '${_formatPrice(widget.payableAmount)} '
                       'FCFA',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
@@ -548,7 +555,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       _isProcessing
                           ? 'Processing...'
                           : 'Pay '
-                                '${_formatPrice(widget.displayTotalAmount)} '
+                                '${_formatPrice(widget.payableAmount)} '
                                 'FCFA',
                       style: const TextStyle(
                         fontSize: 16,
