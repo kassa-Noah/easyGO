@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 
 class CreateTripScreen extends StatefulWidget {
   const CreateTripScreen({super.key});
@@ -13,18 +16,24 @@ class CreateTripScreen extends StatefulWidget {
 class _CreateTripScreenState extends State<CreateTripScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
+
   final TextEditingController _priceController = TextEditingController();
 
   final TextEditingController _seatCapacityController = TextEditingController();
 
-  static const List<String> _cities = [
-    'Yaoundé',
-    'Douala',
-    'Bafoussam',
-    'Bamenda',
-    'Buea',
-    'Limbe',
-  ];
+  /// The cities the agency can actually serve, taken from its own routes. A trip
+  /// is always created against a route, so the pickers must not offer a pair of
+  /// cities the agency has no route for.
+  List<String> _cities = <String>[];
+
+  List<ConsoleRoute> _routes = <ConsoleRoute>[];
+
+  String? _agencyId;
+  String? _agencyName;
+
+  bool _isLoadingRoutes = true;
+  String? _routesError;
 
   static const List<String> _travelClasses = ['Classic', 'VIP'];
 
@@ -37,6 +46,64 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
   TimeOfDay? _arrivalTime;
 
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRoutes();
+  }
+
+  Future<void> _loadRoutes() async {
+    try {
+      final StaffAgencyProfile agency = await _console.getMyAgency();
+
+      final List<ConsoleRoute> routes = await _console.getAgencyRoutes(
+        agencyId: agency.agencyId,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      final List<String> cities = <String>[];
+
+      for (final ConsoleRoute route in routes) {
+        if (!cities.contains(route.originCity)) {
+          cities.add(route.originCity);
+        }
+      }
+
+      setState(() {
+        _agencyId = agency.agencyId;
+        _agencyName = agency.name;
+        _routes = routes;
+        _cities = cities;
+        _isLoadingRoutes = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _routesError = error.message;
+        _isLoadingRoutes = false;
+      });
+    }
+  }
+
+  /// The route serving the pair of cities the user picked, or `null` when the
+  /// agency does not operate that pair.
+  ConsoleRoute? get _selectedRoute {
+    for (final ConsoleRoute route in _routes) {
+      if (route.originCity == _departureCity &&
+          route.destinationCity == _destinationCity) {
+        return route;
+      }
+    }
+
+    return null;
+  }
 
   @override
   void dispose() {
@@ -168,7 +235,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
 
     if (arrivalMinutes <= departureMinutes) {
       _showMessage(
-        'Arrival time must be after departure time for this prototype trip schedule.',
+        'Arrival time must be after departure time.',
       );
       return false;
     }
@@ -189,24 +256,97 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
       return;
     }
 
-    setState(() {
-      _isSubmitting = true;
-    });
+    if (_isLoadingRoutes) {
+      _showMessage('Your routes are still loading. Try again in a moment.');
+      return;
+    }
 
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (_routesError != null) {
+      _showMessage(_routesError!);
+      return;
+    }
 
-    if (!mounted) {
+    if (_cities.isEmpty) {
+      _showMessage(
+        'Your agency has no route yet, so there is nothing to schedule. '
+        'Ask an administrator to create one.',
+      );
+      return;
+    }
+
+    final ConsoleRoute? route = _selectedRoute;
+
+    if (route == null) {
+      _showMessage(
+        'Your agency does not operate $_departureCity → $_destinationCity.',
+      );
+      return;
+    }
+
+    final String agencyId = _agencyId ?? '';
+
+    if (agencyId.isEmpty) {
+      _showMessage('The agency could not be identified. Reload the screen.');
       return;
     }
 
     setState(() {
-      _isSubmitting = false;
+      _isSubmitting = true;
     });
 
-    await _showDemoConfirmation();
+    try {
+      final ConsoleTrip created = await _console.createTrip(
+        agencyId: agencyId,
+        routeId: route.id,
+        departureTime: _instantOn(_departureTime!),
+        arrivalTime: _instantOn(_arrivalTime!),
+        price: double.parse(_priceController.text.trim()),
+        totalSeats: int.parse(_seatCapacityController.text.trim()),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      await _showResult(created);
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSubmitting = false;
+      });
+
+      await _showError(error.message);
+    }
   }
 
-  Future<void> _showDemoConfirmation() async {
+  /// Combines the travel date and a time of day into the absolute instant the
+  /// API stores for a departure or an arrival.
+  DateTime _instantOn(TimeOfDay time) => DateTime(
+    _travelDate!.year,
+    _travelDate!.month,
+    _travelDate!.day,
+    time.hour,
+    time.minute,
+  );
+
+  Future<void> _showResult(ConsoleTrip created) async {
+    // Prefer the figures the API confirmed, falling back to what was submitted
+    // if the created record came back without them.
+    final int fare = created.price > 0
+        ? created.price.round()
+        : int.parse(_priceController.text.trim());
+
+    final int seats = created.totalSeats > 0
+        ? created.totalSeats
+        : int.parse(_seatCapacityController.text.trim());
+
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -216,15 +356,44 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
             color: AppColors.success,
             size: 38,
           ),
-          title: const Text('Trip Validated'),
+          title: const Text('Trip Created'),
           content: Text(
-            'The trip from $_departureCity to '
-            '$_destinationCity on '
-            '${_formatDate(_travelDate!)} '
-            'has passed frontend validation.\n\n'
-            'No trip has been saved yet. '
-            'The backend will create the real trip reference and persist the record.',
+            'The trip was created.\n\n'
+            'Route: $_departureCity → '
+            '$_destinationCity\n'
+            'Date: ${_formatDate(_travelDate!)}\n'
+            'Schedule: '
+            '${_formatTime(_departureTime!)} – '
+            '${_formatTime(_arrivalTime!)}\n'
+            'Fare: $fare FCFA\n'
+            'Seats: $seats\n\n'
+            'The vehicle and its class are not set from this screen.',
+            ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showError(String message) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          icon: const Icon(
+            Icons.error_outline,
+            color: AppColors.error,
+            size: 38,
           ),
+          title: const Text('Trip Not Created'),
+          content: Text(message),
           actions: [
             FilledButton(
               onPressed: () {
@@ -333,14 +502,20 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'General Express',
+                  _agencyName ?? 'Your agency',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'New trips are associated with the authenticated agency.',
+                  _routesError != null
+                      ? 'Your routes could not be loaded.'
+                      : _isLoadingRoutes
+                      ? 'Loading the routes your agency operates…'
+                      : 'New trips are scheduled on your agency\'s own routes '
+                            '(${_cities.length} departure '
+                            '${_cities.length == 1 ? 'city' : 'cities'}).',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -415,9 +590,14 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
   }
 
   Widget _destinationField() {
-    final List<String> availableDestinations = _cities
-        .where((city) => city != _departureCity)
-        .toList();
+    final List<String> availableDestinations = <String>[];
+
+    for (final ConsoleRoute route in _routes) {
+      if (route.originCity == _departureCity &&
+          !availableDestinations.contains(route.destinationCity)) {
+        availableDestinations.add(route.destinationCity);
+      }
+    }
 
     return DropdownButtonFormField<String>(
       initialValue: availableDestinations.contains(_destinationCity)
@@ -601,7 +781,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
           final int seats = int.parse(value!.trim());
 
           if (seats > 100) {
-            return 'Seat capacity cannot exceed 100 in this prototype.';
+            return 'Seat capacity cannot exceed 100.';
           }
 
           return null;

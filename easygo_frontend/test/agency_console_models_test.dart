@@ -74,6 +74,32 @@ const Map<String, dynamic> realTrip = <String, dynamic>{
   '_count': <String, dynamic>{'bookings': 10, 'parcels': 1},
 };
 
+/// Captured from `GET /api/routes`, whose fare is a decimal serialised as a
+/// string and whose branches carry the owning agency.
+const Map<String, dynamic> realRoute = <String, dynamic>{
+  'id': 'af0f9f5e-cf2b-4463-9865-9232b61e5431',
+  'distanceKm': 250,
+  'estimatedDurationMinutes': 240,
+  'baseFare': '5000',
+  'isActive': true,
+  'originBranch': <String, dynamic>{
+    'id': 'b143047d-6d8b-49de-bcf9-7e0b80920bdf',
+    'city': 'Yaounde',
+    'agencyId': '912184dc-5b52-4a80-b6bd-177fd01d56ea',
+    'agency': <String, dynamic>{
+      'id': '912184dc-5b52-4a80-b6bd-177fd01d56ea',
+    },
+  },
+  'destinationBranch': <String, dynamic>{
+    'id': 'f5a7727e-1de0-4dfb-bbfd-531ac3662732',
+    'city': 'Douala',
+    'agencyId': '912184dc-5b52-4a80-b6bd-177fd01d56ea',
+    'agency': <String, dynamic>{
+      'id': '912184dc-5b52-4a80-b6bd-177fd01d56ea',
+    },
+  },
+};
+
 const Map<String, dynamic> realBooking = <String, dynamic>{
   'id': 'c90f7282-2d5f-4917-ae51-8b708814a5e8',
   'bookingReference': 'EG-MUH670F0-V42W9B',
@@ -279,6 +305,73 @@ void main() {
       expect(nextLuggageStatus('Lost'), isNull);
       expect(nextParcelStatus('Ready for Collection'), 'Delivered');
       expect(nextParcelStatus('Delivered'), isNull);
+    });
+  });
+
+  group('trip presentation', () {
+    test('maps the stored trip statuses onto the console words', () {
+      expect(tripStatusLabel('SCHEDULED'), 'Scheduled');
+      expect(tripStatusLabel('BOARDING'), 'Scheduled');
+      expect(tripStatusLabel('DEPARTED'), 'In Progress');
+      expect(tripStatusLabel('ARRIVED'), 'Completed');
+      expect(tripStatusLabel('CANCELLED'), 'Cancelled');
+    });
+
+    test('projects a real trip onto the keys the trip cards cast', () {
+      final Map<String, dynamic> card = consoleTripToCard(
+        ConsoleTrip.fromJson(realTrip),
+      );
+
+      // The cards cast these three, so they must not arrive as strings.
+      expect(card['price'], isA<int>());
+      expect(card['bookedSeats'], isA<int>());
+      expect(card['totalSeats'], isA<int>());
+
+      expect(card['price'], 5000);
+      expect(card['totalSeats'], 30);
+      expect(card['bookedSeats'], 8);
+      expect(card['status'], 'Scheduled');
+      expect(card['travelClass'], 'Toyota Coaster');
+      expect(card['date'], isA<String>());
+      expect(card['departureTime'], isA<String>());
+      expect(card['arrivalTime'], isA<String>());
+      expect(
+        '${card['departureCity']} → ${card['destinationCity']}',
+        'Yaounde → Douala',
+      );
+    });
+
+    test('renders a trip with no vehicle or schedule as a dash', () {
+      final Map<String, dynamic> card = consoleTripToCard(
+        ConsoleTrip.fromJson(<String, dynamic>{
+          'id': 't1',
+          'price': '6500',
+          'totalSeats': 45,
+          'availableSeats': 45,
+          'status': 'SCHEDULED',
+        }),
+      );
+
+      expect(card['travelClass'], '—');
+      expect(card['date'], '—');
+      expect(card['price'], 6500);
+      expect(card['status'], 'Scheduled');
+    });
+  });
+
+  group('ConsoleRoute', () {
+    test('maps the real route payload and keeps the owning agency', () {
+      final ConsoleRoute route = ConsoleRoute.fromJson(realRoute);
+
+      expect(route.routeLabel, 'Yaounde → Douala');
+      // The API serialises the fare as a decimal string.
+      expect(route.baseFare, 5000);
+      expect(route.distanceKm, 250);
+      expect(route.estimatedDurationMinutes, 240);
+
+      expect(route.belongsTo('912184dc-5b52-4a80-b6bd-177fd01d56ea'), isTrue);
+      expect(route.belongsTo('11111111-1111-1111-1111-111111111111'), isFalse);
+      expect(route.belongsTo(''), isFalse);
     });
   });
 

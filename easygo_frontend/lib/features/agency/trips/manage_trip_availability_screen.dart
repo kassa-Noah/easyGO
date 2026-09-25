@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 
 class ManageTripAvailabilityScreen extends StatefulWidget {
   const ManageTripAvailabilityScreen({super.key, required this.trip});
@@ -16,6 +19,8 @@ class ManageTripAvailabilityScreen extends StatefulWidget {
 class _ManageTripAvailabilityScreenState
     extends State<ManageTripAvailabilityScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
 
   late final TextEditingController _capacityController;
 
@@ -97,7 +102,7 @@ class _ManageTripAvailabilityScreenState
     }
 
     if (capacity > 100) {
-      return 'Seat capacity cannot exceed 100 in this prototype.';
+      return 'Seat capacity cannot exceed 100.';
     }
 
     return null;
@@ -119,40 +124,71 @@ class _ManageTripAvailabilityScreenState
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
+    final bool? confirmed = await _confirmCapacityChange(newCapacity);
 
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-
-    if (!mounted) {
+    if (!mounted || confirmed != true) {
       return;
     }
 
     setState(() {
-      _isSaving = false;
+      _isSaving = true;
     });
 
-    await _showDemoConfirmation(newCapacity);
+    try {
+      final ConsoleTrip updated = await _console.updateTrip(
+        tripId: widget.trip['id'] as String,
+        totalSeats: newCapacity,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+        _currentCapacity = updated.totalSeats;
+        _capacityController.text = updated.totalSeats.toString();
+      });
+
+      _showMessage(
+        'Seat capacity is now ${updated.totalSeats} seats, '
+        '${updated.availableSeats} still available.',
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      await _showError(error.message);
+    }
   }
 
-  Future<void> _showDemoConfirmation(int newCapacity) async {
+  Future<bool?> _confirmCapacityChange(int newCapacity) {
     final int availableSeats = newCapacity - _bookedSeats;
 
-    final bool? confirmed = await showDialog<bool>(
+    return showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          icon: const Icon(
-            Icons.check_circle_outline,
-            color: AppColors.success,
+          icon: Icon(
+            _currentStatusAlreadyBooked(newCapacity)
+                ? Icons.warning_amber_outlined
+                : Icons.event_seat_outlined,
+            color: _currentStatusAlreadyBooked(newCapacity)
+                ? AppColors.warning
+                : AppColors.primary,
             size: 38,
           ),
-          title: const Text('Availability Validated'),
+          title: const Text('Review Capacity Change'),
           content: Text(
-            'The capacity change for '
-            '${widget.trip['id']} has passed '
-            'frontend validation.\n\n'
+            'Change the seat capacity for '
+            '${widget.trip['departureCity']} → '
+            '${widget.trip['destinationCity']} on '
+            '${widget.trip['date']}?\n\n'
             'Previous capacity: '
             '$_currentCapacity seats\n'
             'New capacity: '
@@ -160,37 +196,54 @@ class _ManageTripAvailabilityScreenState
             'Booked seats: '
             '$_bookedSeats\n'
             'Available seats: '
-            '$availableSeats\n\n'
-            'No database record has been updated yet. '
-            'The backend will perform the real availability update.',
+            '$availableSeats',
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext, false);
               },
-              child: const Text('Close'),
+              child: const Text('Keep Current Capacity'),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(dialogContext, true);
               },
-              child: const Text('Apply Demo Change'),
+              child: const Text('Apply Change'),
             ),
           ],
         );
       },
     );
+  }
 
-    if (!mounted || confirmed != true) {
-      return;
-    }
+  /// A capacity below the seats already sold would strand booked passengers.
+  bool _currentStatusAlreadyBooked(int newCapacity) =>
+      newCapacity < _bookedSeats;
 
-    setState(() {
-      _currentCapacity = newCapacity;
-    });
-
-    _showMessage('Demo availability updated locally on this screen.');
+  Future<void> _showError(String message) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          icon: const Icon(
+            Icons.error_outline,
+            color: AppColors.error,
+            size: 38,
+          ),
+          title: const Text('Update Failed'),
+          content: Text(message),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _resetCapacity() {
@@ -203,7 +256,7 @@ class _ManageTripAvailabilityScreenState
     final int current = _enteredCapacity;
 
     if (current >= 100) {
-      _showMessage('Prototype capacity limit is 100 seats.');
+      _showMessage('The seat capacity limit is 100.');
       return;
     }
 

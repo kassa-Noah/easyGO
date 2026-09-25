@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../services/agency_console_service.dart';
 
 class EditTripScreen extends StatefulWidget {
   const EditTripScreen({super.key, required this.trip});
@@ -14,6 +16,8 @@ class EditTripScreen extends StatefulWidget {
 
 class _EditTripScreenState extends State<EditTripScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
 
   late final TextEditingController _priceController;
 
@@ -240,7 +244,7 @@ class _EditTripScreenState extends State<EditTripScreen> {
 
     if (arrivalMinutes <= departureMinutes) {
       _showMessage(
-        'Arrival time must be after departure time for this prototype trip schedule.',
+        'Arrival time must be after departure time.',
       );
 
       return false;
@@ -262,24 +266,63 @@ class _EditTripScreenState extends State<EditTripScreen> {
       return;
     }
 
-    setState(() {
-      _isSaving = true;
-    });
-
-    await Future<void>.delayed(const Duration(milliseconds: 900));
-
-    if (!mounted) {
+    // A trip keeps its route and its vehicle once it is scheduled: the API
+    // only accepts a new schedule and fare. Refuse rather than silently drop
+    // a change the user believes they made.
+    if (_departureCity != widget.trip['departureCity'] ||
+        _destinationCity != widget.trip['destinationCity']) {
+      _showMessage(
+        'A scheduled trip keeps its route. Create a new trip to serve a '
+        'different pair of cities.',
+      );
       return;
     }
 
     setState(() {
-      _isSaving = false;
+      _isSaving = true;
     });
 
-    await _showDemoConfirmation();
+    try {
+      await _console.updateTrip(
+        tripId: widget.trip['id'] as String,
+        departureTime: _instantOn(_departureTime),
+        arrivalTime: _instantOn(_arrivalTime),
+        price: int.parse(_priceController.text.trim()).toDouble(),
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      await _showResult();
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      await _showError(error.message);
+    }
   }
 
-  Future<void> _showDemoConfirmation() async {
+  /// Combines the travel date and a time of day into the absolute instant the
+  /// API stores for a departure or an arrival.
+  DateTime _instantOn(TimeOfDay time) => DateTime(
+    _travelDate.year,
+    _travelDate.month,
+    _travelDate.day,
+    time.hour,
+    time.minute,
+  );
+
+  Future<void> _showResult() async {
     final int fare = int.parse(_priceController.text.trim());
 
     await showDialog<void>(
@@ -291,22 +334,43 @@ class _EditTripScreenState extends State<EditTripScreen> {
             color: AppColors.success,
             size: 38,
           ),
-          title: const Text('Changes Validated'),
+          title: const Text('Trip Updated'),
           content: Text(
-            'The changes for '
-            '${widget.trip['id']} have passed '
-            'frontend validation.\n\n'
+            'The schedule and the fare were saved.\n\n'
             'Route: $_departureCity → '
             '$_destinationCity\n'
             'Date: ${_formatDate(_travelDate)}\n'
             'Schedule: '
             '${_formatTime(_departureTime)} – '
             '${_formatTime(_arrivalTime)}\n'
-            'Class: $_travelClass\n'
             'Fare: $fare FCFA\n\n'
-            'No database record has been updated yet. '
-            'The backend will perform the real update.',
+            'The route and the assigned vehicle are unchanged.',
           ),
+          actions: [
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showError(String message) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          icon: const Icon(
+            Icons.error_outline,
+            color: AppColors.error,
+            size: 38,
+          ),
+          title: const Text('Update Failed'),
+          content: Text(message),
           actions: [
             FilledButton(
               onPressed: () {
@@ -422,7 +486,9 @@ class _EditTripScreenState extends State<EditTripScreen> {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'General Express • Scheduled Trip',
+                  '${widget.trip['departureCity']} → '
+                  '${widget.trip['destinationCity']} • '
+                  '${widget.trip['status']} Trip',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -434,9 +500,9 @@ class _EditTripScreenState extends State<EditTripScreen> {
               color: AppColors.primary.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: const Text(
-              'Scheduled',
-              style: TextStyle(
+            child: Text(
+              widget.trip['status'] as String,
+              style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: AppColors.primary,

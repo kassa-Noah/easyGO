@@ -119,6 +119,73 @@ class AgencyConsoleService {
     );
   }
 
+  /// Routes the agency operates, used to schedule a trip.
+  ///
+  /// `/routes` is public and returns every active route on the platform, so the
+  /// result is narrowed to the routes whose branches both belong to [agencyId].
+  Future<List<ConsoleRoute>> getAgencyRoutes({
+    required String agencyId,
+  }) async {
+    final dynamic response = await _apiClient.get('/routes');
+
+    return _toRoutes(
+      _extractList(response),
+    ).where((ConsoleRoute route) => route.belongsTo(agencyId)).toList();
+  }
+
+  /// Schedules a trip against one of the agency's own routes.
+  ///
+  /// The API rejects a departure that is not in the future, an arrival that is
+  /// not after the departure, and a route owned by another agency, so the
+  /// caller only needs to surface the returned message.
+  Future<ConsoleTrip> createTrip({
+    required String agencyId,
+    required String routeId,
+    required DateTime departureTime,
+    required DateTime arrivalTime,
+    required double price,
+    required int totalSeats,
+  }) async {
+    final dynamic response = await _apiClient.post(
+      '/trips',
+      authenticated: true,
+      body: {
+        'agencyId': agencyId,
+        'routeId': routeId,
+        'departureTime': departureTime.toUtc().toIso8601String(),
+        'arrivalTime': arrivalTime.toUtc().toIso8601String(),
+        'price': price,
+        'totalSeats': totalSeats,
+      },
+    );
+
+    return ConsoleTrip.fromJson(_extractData(response));
+  }
+
+  /// Updates a scheduled trip. Omitted fields are left untouched.
+  Future<ConsoleTrip> updateTrip({
+    required String tripId,
+    DateTime? departureTime,
+    DateTime? arrivalTime,
+    double? price,
+    int? totalSeats,
+  }) async {
+    final dynamic response = await _apiClient.patch(
+      '/trips/$tripId',
+      authenticated: true,
+      body: {
+        if (departureTime != null)
+          'departureTime': departureTime.toUtc().toIso8601String(),
+        if (arrivalTime != null)
+          'arrivalTime': arrivalTime.toUtc().toIso8601String(),
+        'price': ?price,
+        'totalSeats': ?totalSeats,
+      },
+    );
+
+    return ConsoleTrip.fromJson(_extractData(response));
+  }
+
   Map<String, dynamic> _extractData(dynamic response) {
     if (response is! Map) {
       throw const ApiException(
@@ -181,5 +248,12 @@ List<ConsoleParcel> _toParcels(List<dynamic> data) {
   return data
       .whereType<Map>()
       .map((item) => ConsoleParcel.fromJson(Map<String, dynamic>.from(item)))
+      .toList();
+}
+
+List<ConsoleRoute> _toRoutes(List<dynamic> data) {
+  return data
+      .whereType<Map>()
+      .map((item) => ConsoleRoute.fromJson(Map<String, dynamic>.from(item)))
       .toList();
 }

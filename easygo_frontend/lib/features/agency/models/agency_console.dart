@@ -237,7 +237,7 @@ class ConsoleTrip {
 
   String get routeLabel => '$originCity → $destinationCity';
 
-  String get statusLabel => formatTrackingStatus(status);
+  String get statusLabel => tripStatusLabel(status);
 }
 
 /// A booking as presented in the agency console.
@@ -712,3 +712,115 @@ String formatConsoleDate(DateTime value) =>
 String formatConsoleTime(DateTime value) =>
     '${value.hour.toString().padLeft(2, '0')}:'
     '${value.minute.toString().padLeft(2, '0')}';
+
+/// The status words the agency console uses for trips, mapped from the enum
+/// the API stores.
+///
+/// Two stored states share a display word: a trip that is `BOARDING` is still
+/// presented as scheduled, because the console only asks whether a trip is
+/// upcoming, under way, arrived or cancelled. The mapping is display-only —
+/// no screen changes a trip status, so nothing is lost on the way back.
+const Map<String, String> tripStatusLabels = <String, String>{
+  'SCHEDULED': 'Scheduled',
+  'BOARDING': 'Scheduled',
+  'DEPARTED': 'In Progress',
+  'ARRIVED': 'Completed',
+  'CANCELLED': 'Cancelled',
+};
+
+/// The status words a trip can be shown as, in lifecycle order.
+const List<String> tripStatusWords = <String>[
+  'Scheduled',
+  'In Progress',
+  'Completed',
+  'Cancelled',
+];
+
+/// Converts a stored trip status into the word the console displays.
+String tripStatusLabel(String apiStatus) =>
+    tripStatusLabels[apiStatus] ?? formatTrackingStatus(apiStatus);
+
+/// A route the signed-in agency operates, used to schedule a trip.
+///
+/// Trips are always created against a route, and the API refuses a route whose
+/// branches belong to another agency, so the pickers are scoped to
+/// [belongsTo].
+class ConsoleRoute {
+  final String id;
+  final String originCity;
+  final String destinationCity;
+  final String originAgencyId;
+  final String destinationAgencyId;
+  final double baseFare;
+  final int? distanceKm;
+  final int? estimatedDurationMinutes;
+
+  const ConsoleRoute({
+    required this.id,
+    required this.originCity,
+    required this.destinationCity,
+    required this.originAgencyId,
+    required this.destinationAgencyId,
+    required this.baseFare,
+    required this.distanceKm,
+    required this.estimatedDurationMinutes,
+  });
+
+  factory ConsoleRoute.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? origin = _toMap(json['originBranch']);
+
+    final Map<String, dynamic>? destination = _toMap(json['destinationBranch']);
+
+    return ConsoleRoute(
+      id: json['id']?.toString() ?? '',
+      originCity: origin?['city']?.toString() ?? '',
+      destinationCity: destination?['city']?.toString() ?? '',
+      originAgencyId: _toMap(origin?['agency'])?['id']?.toString() ?? '',
+      destinationAgencyId:
+          _toMap(destination?['agency'])?['id']?.toString() ?? '',
+      baseFare: _toDouble(json['baseFare']),
+      distanceKm: json['distanceKm'] == null
+          ? null
+          : _toInt(json['distanceKm']),
+      estimatedDurationMinutes: json['estimatedDurationMinutes'] == null
+          ? null
+          : _toInt(json['estimatedDurationMinutes']),
+    );
+  }
+
+  /// A route is only usable when both of its branches belong to [agencyId].
+  bool belongsTo(String agencyId) =>
+      agencyId.isNotEmpty &&
+      originAgencyId == agencyId &&
+      destinationAgencyId == agencyId;
+
+  /// The cities this route connects, used to build the pickers.
+  String get routeLabel => '$originCity → $destinationCity';
+}
+
+/// Projects a console trip onto the keys the agency trip cards render.
+///
+/// Both the trip list and the trip details screen need the same shape, and the
+/// cards cast `price`, `bookedSeats` and `totalSeats` to `int` and index `date`,
+/// `departureTime`, `arrivalTime` and `travelClass` as strings, so the
+/// projection is defined once here.
+Map<String, dynamic> consoleTripToCard(ConsoleTrip trip) {
+  final DateTime? departure = trip.departureTime;
+  final DateTime? arrival = trip.arrivalTime;
+
+  return <String, dynamic>{
+    'id': trip.id,
+    'departureCity': trip.originCity,
+    'destinationCity': trip.destinationCity,
+    'date': departure == null ? '—' : formatConsoleDate(departure),
+    'departureTime': departure == null ? '—' : formatConsoleTime(departure),
+    'arrivalTime': arrival == null ? '—' : formatConsoleTime(arrival),
+    'travelClass': dashIfEmpty(trip.vehicleDescription),
+    // The fare and the seat progress bar both require integers, while the
+    // API stores the fare as a decimal amount.
+    'price': trip.price.round(),
+    'bookedSeats': trip.bookedSeats,
+    'totalSeats': trip.totalSeats,
+    'status': tripStatusLabel(trip.status),
+  };
+}

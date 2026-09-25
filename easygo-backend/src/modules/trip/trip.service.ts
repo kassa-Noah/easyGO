@@ -157,6 +157,32 @@ export const updateTrip = async (
     updateData.arrivalTime = new Date(data.arrivalTime);
   }
 
+  // Seat accounting lives on the trip itself: `availableSeats` is what is left
+  // to sell, so a capacity change has to move it by the same amount. Writing
+  // `totalSeats` alone leaves the trip advertising more seats than it has, and
+  // the agency console derives booked seats as totalSeats - availableSeats, so
+  // it then reads a negative number of booked seats.
+  if (data.totalSeats !== undefined) {
+    const current = await prisma.trip.findUnique({
+      where: { id: tripId },
+      select: { totalSeats: true, availableSeats: true },
+    });
+
+    if (!current) {
+      throw new Error("Trip not found");
+    }
+
+    const bookedSeats = current.totalSeats - current.availableSeats;
+
+    if (data.totalSeats < bookedSeats) {
+      throw new Error(
+        `Capacity cannot be lower than the ${bookedSeats} seats already booked`
+      );
+    }
+
+    updateData.availableSeats = data.totalSeats - bookedSeats;
+  }
+
   return prisma.trip.update({
     where: {
       id: tripId,

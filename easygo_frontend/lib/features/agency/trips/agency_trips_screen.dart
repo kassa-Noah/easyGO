@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 import 'agency_trip_details_screen.dart';
 import 'create_trip_screen.dart';
 
@@ -15,6 +18,7 @@ class AgencyTripsScreen extends StatefulWidget {
 class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
   static const String _all = 'All';
   static const String _scheduled = 'Scheduled';
+  static const String _inProgress = 'In Progress';
   static const String _completed = 'Completed';
   static const String _cancelled = 'Cancelled';
 
@@ -23,64 +27,69 @@ class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
   static const List<String> _filters = [
     _all,
     _scheduled,
+    _inProgress,
     _completed,
     _cancelled,
   ];
 
-  static const List<Map<String, dynamic>> _trips = [
-    {
-      'id': 'TRIP-DEMO-001',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Douala',
-      'date': '20 Sep 2026',
-      'departureTime': '07:00',
-      'arrivalTime': '11:00',
-      'travelClass': 'VIP',
-      'price': 7000,
-      'bookedSeats': 32,
-      'totalSeats': 50,
-      'status': 'Scheduled',
-    },
-    {
-      'id': 'TRIP-DEMO-002',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Bafoussam',
-      'date': '25 Sep 2026',
-      'departureTime': '09:30',
-      'arrivalTime': '13:30',
-      'travelClass': 'Classic',
-      'price': 5000,
-      'bookedSeats': 18,
-      'totalSeats': 40,
-      'status': 'Scheduled',
-    },
-    {
-      'id': 'TRIP-DEMO-003',
-      'departureCity': 'Douala',
-      'destinationCity': 'Yaoundé',
-      'date': '04 Aug 2026',
-      'departureTime': '08:00',
-      'arrivalTime': '12:00',
-      'travelClass': 'VIP',
-      'price': 7000,
-      'bookedSeats': 46,
-      'totalSeats': 50,
-      'status': 'Completed',
-    },
-    {
-      'id': 'TRIP-DEMO-004',
-      'departureCity': 'Yaoundé',
-      'destinationCity': 'Buea',
-      'date': '18 Jul 2026',
-      'departureTime': '06:30',
-      'arrivalTime': '12:30',
-      'travelClass': 'Classic',
-      'price': 7000,
-      'bookedSeats': 11,
-      'totalSeats': 40,
-      'status': 'Cancelled',
-    },
-  ];
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
+
+  List<Map<String, dynamic>> _trips = <Map<String, dynamic>>[];
+  bool _isLoading = true;
+  String? _errorMessage;
+  String? _agencyName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTrips();
+  }
+
+  Future<void> _loadTrips() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final List<ConsoleTrip> trips = await _console.getTrips();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _trips = trips.map(consoleTripToCard).toList();
+        _isLoading = false;
+      });
+
+      await _loadAgencyName();
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// The agency name is decorative, so a failure is not surfaced.
+  Future<void> _loadAgencyName() async {
+    try {
+      final StaffAgencyProfile agency = await _console.getMyAgency();
+
+      if (mounted) {
+        setState(() => _agencyName = agency.name);
+      }
+    } on ApiException {
+      // Keep the generic heading when the profile cannot be read.
+    }
+  }
 
   List<Map<String, dynamic>> get _filteredTrips {
     if (_selectedFilter == _all) {
@@ -97,20 +106,29 @@ class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
     );
   }
 
-  void _openTripDetails(Map<String, dynamic> trip) {
-    Navigator.push(
+  Future<void> _openTripDetails(Map<String, dynamic> trip) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => AgencyTripDetailsScreen(trip: trip),
       ),
     );
+
+    // The details screen can edit the trip or its seat capacity.
+    if (mounted) {
+      await _loadTrips();
+    }
   }
 
-  void _openCreateTrip() {
-    Navigator.push(
+  Future<void> _openCreateTrip() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const CreateTripScreen()),
     );
+
+    if (mounted) {
+      await _loadTrips();
+    }
   }
 
   @override
@@ -169,34 +187,43 @@ class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
                       const SizedBox(height: 22),
                       _buildCreateAction(context),
                       const SizedBox(height: 18),
-                      _buildFilters(context),
-                      const SizedBox(height: 20),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 250),
-                        child: trips.isEmpty
-                            ? _buildEmptyState(context)
-                            : Column(
-                                key: ValueKey(_selectedFilter),
-                                children: trips
-                                    .map(
-                                      (trip) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 14,
-                                        ),
-                                        child: _AgencyTripCard(
-                                          trip: trip,
-                                          formattedPrice: _formatPrice(
-                                            trip['price'] as int,
+                      if (_isLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_errorMessage != null)
+                        _buildError(context)
+                      else ...[
+                        _buildFilters(context),
+                        const SizedBox(height: 20),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: trips.isEmpty
+                              ? _buildEmptyState(context)
+                              : Column(
+                                  key: ValueKey(_selectedFilter),
+                                  children: trips
+                                      .map(
+                                        (trip) => Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 14,
                                           ),
-                                          onTap: () {
-                                            _openTripDetails(trip);
-                                          },
+                                          child: _AgencyTripCard(
+                                            trip: trip,
+                                            formattedPrice: _formatPrice(
+                                              trip['price'] as int,
+                                            ),
+                                            onTap: () {
+                                              _openTripDetails(trip);
+                                            },
+                                          ),
                                         ),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                      ),
+                                      )
+                                      .toList(),
+                                ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -219,6 +246,10 @@ class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
 
     final int cancelled = _trips
         .where((trip) => trip['status'] == _cancelled)
+        .length;
+
+    final int inProgress = _trips
+        .where((trip) => trip['status'] == _inProgress)
         .length;
 
     return GlassContainer(
@@ -248,14 +279,14 @@ class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'General Express',
+                      _agencyName ?? 'Your agency',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${_trips.length} demo trips',
+                      '${_trips.length} trips',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -272,6 +303,11 @@ class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
                 label: 'Scheduled',
                 value: scheduled,
                 color: AppColors.primary,
+              ),
+              _SummaryBadge(
+                label: 'In Progress',
+                value: inProgress,
+                color: AppColors.warning,
               ),
               _SummaryBadge(
                 label: 'Completed',
@@ -321,6 +357,35 @@ class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      borderRadius: 18,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+            color: AppColors.error,
+            size: 34,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage ?? 'Unable to load trips.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 14),
+          TextButton.icon(
+            onPressed: _loadTrips,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Try again'),
+          ),
+        ],
       ),
     );
   }
@@ -385,6 +450,8 @@ class _AgencyTripCard extends StatelessWidget {
     switch (trip['status']) {
       case 'Scheduled':
         return AppColors.primary;
+      case 'In Progress':
+        return AppColors.warning;
       case 'Completed':
         return AppColors.success;
       case 'Cancelled':
@@ -398,6 +465,8 @@ class _AgencyTripCard extends StatelessWidget {
     switch (trip['status']) {
       case 'Scheduled':
         return Icons.schedule_outlined;
+      case 'In Progress':
+        return Icons.directions_bus_outlined;
       case 'Completed':
         return Icons.check_circle_outline;
       case 'Cancelled':

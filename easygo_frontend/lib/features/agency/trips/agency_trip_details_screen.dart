@@ -1,19 +1,72 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 import 'edit_trip_screen.dart';
 import 'manage_trip_availability_screen.dart';
 
-class AgencyTripDetailsScreen extends StatelessWidget {
+class AgencyTripDetailsScreen extends StatefulWidget {
   const AgencyTripDetailsScreen({super.key, required this.trip});
 
   final Map<String, dynamic> trip;
+
+  @override
+  State<AgencyTripDetailsScreen> createState() =>
+      _AgencyTripDetailsScreenState();
+}
+
+class _AgencyTripDetailsScreenState extends State<AgencyTripDetailsScreen> {
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
+
+  /// Held in state rather than read straight off the widget so the screen can
+  /// show the result of an edit or a capacity change as soon as the user
+  /// returns from it.
+  late Map<String, dynamic> _trip = widget.trip;
+
+  Map<String, dynamic> get trip => _trip;
+
+  /// Re-reads the trip from the agency's own trip list. There is no
+  /// single-trip staff endpoint, so the scoped list is the source of truth.
+  Future<void> _refresh() async {
+    final String id = _trip['id'] as String? ?? '';
+
+    if (id.isEmpty) {
+      return;
+    }
+
+    try {
+      final List<ConsoleTrip> trips = await _console.getTrips();
+
+      ConsoleTrip? updated;
+
+      for (final ConsoleTrip item in trips) {
+        if (item.id == id) {
+          updated = item;
+          break;
+        }
+      }
+
+      if (!mounted || updated == null) {
+        return;
+      }
+
+      final Map<String, dynamic> card = consoleTripToCard(updated);
+
+      setState(() => _trip = card);
+    } on ApiException {
+      // Keep showing the last known values rather than blanking the screen.
+    }
+  }
 
   Color _statusColor(String status) {
     switch (status) {
       case 'Scheduled':
         return AppColors.primary;
+      case 'In Progress':
+        return AppColors.warning;
       case 'Completed':
         return AppColors.success;
       case 'Cancelled':
@@ -27,6 +80,8 @@ class AgencyTripDetailsScreen extends StatelessWidget {
     switch (status) {
       case 'Scheduled':
         return Icons.schedule_outlined;
+      case 'In Progress':
+        return Icons.directions_bus_outlined;
       case 'Completed':
         return Icons.check_circle_outline;
       case 'Cancelled':
@@ -43,20 +98,28 @@ class AgencyTripDetailsScreen extends StatelessWidget {
     );
   }
 
-  void _openEditTrip(BuildContext context) {
-    Navigator.push(
+  Future<void> _openEditTrip(BuildContext context) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EditTripScreen(trip: trip)),
     );
+
+    if (mounted) {
+      await _refresh();
+    }
   }
 
-  void _openAvailability(BuildContext context) {
-    Navigator.push(
+  Future<void> _openAvailability(BuildContext context) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ManageTripAvailabilityScreen(trip: trip),
       ),
     );
+
+    if (mounted) {
+      await _refresh();
+    }
   }
 
   @override
