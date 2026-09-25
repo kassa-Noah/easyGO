@@ -20,6 +20,10 @@ import {
   updateParcelStatusSchema,
 } from "./parcel.schema";
 
+import {
+  notifySafely,
+} from "../notification/notification.service";
+
 export const registerParcel = async (
   req: Request,
   res: Response
@@ -409,6 +413,20 @@ export const changeParcelStatus =
           updatedById:
             req.user!.userId,
         });
+
+      // The sender is the customer who registered the parcel, so they are the
+      // one waiting to hear that it moved.
+      await notifySafely({
+        userId: parcel.senderId,
+
+        title: "Parcel updated",
+
+        message:
+          `Parcel ${parcel.trackingNumber} is now ` +
+          `${validatedData.status.toLowerCase().split("_").join(" ")}.`,
+
+        type: "PARCEL",
+      });
 
       return res.status(200).json({
         success: true,

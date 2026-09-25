@@ -137,45 +137,6 @@ class AdminService {
     return AdminAccount.fromJson(_extractData(response));
   }
 
-  /// Notifications addressed to the signed-in administrator.
-  Future<List<AdminNotification>> getNotifications() async {
-    final dynamic response = await _apiClient.get(
-      '/notifications/me',
-      authenticated: true,
-    );
-
-    final List<AdminNotification> notifications = <AdminNotification>[];
-
-    for (final dynamic item in _extractList(response)) {
-      if (item is Map) {
-        notifications.add(
-          AdminNotification.fromJson(Map<String, dynamic>.from(item)),
-        );
-      }
-    }
-
-    return notifications;
-  }
-
-  /// How many notifications are still unread.
-  Future<int> getUnreadNotificationCount() async {
-    final dynamic response = await _apiClient.get(
-      '/notifications/unread-count',
-      authenticated: true,
-    );
-
-    final Map<String, dynamic> data = _extractData(response);
-
-    return data['unreadCount'] is int
-        ? data['unreadCount'] as int
-        : int.tryParse('${data['unreadCount']}') ?? 0;
-  }
-
-  /// Marks every notification as read.
-  Future<void> markAllNotificationsRead() async {
-    await _apiClient.patch('/notifications/read-all', authenticated: true);
-  }
-
   /// Every trip on the platform.
   ///
   /// `/trips` is public and already returns the whole platform with the agency

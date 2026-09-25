@@ -7,6 +7,7 @@ import '../../../shared/widgets/glass_container.dart';
 import '../models/admin_console.dart';
 import '../notifications/admin_notifications_screen.dart';
 import '../services/admin_service.dart';
+import '../../notifications/services/notification_service.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   final VoidCallback onOpenAgencies;
@@ -56,7 +57,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       int unread = 0;
 
       try {
-        unread = await _admin.getUnreadNotificationCount();
+        unread = await NotificationService.instance.getUnreadCount();
       } on ApiException {
         unread = 0;
       }

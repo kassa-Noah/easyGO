@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/api_exception.dart';
+import '../../notifications/models/app_notification.dart';
+import '../../notifications/services/notification_service.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -10,72 +13,75 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  final NotificationService _service = NotificationService.instance;
+
   String _selectedFilter = 'All';
 
-  final List<String> _filters = ['All', 'Unread', 'Travel', 'Tracking'];
-
-  final List<Map<String, dynamic>> _notifications = [
-    {
-      'id': 'notification_001',
-      'title': 'Booking Confirmed',
-      'message':
-          'Your General Express journey from Yaoundé to Douala has been confirmed.',
-      'type': 'Travel',
-      'time': '10 min ago',
-      'isRead': false,
-      'icon': Icons.check_circle_outline,
-    },
-    {
-      'id': 'notification_002',
-      'title': 'Payment Successful',
-      'message':
-          'Your payment of 12,500 FCFA for booking DEMO-BOOKING-001 was successful.',
-      'type': 'Travel',
-      'time': '12 min ago',
-      'isRead': false,
-      'icon': Icons.account_balance_wallet_outlined,
-    },
-    {
-      'id': 'notification_003',
-      'title': 'Luggage In Transit',
-      'message':
-          'Luggage LUG-DEMO-001 is now in transit from Yaoundé to Douala.',
-      'type': 'Tracking',
-      'time': '1 hour ago',
-      'isRead': false,
-      'icon': Icons.luggage_outlined,
-    },
-    {
-      'id': 'notification_004',
-      'title': 'Parcel Status Updated',
-      'message':
-          'Parcel PAR-DEMO-001 has been received by the transport agency.',
-      'type': 'Tracking',
-      'time': '3 hours ago',
-      'isRead': true,
-      'icon': Icons.inventory_2_outlined,
-    },
-    {
-      'id': 'notification_005',
-      'title': 'Upcoming Journey',
-      'message':
-          'Your Yaoundé to Douala journey is scheduled for 20 September 2026 at 07:00.',
-      'type': 'Travel',
-      'time': 'Yesterday',
-      'isRead': true,
-      'icon': Icons.directions_bus_outlined,
-    },
-    {
-      'id': 'notification_006',
-      'title': 'Door-to-Door Service',
-      'message':
-          'Taxi assignment information will appear here when the external taxi provider assigns your pickup driver.',
-      'type': 'Travel',
-      'time': 'Yesterday',
-      'isRead': true,
-      'icon': Icons.local_taxi_outlined,
-    },
+  /// The filters follow the categories the API stores, grouped into the three
+  /// headings a reader scans for.
+  final List<String> _filters = <String>[
+    'All',
+    'Unread',
+    ...notificationGroups,
   ];
+
+  List<Map<String, dynamic>> _notifications = <Map<String, dynamic>>[];
+
+  bool _isLoading = true;
+  bool _isMarkingAll = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final List<AppNotification> items = await _service.getMine();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _notifications = items.map(_toCard).toList();
+        _isLoading = false;
+        _isMarkingAll = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+        _isMarkingAll = false;
+      });
+    }
+  }
+
+  /// Projects a notification onto the keys the card renders.
+  Map<String, dynamic> _toCard(AppNotification notification) {
+    return <String, dynamic>{
+      'id': notification.id,
+      'title': notification.title,
+      'message': notification.message,
+      'type': notification.groupLabel,
+      'time': notification.ageLabel(),
+      'isRead': notification.isRead,
+      'icon': notification.icon,
+    };
+  }
 
   List<Map<String, dynamic>> get _filteredNotifications {
     if (_selectedFilter == 'All') {
@@ -99,26 +105,67 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         .length;
   }
 
-  void _markAsRead(Map<String, dynamic> notification) {
+  Future<void> _markAsRead(Map<String, dynamic> notification) async {
     if (notification['isRead'] == true) {
       return;
     }
 
-    setState(() {
-      notification['isRead'] = true;
-    });
+    final String id = notification['id'] as String;
+
+    try {
+      await _service.markAsRead(id);
+    } on ApiException {
+      // The list is re-read below either way, so a failure here simply leaves
+      // the notification unread rather than reporting success.
+    }
+
+    if (mounted) {
+      await _load();
+    }
   }
 
-  void _markAllAsRead() {
+  Future<void> _markAllAsRead() async {
     setState(() {
-      for (final notification in _notifications) {
-        notification['isRead'] = true;
-      }
+      _isMarkingAll = true;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('All notifications marked as read.')),
-    );
+    try {
+      final int updated = await _service.markAllAsRead();
+
+      if (!mounted) {
+        return;
+      }
+
+      await _load();
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            updated == 0
+                ? 'Nothing was left unread.'
+                : 'Marked $updated '
+                      '${updated == 1 ? 'notification' : 'notifications'} '
+                      'as read.',
+          ),
+        ),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isMarkingAll = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    }
   }
 
   Color _typeColor(String type) {
@@ -126,10 +173,38 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case 'Tracking':
         return AppColors.secondary;
 
-      case 'Travel':
+      case 'System':
+        return AppColors.warning;
+
+      case 'Journey':
       default:
         return AppColors.primary;
     }
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off_outlined, color: AppColors.error),
+            const SizedBox(height: 12),
+            Text(
+              _errorMessage ?? 'Unable to load your notifications.',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: _load,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -143,7 +218,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           if (_unreadCount > 0)
             TextButton(
-              onPressed: _markAllAsRead,
+              onPressed: _isMarkingAll ? null : _markAllAsRead,
               child: const Text('Mark all read'),
             ),
         ],
@@ -156,7 +231,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             _buildFilters(),
 
             Expanded(
-              child: notifications.isEmpty
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _errorMessage != null
+                  ? _buildErrorState()
+                  : notifications.isEmpty
                   ? _buildEmptyState()
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),

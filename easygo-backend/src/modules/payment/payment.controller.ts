@@ -23,6 +23,14 @@ import {
   requestFirstMileTaxiAssignment,
 } from "../taxi/taxi.service";
 
+import {
+  getBookingById,
+} from "../booking/booking.service";
+
+import {
+  notifySafely,
+} from "../notification/notification.service";
+
 export const initiatePayment =
   async (
     req: Request,
@@ -383,6 +391,26 @@ export const simulatePayment =
             "Unable to request the first-mile taxi assignment:",
             error
           );
+        }
+
+        // The customer has just paid, so their seat is confirmed and they
+        // should be able to see that without reloading the booking.
+        const booking = await getBookingById(
+          updatedPayment.bookingId
+        );
+
+        if (booking) {
+          await notifySafely({
+            userId: booking.userId,
+
+            title: "Booking confirmed",
+
+            message:
+              `Your booking ${booking.bookingReference} is confirmed. ` +
+              `Open it to see your ticket and your pickup details.`,
+
+            type: "BOOKING",
+          });
         }
       }
 

@@ -31,6 +31,29 @@ export const createNotification = async (
   });
 };
 
+/**
+ * Records a notification without letting a failure break the operation that
+ * triggered it.
+ *
+ * Notifications are a side effect of paying, of a status changing, and so on. A
+ * problem writing one must never roll back or fail the action the user asked
+ * for, so the error is logged and swallowed.
+ */
+export const notifySafely = async (
+  data: CreateNotificationInput
+) => {
+  try {
+    return await createNotification(data);
+  } catch (error) {
+    console.error(
+      `Unable to create a ${data.type} notification for ${data.userId}:`,
+      error
+    );
+
+    return null;
+  }
+};
+
 export const getUserNotifications = async (
   userId: string
 ) => {

@@ -340,36 +340,6 @@ class AdminAgency {
   String get statusLabel => isActive ? 'Active' : 'Suspended';
 }
 
-/// A notification delivered to the signed-in account.
-class AdminNotification {
-  final String id;
-  final String title;
-  final String message;
-  final String type;
-  final bool isRead;
-  final DateTime? createdAt;
-
-  const AdminNotification({
-    required this.id,
-    required this.title,
-    required this.message,
-    required this.type,
-    required this.isRead,
-    required this.createdAt,
-  });
-
-  factory AdminNotification.fromJson(Map<String, dynamic> json) {
-    return AdminNotification(
-      id: json['id']?.toString() ?? '',
-      title: json['title']?.toString() ?? '',
-      message: json['message']?.toString() ?? '',
-      type: json['type']?.toString() ?? '',
-      isRead: json['isRead'] as bool? ?? false,
-      createdAt: _toNullableDateTime(json['createdAt']),
-    );
-  }
-}
-
 /// Turns a stored enum such as `ARRIVED_AT_DESTINATION_AGENCY` into a readable
 /// label, used as the fallback for any state without explicit wording.
 String _humanise(String status) {

@@ -18,6 +18,10 @@ import {
   updateLuggageStatusSchema,
 } from "./luggage.schema";
 
+import {
+  notifySafely,
+} from "../notification/notification.service";
+
 export const registerLuggage = async (
   req: Request,
   res: Response
@@ -282,6 +286,20 @@ export const changeLuggageStatus =
           updatedById:
             req.user!.userId,
         });
+
+      // The traveler should hear about the change without having to poll the
+      // tracker.
+      await notifySafely({
+        userId: luggage.booking.userId,
+
+        title: "Luggage updated",
+
+        message:
+          `Luggage ${luggage.trackingNumber} is now ` +
+          `${validatedData.status.toLowerCase().split("_").join(" ")}.`,
+
+        type: "LUGGAGE",
+      });
 
       return res.status(200).json({
         success: true,
