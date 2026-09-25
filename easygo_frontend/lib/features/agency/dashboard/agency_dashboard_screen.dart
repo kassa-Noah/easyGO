@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../notifications/screens/notifications_screen.dart';
+import '../../notifications/services/notification_service.dart';
 import '../models/agency_console.dart';
 import '../services/agency_console_service.dart';
 
@@ -26,6 +29,8 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
   AgencyDashboard? _dashboard;
   StaffAgencyProfile? _agency;
 
+  int _unreadNotifications = 0;
+
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -34,6 +39,18 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
     super.initState();
 
     _loadDashboard();
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+    );
+
+    // Reading them on the other screen changes the count this one shows.
+    if (mounted) {
+      await _loadDashboard();
+    }
   }
 
   Future<void> _loadDashboard() async {
@@ -47,6 +64,16 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
 
       final AgencyDashboard dashboard = await _console.getDashboard();
 
+      // The badge is decorative, so failing to read it must not stop the page
+      // from rendering.
+      int unread = 0;
+
+      try {
+        unread = await NotificationService.instance.getUnreadCount();
+      } on ApiException {
+        unread = 0;
+      }
+
       if (!mounted) {
         return;
       }
@@ -54,6 +81,7 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
       setState(() {
         _agency = agency;
         _dashboard = dashboard;
+        _unreadNotifications = unread;
         _isLoading = false;
       });
     } on ApiException catch (error) {
@@ -351,17 +379,12 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
           ),
         ),
         IconButton(
-          tooltip: 'Notifications',
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Agency notifications will be connected later.'),
-              ),
-            );
-          },
-          icon: const Badge(
-            smallSize: 8,
-            child: Icon(Icons.notifications_outlined),
+          tooltip: AppLocalizations.of(context).notifications,
+          onPressed: _openNotifications,
+          icon: Badge(
+            isLabelVisible: _unreadNotifications > 0,
+            label: Text('$_unreadNotifications'),
+            child: const Icon(Icons.notifications_outlined),
           ),
         ),
       ],

@@ -1464,8 +1464,8 @@ class AppLocalizations {
       isFrench ? 'Gestion du profil' : 'Profile Management';
 
   String get profileManagementNotice => isFrench
-      ? 'En production, le backend doit vérifier que le membre du personnel authentifié est autorisé à modifier cette agence.'
-      : 'In production, the backend must verify that the authenticated staff member is authorized to modify this agency.';
+      ? 'Seul un membre du personnel de cette agence peut modifier sa fiche. Le backend résout l’agence à partir de l’appartenance du compte connecté, et non à partir de ce qui est envoyé par l’application.'
+      : 'Only a staff member of this agency can edit its record. The backend resolves the agency from the signed-in account’s membership rather than from anything the app sends.';
 
   String get saveChanges =>
       isFrench ? 'Enregistrer les modifications' : 'Save Changes';
@@ -1687,8 +1687,6 @@ class AppLocalizations {
   String get adminOperationsReadOnlyNotice => isFrench
       ? 'L’administrateur supervise ces opérations. La gestion opérationnelle normale reste sous la responsabilité de l’agence concernée.'
       : 'The administrator monitors these operations. Normal operational management remains the responsibility of the relevant agency.';
-  String get adminNotifications =>
-      isFrench ? 'Notifications administrateur' : 'Admin Notifications';
   String get markAllAsRead =>
       isFrench ? 'Tout marquer comme lu' : 'Mark All as Read';
   String get adminProfile =>

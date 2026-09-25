@@ -8,7 +8,7 @@ import '../../auth/models/auth_user.dart';
 import '../../auth/screens/change_password_screen.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../auth/services/auth_service.dart';
-import '../notifications/notifications_screen.dart';
+import '../../notifications/screens/notifications_screen.dart';
 import 'help_support_screen.dart';
 import 'personal_information_screen.dart';
 import 'settings_screen.dart';

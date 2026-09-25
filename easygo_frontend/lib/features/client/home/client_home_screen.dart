@@ -7,7 +7,8 @@ import '../../../../shared/widgets/glass_container.dart';
 import '../../agencies/models/agency.dart';
 import '../../agencies/services/agency_service.dart';
 import '../agencies/agency_details_screen.dart';
-import '../notifications/notifications_screen.dart';
+import '../../notifications/screens/notifications_screen.dart';
+import '../../notifications/services/notification_service.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   const ClientHomeScreen({super.key});
@@ -22,6 +23,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   final AgencyService _agencyService = AgencyService.instance;
 
   List<Agency> _agencies = [];
+
+  int _unreadNotifications = 0;
 
   String _searchQuery = '';
   String? _errorMessage;
@@ -51,12 +54,23 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     try {
       final List<Agency> agencies = await _agencyService.getAgencies();
 
+      // The badge is decorative, so failing to read it must not stop the page
+      // from rendering.
+      int unread = 0;
+
+      try {
+        unread = await NotificationService.instance.getUnreadCount();
+      } on ApiException {
+        unread = 0;
+      }
+
       if (!mounted) {
         return;
       }
 
       setState(() {
         _agencies = agencies;
+        _unreadNotifications = unread;
         _isLoading = false;
       });
     } on ApiException catch (error) {
@@ -113,11 +127,16 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     }).toList();
   }
 
-  void _openNotifications() {
-    Navigator.push(
+  Future<void> _openNotifications() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const NotificationsScreen()),
     );
+
+    // Reading them on the other screen changes the count this one shows.
+    if (mounted) {
+      await _loadAgencies();
+    }
   }
 
   void _openAgency(Agency agency) {
@@ -317,7 +336,11 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             child: IconButton(
               tooltip: l10n.notifications,
               onPressed: _openNotifications,
-              icon: const Icon(Icons.notifications_none),
+              icon: Badge(
+                isLabelVisible: _unreadNotifications > 0,
+                label: Text('$_unreadNotifications'),
+                child: const Icon(Icons.notifications_none),
+              ),
             ),
           ),
         ),

@@ -5,7 +5,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../shared/widgets/glass_container.dart';
 import '../models/admin_console.dart';
-import '../notifications/admin_notifications_screen.dart';
+import '../../notifications/screens/notifications_screen.dart';
 import '../services/admin_service.dart';
 import '../../notifications/services/notification_service.dart';
 
@@ -150,7 +150,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const AdminNotificationsScreen(),
+                  builder: (_) => const NotificationsScreen(),
                 ),
               );
             },

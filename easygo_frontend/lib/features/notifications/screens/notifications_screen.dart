@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
-import '../../../../core/network/api_exception.dart';
-import '../../notifications/models/app_notification.dart';
-import '../../notifications/services/notification_service.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/localization/app_localizations.dart';
+import '../../../core/network/api_exception.dart';
+import '../models/app_notification.dart';
+import '../services/notification_service.dart';
 
+/// The signed-in account's notifications.
+///
+/// A notification is addressed to a user rather than to a role, so customers,
+/// agency staff and administrators all read the same endpoint and share this
+/// screen. There is no role-wide feed to show.
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -209,17 +215,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+
     final notifications = _filteredNotifications;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(l10n.notifications),
         actions: [
           if (_unreadCount > 0)
             TextButton(
               onPressed: _isMarkingAll ? null : _markAllAsRead,
-              child: const Text('Mark all read'),
+              child: Text(l10n.markAllAsRead),
             ),
         ],
       ),
@@ -501,7 +509,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             const SizedBox(height: 7),
 
             const Text(
-              'Notifications related to your journeys, luggage and parcels will appear here.',
+              'Notifications addressed to your account will appear here.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
