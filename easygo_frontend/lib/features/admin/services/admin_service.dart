@@ -67,10 +67,14 @@ class AdminService {
     return AdminAccount.fromJson(_extractData(response));
   }
 
-  /// Every agency on the platform.
+  /// Every agency on the platform, suspended ones included.
+  ///
+  /// The public `/agencies` directory is filtered to active agencies, which
+  /// would hide a suspended agency from the console and make suspension a
+  /// one-way door, so the admin-scoped endpoint is used instead.
   Future<List<AdminAgency>> getAgencies() async {
     final dynamic response = await _apiClient.get(
-      '/agencies',
+      '/admin/agencies',
       authenticated: true,
     );
 

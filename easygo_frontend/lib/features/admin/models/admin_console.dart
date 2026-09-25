@@ -277,6 +277,10 @@ class AdminAgency {
   final bool isActive;
   final DateTime? createdAt;
   final List<String> branchCities;
+  final int branchCount;
+  final int tripCount;
+  final int vehicleCount;
+  final int staffCount;
 
   const AdminAgency({
     required this.id,
@@ -288,6 +292,10 @@ class AdminAgency {
     required this.isActive,
     required this.createdAt,
     required this.branchCities,
+    required this.branchCount,
+    required this.tripCount,
+    required this.vehicleCount,
+    required this.staffCount,
   });
 
   factory AdminAgency.fromJson(Map<String, dynamic> json) {
@@ -302,6 +310,10 @@ class AdminAgency {
       }
     }
 
+    // The admin endpoint counts the related records; fall back to the branches
+    // it also returns when a response carries no counts.
+    final Map<String, dynamic>? counts = _toMap(json['_count']);
+
     return AdminAgency(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
@@ -312,10 +324,14 @@ class AdminAgency {
       isActive: json['isActive'] as bool? ?? false,
       createdAt: _toNullableDateTime(json['createdAt']),
       branchCities: cities,
+      branchCount: counts == null
+          ? cities.length
+          : _toInt(counts['branches']),
+      tripCount: _toInt(counts?['trips']),
+      vehicleCount: _toInt(counts?['vehicles']),
+      staffCount: _toInt(counts?['staff']),
     );
   }
-
-  int get branchCount => branchCities.length;
 
   String get cityLabel => branchCities.isEmpty ? '—' : branchCities.join(', ');
 

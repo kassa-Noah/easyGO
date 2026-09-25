@@ -12,6 +12,10 @@ import {
   getDashboardStatistics,
 } from "./admin.service";
 
+import {
+  getAllAgenciesForAdmin,
+} from "../agency/agency.service";
+
 export const dashboard = async (
   _req: Request,
   res: Response
@@ -155,6 +159,38 @@ export const listAllLuggage =
         message:
           error.message ||
           "Unable to retrieve luggage",
+      });
+    }
+  };
+
+/**
+ * Every agency, including the suspended ones.
+ *
+ * The public `GET /agencies` is filtered to active agencies, which is right for
+ * the customer directory but wrong here: an administrator has to be able to see
+ * a suspended agency in order to reactivate it.
+ */
+export const listAllAgencies =
+  async (
+    _req: Request,
+    res: Response
+  ) => {
+    try {
+      const agencies =
+        await getAllAgenciesForAdmin();
+
+      return res.status(200).json({
+        success: true,
+        count: agencies.length,
+        data: agencies,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        success: false,
+
+        message:
+          error.message ||
+          "Unable to retrieve agencies",
       });
     }
   };

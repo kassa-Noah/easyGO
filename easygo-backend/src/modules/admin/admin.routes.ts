@@ -5,6 +5,7 @@ import {
 import {
   dashboard,
   dashboardStatistics,
+  listAllAgencies,
   listAllBookings,
   listAllLuggage,
   listAllParcels,
@@ -39,6 +40,11 @@ router.get(
 router.get(
   "/bookings",
   listAllBookings
+);
+
+router.get(
+  "/agencies",
+  listAllAgencies
 );
 
 router.get(

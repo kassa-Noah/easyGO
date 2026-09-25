@@ -170,6 +170,31 @@ void main() {
 
       expect(agency.statusLabel, 'Suspended');
       expect(agency.cityLabel, '—');
+      expect(agency.branchCount, 0);
+    });
+
+    test('prefers the counts the admin endpoint returns', () {
+      final AdminAgency agency = AdminAgency.fromJson(<String, dynamic>{
+        ...realAgency,
+        '_count': <String, dynamic>{
+          'branches': 3,
+          'trips': 12,
+          'vehicles': 4,
+          'staff': 7,
+        },
+      });
+
+      expect(agency.branchCount, 3);
+      expect(agency.tripCount, 12);
+      expect(agency.vehicleCount, 4);
+      expect(agency.staffCount, 7);
+    });
+
+    test('falls back to the returned branches when there are no counts', () {
+      final AdminAgency agency = AdminAgency.fromJson(realAgency);
+
+      expect(agency.branchCount, 2);
+      expect(agency.tripCount, 0);
     });
   });
 

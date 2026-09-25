@@ -49,6 +49,31 @@ export const getAllAgencies = async () => {
   });
 };
 
+// The public agency list is filtered to active agencies, because it backs the
+// customer-facing directory and a suspended agency must not be advertised. The
+// administrator console needs the opposite: it has to see suspended agencies to
+// be able to reactivate them, so it gets its own query with the counts it
+// displays.
+export const getAllAgenciesForAdmin = async () => {
+  return prisma.agency.findMany({
+    include: {
+      branches: true,
+
+      _count: {
+        select: {
+          branches: true,
+          trips: true,
+          vehicles: true,
+          staff: true,
+        },
+      },
+    },
+    orderBy: {
+      name: "asc",
+    },
+  });
+};
+
 export const getAgencyById = async (agencyId: string) => {
   return prisma.agency.findUnique({
     where: {
