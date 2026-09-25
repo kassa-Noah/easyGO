@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../models/agency_console.dart';
+import '../services/agency_console_service.dart';
 import 'edit_agency_profile_screen.dart';
 
 class AgencyProfileScreen extends StatefulWidget {
@@ -13,35 +16,120 @@ class AgencyProfileScreen extends StatefulWidget {
 }
 
 class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
-  Map<String, dynamic> _agency = {
-    'name': 'General Express',
-    'email': 'contact@generalexpress.cm',
-    'phone': '+237 6 70 00 00 00',
-    'description':
-        'Interurban passenger transportation service connecting major cities in Cameroon.',
-    'headOffice': 'Yaoundé, Centre',
-    'address': 'Mvan, Yaoundé',
-    'openingHours': '05:30 - 21:00',
-    'rating': 4.5,
-    'reviewCount': 128,
-    'verified': true,
-  };
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
+
+  Map<String, dynamic> _agency = <String, dynamic>{};
+
+  List<ConsoleBranch> _branches = <ConsoleBranch>[];
+
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+    }
+
+    try {
+      final StaffAgencyProfile profile = await _console.getMyAgency();
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _agency = _toProfileMap(profile);
+        _branches = profile.branches;
+        _isLoading = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _errorMessage = error.message;
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Projects the agency record onto the keys this screen renders.
+  ///
+  /// The head office row is shown from the first branch, because the agency
+  /// record itself carries no single head-office address. The agency has no
+  /// opening-hours or rating field at all, so those rows are gone rather than
+  /// filled with an invented value.
+  Map<String, dynamic> _toProfileMap(StaffAgencyProfile profile) {
+    final ConsoleBranch? primary = profile.branches.isEmpty
+        ? null
+        : profile.branches.first;
+
+    return <String, dynamic>{
+      'agencyId': profile.agencyId,
+      'name': profile.name,
+      'email': dashIfEmpty(profile.email),
+      'phone': dashIfEmpty(profile.phone),
+      'description': dashIfEmpty(profile.description),
+      'website': dashIfEmpty(profile.website),
+      'staffRole': profile.staffRole,
+      'headOffice': dashIfEmpty(primary?.city),
+      'address': dashIfEmpty(primary?.address),
+      'verified': profile.isActive,
+    };
+  }
 
   Future<void> _editProfile() async {
-    final result = await Navigator.push<Map<String, dynamic>>(
+    final bool? saved = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (context) => EditAgencyProfileScreen(agency: _agency),
       ),
     );
 
-    if (result == null || !mounted) {
-      return;
+    // The API is the source of truth, so re-read instead of trusting the map
+    // handed back by the edit screen.
+    if (saved == true && mounted) {
+      await _loadProfile();
     }
+  }
 
-    setState(() {
-      _agency = result;
-    });
+  Widget _buildError(BuildContext context) {
+    return GlassContainer(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      borderRadius: 18,
+      child: Column(
+        children: [
+          const Icon(
+            Icons.cloud_off_outlined,
+            color: AppColors.error,
+            size: 34,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _errorMessage ?? 'Unable to load the agency profile.',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 14),
+          TextButton.icon(
+            onPressed: _loadProfile,
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Try again'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -95,11 +183,19 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildAgencyHeader(context, localizations),
+                    if (_isLoading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 60),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (_errorMessage != null)
+                      _buildError(context)
+                    else ...[
+                      _buildAgencyHeader(context, localizations),
                     const SizedBox(height: 18),
                     _buildContactInformation(context, localizations),
                     const SizedBox(height: 18),
-                    _buildLocationInformation(context, localizations),
+                    _buildBranchInformation(context),
                     const SizedBox(height: 18),
                     _buildPublicInformation(context, localizations),
                     const SizedBox(height: 18),
@@ -113,6 +209,7 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
                         label: Text(localizations.editAgencyInformation),
                       ),
                     ),
+                    ],
                   ],
                 ),
               ),
@@ -187,15 +284,19 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
             runSpacing: 10,
             children: [
               _ProfileBadge(
-                icon: Icons.star,
-                text: '${_agency['rating']} / 5',
-                color: AppColors.warning,
-              ),
-              _ProfileBadge(
-                icon: Icons.reviews_outlined,
-                text: '${_agency['reviewCount']} ${localizations.reviews}',
+                icon: Icons.store_mall_directory_outlined,
+                text:
+                    '${_branches.length} '
+                    '${_branches.length == 1 ? 'branch' : 'branches'}',
                 color: AppColors.primary,
               ),
+              if (_agency['staffRole'] != null &&
+                  (_agency['staffRole'] as String).isNotEmpty)
+                _ProfileBadge(
+                  icon: Icons.badge_outlined,
+                  text: _agency['staffRole'] as String,
+                  color: AppColors.secondary,
+                ),
               if (verified)
                 _ProfileBadge(
                   icon: Icons.verified_outlined,
@@ -230,34 +331,37 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
           ),
           const SizedBox(height: 14),
           _InformationRow(
-            icon: Icons.schedule_outlined,
-            label: localizations.openingHours,
-            value: _agency['openingHours'] as String,
+            icon: Icons.language_outlined,
+            label: 'Website',
+            value: _agency['website'] as String,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLocationInformation(
-    BuildContext context,
-    AppLocalizations localizations,
-  ) {
+  /// The agency's branches, which is where the real addresses and phones live.
+  Widget _buildBranchInformation(BuildContext context) {
     return _SectionCard(
-      title: localizations.locationInformation,
+      title: 'Branches',
       child: Column(
         children: [
-          _InformationRow(
-            icon: Icons.location_city_outlined,
-            label: localizations.headOffice,
-            value: _agency['headOffice'] as String,
-          ),
-          const SizedBox(height: 14),
-          _InformationRow(
-            icon: Icons.location_on_outlined,
-            label: localizations.agencyAddress,
-            value: _agency['address'] as String,
-          ),
+          if (_branches.isEmpty)
+            Text(
+              'This agency has no branch yet.',
+              style: Theme.of(context).textTheme.bodySmall,
+            )
+          else
+            for (int index = 0; index < _branches.length; index++) ...[
+              if (index > 0) const SizedBox(height: 14),
+              _InformationRow(
+                icon: Icons.location_city_outlined,
+                label: '${_branches[index].name} '
+                    '(${_branches[index].city})',
+                value: '${_branches[index].address}'
+                    '${_branches[index].phone == null ? '' : ' • ${_branches[index].phone}'}',
+              ),
+            ],
         ],
       ),
     );

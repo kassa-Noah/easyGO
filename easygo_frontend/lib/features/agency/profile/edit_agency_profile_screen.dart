@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../services/agency_console_service.dart';
 
 class EditAgencyProfileScreen extends StatefulWidget {
   const EditAgencyProfileScreen({super.key, required this.agency});
@@ -17,13 +19,12 @@ class EditAgencyProfileScreen extends StatefulWidget {
 class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  final AgencyConsoleService _console = AgencyConsoleService.instance;
+
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late final TextEditingController _descriptionController;
-  late final TextEditingController _headOfficeController;
-  late final TextEditingController _addressController;
-  late final TextEditingController _openingHoursController;
 
   bool _isSaving = false;
 
@@ -46,18 +47,6 @@ class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
     _descriptionController = TextEditingController(
       text: widget.agency['description'] as String,
     );
-
-    _headOfficeController = TextEditingController(
-      text: widget.agency['headOffice'] as String,
-    );
-
-    _addressController = TextEditingController(
-      text: widget.agency['address'] as String,
-    );
-
-    _openingHoursController = TextEditingController(
-      text: widget.agency['openingHours'] as String,
-    );
   }
 
   @override
@@ -66,9 +55,6 @@ class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
     _emailController.dispose();
     _phoneController.dispose();
     _descriptionController.dispose();
-    _headOfficeController.dispose();
-    _addressController.dispose();
-    _openingHoursController.dispose();
 
     super.dispose();
   }
@@ -96,8 +82,6 @@ class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
-    final localizations = AppLocalizations.of(context);
-
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -106,56 +90,79 @@ class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
       _isSaving = true;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    try {
+      await _console.updateAgency(
+        agencyId: widget.agency['agencyId'] as String? ?? '',
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
+      );
 
-    if (!mounted) {
-      return;
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      await _showResult(
+        title: 'Agency Information Saved',
+        message:
+            'The agency name, description, email address and phone number '
+            'were saved.',
+        isError: false,
+      );
+
+      if (mounted) {
+        // The profile screen re-reads the record from the API.
+        Navigator.pop(context, true);
+      }
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isSaving = false;
+      });
+
+      await _showResult(
+        title: 'Save Failed',
+        message: error.message,
+        isError: true,
+      );
     }
+  }
 
-    setState(() {
-      _isSaving = false;
-    });
-
-    final updatedAgency = Map<String, dynamic>.from(widget.agency);
-
-    updatedAgency.addAll({
-      'name': _nameController.text.trim(),
-      'email': _emailController.text.trim(),
-      'phone': _phoneController.text.trim(),
-      'description': _descriptionController.text.trim(),
-      'headOffice': _headOfficeController.text.trim(),
-      'address': _addressController.text.trim(),
-      'openingHours': _openingHoursController.text.trim(),
-    });
-
-    final bool? confirm = await showDialog<bool>(
+  Future<void> _showResult({
+    required String title,
+    required String message,
+    required bool isError,
+  }) async {
+    await showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          icon: const Icon(
-            Icons.check_circle_outline,
-            color: AppColors.success,
+          icon: Icon(
+            isError ? Icons.error_outline : Icons.check_circle_outline,
+            color: isError ? AppColors.error : AppColors.success,
             size: 38,
           ),
-          title: Text(localizations.profileValidated),
-          content: Text(localizations.profilePrototypeNotice),
+          title: Text(title),
+          content: Text(message),
           actions: [
             FilledButton(
               onPressed: () {
-                Navigator.pop(dialogContext, true);
+                Navigator.pop(dialogContext);
               },
-              child: Text(localizations.continueLabel),
+              child: Text(AppLocalizations.of(context).continueLabel),
             ),
           ],
         );
       },
     );
-
-    if (!mounted || confirm != true) {
-      return;
-    }
-
-    Navigator.pop(context, updatedAgency);
   }
 
   @override
@@ -318,16 +325,6 @@ class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
             prefixIcon: const Icon(Icons.description_outlined),
           ),
         ),
-        const SizedBox(height: 15),
-        TextFormField(
-          controller: _openingHoursController,
-          validator: (value) =>
-              _requiredValidator(value, localizations.requiredField),
-          decoration: InputDecoration(
-            labelText: localizations.openingHours,
-            prefixIcon: const Icon(Icons.schedule_outlined),
-          ),
-        ),
       ],
     );
   }
@@ -360,30 +357,15 @@ class _EditAgencyProfileScreenState extends State<EditAgencyProfileScreen> {
     );
   }
 
+  /// Addresses belong to each branch, so they are not edited on the agency.
   Widget _buildLocationInformation(AppLocalizations localizations) {
     return _FormSection(
       title: localizations.locationInformation,
       children: [
-        TextFormField(
-          controller: _headOfficeController,
-          textCapitalization: TextCapitalization.words,
-          validator: (value) =>
-              _requiredValidator(value, localizations.requiredField),
-          decoration: InputDecoration(
-            labelText: localizations.headOffice,
-            prefixIcon: const Icon(Icons.location_city_outlined),
-          ),
-        ),
-        const SizedBox(height: 15),
-        TextFormField(
-          controller: _addressController,
-          textCapitalization: TextCapitalization.words,
-          validator: (value) =>
-              _requiredValidator(value, localizations.requiredField),
-          decoration: InputDecoration(
-            labelText: localizations.agencyAddress,
-            prefixIcon: const Icon(Icons.location_on_outlined),
-          ),
+        Text(
+          'The agency record has no address of its own: each address is stored '
+          'on a branch, and the profile screen lists them.',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.45),
         ),
       ],
     );

@@ -1495,16 +1495,9 @@ class AppLocalizations {
       ? 'Saisissez une adresse e-mail valide.'
       : 'Enter a valid email address.';
 
-  String get profileValidated =>
-      isFrench ? 'Profil validé' : 'Profile Validated';
-
-  String get profilePrototypeNotice => isFrench
-      ? 'Les modifications du profil ont été simulées avec succès sur l’interface.\n\nAucun enregistrement de la base de données n’a été modifié. Le backend devra autoriser et enregistrer les véritables modifications.'
-      : 'The profile changes have been simulated successfully in the interface.\n\nNo database record has been updated. The backend will authorize and persist the real profile changes.';
-
   String get agencyProfileBackendNotice => isFrench
-      ? 'Cette interface est actuellement une démonstration frontend. En production, les modifications doivent être envoyées au backend, validées selon l’agence authentifiée, puis enregistrées dans la base de données.'
-      : 'This interface is currently a frontend demonstration. In production, changes must be sent to the backend, validated against the authenticated agency, and then persisted in the database.';
+      ? 'Les modifications sont enregistrées directement sur la fiche de l’agence. Chaque adresse appartient à une succursale et se gère donc au niveau de la succursale.'
+      : 'Changes are saved straight to the agency record. Each address belongs to a branch, so addresses are managed per branch.';
 
   String get continueLabel => isFrench ? 'Continuer' : 'Continue';
 

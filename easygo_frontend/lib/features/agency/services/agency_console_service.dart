@@ -119,6 +119,29 @@ class AgencyConsoleService {
     );
   }
 
+  /// Updates the agency the signed-in staff member belongs to.
+  ///
+  /// The API accepts a name, description, email, phone, logo URL and active
+  /// flag. Branch addresses live on each branch, so they are not part of this.
+  Future<void> updateAgency({
+    required String agencyId,
+    required String name,
+    required String description,
+    required String email,
+    required String phone,
+  }) async {
+    await _apiClient.patch(
+      '/agencies/$agencyId',
+      authenticated: true,
+      body: {
+        'name': name,
+        'description': description,
+        'email': email,
+        'phone': phone,
+      },
+    );
+  }
+
   /// Routes the agency operates, used to schedule a trip.
   ///
   /// `/routes` is public and returns every active route on the platform, so the
