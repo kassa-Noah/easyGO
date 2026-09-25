@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/localization/app_localizations.dart';
-import '../../../shared/widgets/glass_container.dart';
+import '../models/admin_console.dart';
+import '../services/admin_service.dart';
+import 'admin_monitor_list.dart';
 
 class AdminParcelsScreen extends StatelessWidget {
   const AdminParcelsScreen({super.key});
@@ -10,46 +12,29 @@ class AdminParcelsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.platformParcels)),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.inventory_2_outlined),
-              title: const Text('PAR-DEMO-001'),
-              subtitle: const Text('Marie N. • General Express'),
-              trailing: Chip(label: Text(l.trackingStatusLabel('In Transit'))),
-            ),
+    return AdminMonitorList<AdminParcelRow>(
+      title: l.platformParcels,
+      emptyMessage: 'No parcel has been registered yet.',
+      load: AdminService.instance.getAllParcels,
+      itemBuilder: (BuildContext context, AdminParcelRow parcel) {
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.inventory_2_outlined),
+          title: Text(
+            parcel.description == null || parcel.description!.isEmpty
+                ? parcel.trackingNumber
+                : parcel.description!,
           ),
-          const SizedBox(height: 12),
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.inventory_2_outlined),
-              title: const Text('PAR-DEMO-002'),
-              subtitle: const Text('Paul T. • Global Travel'),
-              trailing: Chip(label: Text(l.trackingStatusLabel('Delivered'))),
-            ),
+          subtitle: Text(
+            '${parcel.trackingNumber} • ${parcel.agencyName ?? '—'}\n'
+            '${parcel.routeLabel} • for '
+            '${parcel.recipientName.isEmpty ? '—' : parcel.recipientName}'
+            '${parcel.weightKg == null ? '' : ' • ${parcel.weightKg} kg'}',
           ),
-          const SizedBox(height: 12),
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.inventory_2_outlined),
-              title: const Text('PAR-DEMO-003'),
-              subtitle: const Text('Alice K. • General Express'),
-              trailing: Chip(
-                label: Text(l.trackingStatusLabel('Received by Agency')),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          GlassContainer(child: Text(l.adminOperationsReadOnlyNotice)),
-        ],
-      ),
+          isThreeLine: true,
+          trailing: Chip(label: Text(parcel.status)),
+        );
+      },
     );
   }
 }

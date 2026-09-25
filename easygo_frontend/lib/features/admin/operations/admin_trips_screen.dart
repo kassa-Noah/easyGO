@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/localization/app_localizations.dart';
-import '../../../shared/widgets/glass_container.dart';
+import '../models/admin_console.dart';
+import '../services/admin_service.dart';
+import 'admin_monitor_list.dart';
 
 class AdminTripsScreen extends StatelessWidget {
   const AdminTripsScreen({super.key});
@@ -10,44 +12,25 @@ class AdminTripsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.platformTrips)),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.directions_bus_outlined),
-              title: const Text('TRIP-DEMO-001'),
-              subtitle: const Text('Yaoundé → Douala • General Express'),
-              trailing: Chip(label: Text(l.agencyTripStatusLabel('Scheduled'))),
-            ),
+    return AdminMonitorList<AdminTripRow>(
+      title: l.platformTrips,
+      emptyMessage: 'No trip has been scheduled yet.',
+      load: AdminService.instance.getTrips,
+      itemBuilder: (BuildContext context, AdminTripRow trip) {
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.directions_bus_outlined),
+          title: Text(trip.routeLabel),
+          subtitle: Text(
+            '${trip.agencyName ?? '—'}\n'
+            '${trip.departureTime == null ? '—' : formatAdminDateTime(trip.departureTime!)}\n'
+            '${formatAdminAmount(trip.price)} • '
+            '${trip.bookedSeats} / ${trip.totalSeats} seats booked',
           ),
-          const SizedBox(height: 12),
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.directions_bus_outlined),
-              title: const Text('TRIP-DEMO-002'),
-              subtitle: const Text('Yaoundé → Bafoussam • General Express'),
-              trailing: Chip(label: Text(l.agencyTripStatusLabel('Scheduled'))),
-            ),
-          ),
-          const SizedBox(height: 12),
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.directions_bus_outlined),
-              title: const Text('TRIP-DEMO-003'),
-              subtitle: const Text('Douala → Yaoundé • Global Travel'),
-              trailing: Chip(label: Text(l.agencyTripStatusLabel('Completed'))),
-            ),
-          ),
-          const SizedBox(height: 12),
-          GlassContainer(child: Text(l.adminOperationsReadOnlyNotice)),
-        ],
-      ),
+          isThreeLine: true,
+          trailing: Chip(label: Text(trip.status)),
+        );
+      },
     );
   }
 }

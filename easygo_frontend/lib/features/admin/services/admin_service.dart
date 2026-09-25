@@ -176,6 +176,46 @@ class AdminService {
     await _apiClient.patch('/notifications/read-all', authenticated: true);
   }
 
+  /// Every trip on the platform.
+  ///
+  /// `/trips` is public and already returns the whole platform with the agency
+  /// and route attached, so no admin-scoped variant is needed.
+  Future<List<AdminTripRow>> getTrips() async {
+    final dynamic response = await _apiClient.get('/trips');
+
+    return _mapList(response, AdminTripRow.fromJson);
+  }
+
+  /// Every booking on the platform.
+  Future<List<AdminBookingRow>> getAllBookings() async {
+    final dynamic response = await _apiClient.get(
+      '/admin/bookings',
+      authenticated: true,
+    );
+
+    return _mapList(response, AdminBookingRow.fromJson);
+  }
+
+  /// Every piece of luggage on the platform.
+  Future<List<AdminLuggageRow>> getAllLuggage() async {
+    final dynamic response = await _apiClient.get(
+      '/admin/luggage',
+      authenticated: true,
+    );
+
+    return _mapList(response, AdminLuggageRow.fromJson);
+  }
+
+  /// Every parcel on the platform.
+  Future<List<AdminParcelRow>> getAllParcels() async {
+    final dynamic response = await _apiClient.get(
+      '/admin/parcels',
+      authenticated: true,
+    );
+
+    return _mapList(response, AdminParcelRow.fromJson);
+  }
+
   Map<String, dynamic> _extractData(dynamic response) {
     if (response is! Map) {
       throw const ApiException(
@@ -210,5 +250,25 @@ class AdminService {
     }
 
     return data;
+  }
+
+  /// Maps a list response through a row factory.
+  ///
+  /// The list parameter is typed rather than left dynamic on purpose: on a
+  /// dynamic receiver Dart cannot infer the type argument of `map`, and the
+  /// resulting `List<dynamic>` fails its cast at runtime.
+  List<T> _mapList<T>(
+    dynamic response,
+    T Function(Map<String, dynamic> json) fromJson,
+  ) {
+    final List<T> rows = <T>[];
+
+    for (final dynamic item in _extractList(response)) {
+      if (item is Map) {
+        rows.add(fromJson(Map<String, dynamic>.from(item)));
+      }
+    }
+
+    return rows;
   }
 }

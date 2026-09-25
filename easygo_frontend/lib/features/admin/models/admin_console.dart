@@ -370,11 +370,253 @@ class AdminNotification {
   }
 }
 
+/// Turns a stored enum such as `ARRIVED_AT_DESTINATION_AGENCY` into a readable
+/// label, used as the fallback for any state without explicit wording.
+String _humanise(String status) {
+  if (status.isEmpty) {
+    return '—';
+  }
+
+  return status
+      .toLowerCase()
+      .split('_')
+      .map(
+        (String word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1)}',
+      )
+      .join(' ');
+}
+
+/// The trip states the monitor list shows.
+String adminTripStatusLabel(String status) => switch (status) {
+  'SCHEDULED' => 'Scheduled',
+  'BOARDING' => 'Boarding',
+  'DEPARTED' => 'In Progress',
+  'ARRIVED' => 'Completed',
+  'CANCELLED' => 'Cancelled',
+  _ => _humanise(status),
+};
+
+/// The booking states the monitor list shows.
+String adminBookingStatusLabel(String status) => switch (status) {
+  'PENDING' => 'Pending',
+  'CONFIRMED' => 'Confirmed',
+  'COMPLETED' => 'Completed',
+  'CANCELLED' => 'Cancelled',
+  _ => _humanise(status),
+};
+
+/// The luggage and parcel states the monitor lists show. Both use the same
+/// wording; luggage calls the first hand-over RECEIVED_AT_AGENCY while parcels
+/// call it RECEIVED_AT_ORIGIN_AGENCY.
+String adminTrackingStatusLabel(String status) => switch (status) {
+  'RECEIVED_AT_AGENCY' || 'RECEIVED_AT_ORIGIN_AGENCY' => 'Received by agency',
+  'ARRIVED_AT_DESTINATION_AGENCY' => 'Arrived',
+  'READY_FOR_COLLECTION' => 'Ready for collection',
+  'IN_TRANSIT' => 'In transit',
+  _ => _humanise(status),
+};
+
+/// A trip as the platform monitor shows it.
+class AdminTripRow {
+  final String id;
+  final String originCity;
+  final String destinationCity;
+  final String? agencyName;
+  final DateTime? departureTime;
+  final double price;
+  final int totalSeats;
+  final int availableSeats;
+  final String status;
+
+  const AdminTripRow({
+    required this.id,
+    required this.originCity,
+    required this.destinationCity,
+    required this.agencyName,
+    required this.departureTime,
+    required this.price,
+    required this.totalSeats,
+    required this.availableSeats,
+    required this.status,
+  });
+
+  factory AdminTripRow.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? route = _toMap(json['route']);
+    final Map<String, dynamic>? origin = _toMap(route?['originBranch']);
+    final Map<String, dynamic>? destination = _toMap(
+      route?['destinationBranch'],
+    );
+
+    return AdminTripRow(
+      id: json['id']?.toString() ?? '',
+      originCity: origin?['city']?.toString() ?? '',
+      destinationCity: destination?['city']?.toString() ?? '',
+      agencyName: _toNullableString(_toMap(json['agency'])?['name']),
+      departureTime: _toNullableDateTime(json['departureTime']),
+      price: _toDouble(json['price']),
+      totalSeats: _toInt(json['totalSeats']),
+      availableSeats: _toInt(json['availableSeats']),
+      status: adminTripStatusLabel(json['status']?.toString() ?? ''),
+    );
+  }
+
+  String get routeLabel => '$originCity → $destinationCity';
+
+  int get bookedSeats {
+    final int booked = totalSeats - availableSeats;
+
+    return booked < 0 ? 0 : booked;
+  }
+}
+
+/// A booking as the platform monitor shows it.
+class AdminBookingRow {
+  final String id;
+  final String bookingReference;
+  final String passengerName;
+  final String? agencyName;
+  final String originCity;
+  final String destinationCity;
+  final DateTime? departureTime;
+  final double totalAmount;
+  final int numberOfSeats;
+  final String status;
+
+  const AdminBookingRow({
+    required this.id,
+    required this.bookingReference,
+    required this.passengerName,
+    required this.agencyName,
+    required this.originCity,
+    required this.destinationCity,
+    required this.departureTime,
+    required this.totalAmount,
+    required this.numberOfSeats,
+    required this.status,
+  });
+
+  factory AdminBookingRow.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? user = _toMap(json['user']);
+    final Map<String, dynamic>? trip = _toMap(json['trip']);
+    final Map<String, dynamic>? route = _toMap(trip?['route']);
+    final Map<String, dynamic>? origin = _toMap(route?['originBranch']);
+    final Map<String, dynamic>? destination = _toMap(route?['destinationBranch']);
+
+    return AdminBookingRow(
+      id: json['id']?.toString() ?? '',
+      bookingReference: json['bookingReference']?.toString() ?? '',
+      passengerName: [user?['firstName'], user?['lastName']]
+          .where((dynamic part) => part != null && '$part'.isNotEmpty)
+          .join(' '),
+      agencyName: _toNullableString(_toMap(trip?['agency'])?['name']),
+      originCity: origin?['city']?.toString() ?? '',
+      destinationCity: destination?['city']?.toString() ?? '',
+      departureTime: _toNullableDateTime(trip?['departureTime']),
+      totalAmount: _toDouble(json['totalAmount']),
+      numberOfSeats: _toInt(json['numberOfSeats']),
+      status: adminBookingStatusLabel(json['status']?.toString() ?? ''),
+    );
+  }
+
+  String get routeLabel => '$originCity → $destinationCity';
+}
+
+/// A piece of luggage as the platform monitor shows it.
+class AdminLuggageRow {
+  final String id;
+  final String trackingNumber;
+  final String? description;
+  final double? weightKg;
+  final String status;
+  final String? bookingReference;
+  final String? passengerName;
+  final String? agencyName;
+
+  const AdminLuggageRow({
+    required this.id,
+    required this.trackingNumber,
+    required this.description,
+    required this.weightKg,
+    required this.status,
+    required this.bookingReference,
+    required this.passengerName,
+    required this.agencyName,
+  });
+
+  factory AdminLuggageRow.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? booking = _toMap(json['booking']);
+    final Map<String, dynamic>? user = _toMap(booking?['user']);
+    final Map<String, dynamic>? trip = _toMap(booking?['trip']);
+
+    return AdminLuggageRow(
+      id: json['id']?.toString() ?? '',
+      trackingNumber: json['trackingNumber']?.toString() ?? '',
+      description: _toNullableString(json['description']),
+      weightKg: json['weightKg'] == null
+          ? null
+          : _toDouble(json['weightKg']),
+      status: adminTrackingStatusLabel(json['status']?.toString() ?? ''),
+      bookingReference: _toNullableString(booking?['bookingReference']),
+      passengerName: [
+        user?['firstName'],
+        user?['lastName'],
+      ].where((dynamic part) => part != null && '$part'.isNotEmpty).join(' '),
+      agencyName: _toNullableString(_toMap(trip?['agency'])?['name']),
+    );
+  }
+}
+
+/// A parcel as the platform monitor shows it.
+class AdminParcelRow {
+  final String id;
+  final String trackingNumber;
+  final String? description;
+  final double? weightKg;
+  final String status;
+  final String recipientName;
+  final String originCity;
+  final String destinationCity;
+  final String? agencyName;
+
+  const AdminParcelRow({
+    required this.id,
+    required this.trackingNumber,
+    required this.description,
+    required this.weightKg,
+    required this.status,
+    required this.recipientName,
+    required this.originCity,
+    required this.destinationCity,
+    required this.agencyName,
+  });
+
+  factory AdminParcelRow.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? origin = _toMap(json['originBranch']);
+
+    return AdminParcelRow(
+      id: json['id']?.toString() ?? '',
+      trackingNumber: json['trackingNumber']?.toString() ?? '',
+      description: _toNullableString(json['description']),
+      weightKg: json['weightKg'] == null
+          ? null
+          : _toDouble(json['weightKg']),
+      status: adminTrackingStatusLabel(json['status']?.toString() ?? ''),
+      recipientName: json['recipientName']?.toString() ?? '',
+      originCity: origin?['city']?.toString() ?? '',
+      destinationCity: _toMap(json['destinationBranch'])?['city']?.toString() ?? '',
+      agencyName: _toNullableString(_toMap(origin?['agency'])?['name']),
+    );
+  }
+
+  String get routeLabel => '$originCity → $destinationCity';
+}
+
 /// The administrator landing page payload: counters plus the newest records.
 class AdminDashboard {
   final AdminStatistics statistics;
   final List<AdminAccount> recentUsers;
-
   const AdminDashboard({
     required this.statistics,
     required this.recentUsers,

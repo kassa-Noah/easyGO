@@ -237,4 +237,120 @@ void main() {
       expect(formatAdminAmount(35000), '35,000 FCFA');
     });
   });
+
+  group('monitor rows', () {
+    const Map<String, dynamic> realAdminTrip = <String, dynamic>{
+      'id': 'dc751d5e-d7cd-432b-8d9d-67bf108fda10',
+      'departureTime': '2026-09-20T07:00:00.000Z',
+      'price': '5000',
+      'totalSeats': 30,
+      'availableSeats': 20,
+      'status': 'SCHEDULED',
+      'agency': <String, dynamic>{'name': 'Finexs Voyages'},
+      'route': <String, dynamic>{
+        'originBranch': <String, dynamic>{'city': 'Yaounde'},
+        'destinationBranch': <String, dynamic>{'city': 'Douala'},
+      },
+    };
+
+    test('maps a real trip, deriving the booked seats', () {
+      final AdminTripRow trip = AdminTripRow.fromJson(realAdminTrip);
+
+      expect(trip.routeLabel, 'Yaounde → Douala');
+      expect(trip.agencyName, 'Finexs Voyages');
+      expect(trip.price, 5000);
+      expect(trip.status, 'Scheduled');
+      expect(trip.bookedSeats, 10);
+      expect(formatAdminDateTime(trip.departureTime!), '20/09/2026 • 07:00');
+    });
+
+    test('maps a real booking', () {
+      final AdminBookingRow booking = AdminBookingRow.fromJson(<String, dynamic>{
+        'id': '8f4c08f7-e43b-4aa9-836a-94551a8dd6e0',
+        'bookingReference': 'EG-MUHBGQYP-QI5D3X',
+        'numberOfSeats': 1,
+        'totalAmount': '5000',
+        'status': 'CONFIRMED',
+        'user': <String, dynamic>{'firstName': 'kassa', 'lastName': 'vianny'},
+        'trip': <String, dynamic>{
+          'departureTime': '2026-10-10T07:00:00.000Z',
+          'agency': <String, dynamic>{'name': 'Finexs Voyages'},
+          'route': <String, dynamic>{
+            'originBranch': <String, dynamic>{'city': 'Yaounde'},
+            'destinationBranch': <String, dynamic>{'city': 'Douala'},
+          },
+        },
+      });
+
+      expect(booking.bookingReference, 'EG-MUHBGQYP-QI5D3X');
+      expect(booking.passengerName, 'kassa vianny');
+      expect(booking.agencyName, 'Finexs Voyages');
+      expect(booking.routeLabel, 'Yaounde → Douala');
+      expect(booking.numberOfSeats, 1);
+      expect(formatAdminAmount(booking.totalAmount), '5,000 FCFA');
+      expect(booking.status, 'Confirmed');
+    });
+
+    test('reads the agency a piece of luggage belongs to', () {
+      final AdminLuggageRow luggage = AdminLuggageRow.fromJson(<String, dynamic>{
+        'id': 'l1',
+        'trackingNumber': 'LUG-MUH3YJR1-EY01OL',
+        'description': 'Audit suitcase',
+        'weightKg': 12.5,
+        'status': 'LOADED',
+        'booking': <String, dynamic>{
+          'bookingReference': 'EG-MUH3YIZ1-TR3HZT',
+          'user': <String, dynamic>{'firstName': 'Audit', 'lastName': 'User'},
+          'trip': <String, dynamic>{
+            'agency': <String, dynamic>{'name': 'Finexs Voyages'},
+          },
+        },
+      });
+
+      expect(luggage.trackingNumber, 'LUG-MUH3YJR1-EY01OL');
+      expect(luggage.status, 'Loaded');
+      expect(luggage.agencyName, 'Finexs Voyages');
+      expect(luggage.passengerName, 'Audit User');
+      expect(luggage.weightKg, 12.5);
+    });
+
+    test('maps a real parcel whose price is not set', () {
+      final AdminParcelRow parcel = AdminParcelRow.fromJson(<String, dynamic>{
+        'id': 'p1',
+        'trackingNumber': 'PAR-MUH3YJVA-YRDPTS',
+        'description': 'Audit parcel',
+        'weightKg': 8.5,
+        'recipientName': 'Mary Example',
+        'status': 'LOADED',
+        'shipmentPrice': null,
+        'originBranch': <String, dynamic>{
+          'city': 'Yaounde',
+          'agency': <String, dynamic>{'name': 'Finexs Voyages'},
+        },
+        'destinationBranch': <String, dynamic>{'city': 'Douala'},
+      });
+
+      expect(parcel.routeLabel, 'Yaounde → Douala');
+      expect(parcel.agencyName, 'Finexs Voyages');
+      expect(parcel.recipientName, 'Mary Example');
+      expect(parcel.status, 'Loaded');
+    });
+
+    test('writes out a status with no explicit wording', () {
+      expect(
+        adminTrackingStatusLabel('RECEIVED_AT_ORIGIN_AGENCY'),
+        'Received by agency',
+      );
+      expect(adminTrackingStatusLabel('ARRIVED_AT_DESTINATION_AGENCY'), 'Arrived');
+      expect(
+        adminTrackingStatusLabel('READY_FOR_COLLECTION'),
+        'Ready for collection',
+      );
+      expect(adminTrackingStatusLabel('PROCESSING'), 'Processing');
+      expect(adminTripStatusLabel('DEPARTED'), 'In Progress');
+      expect(adminBookingStatusLabel('PENDING'), 'Pending');
+      // An absent status must read as a dash, not as an empty chip.
+      expect(adminTrackingStatusLabel(''), '—');
+    });
+  });
 }

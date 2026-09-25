@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/localization/app_localizations.dart';
-import '../../../shared/widgets/glass_container.dart';
+import '../models/admin_console.dart';
+import '../services/admin_service.dart';
+import 'admin_monitor_list.dart';
 
 class AdminBookingsScreen extends StatelessWidget {
   const AdminBookingsScreen({super.key});
@@ -10,50 +12,27 @@ class AdminBookingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l.platformBookings)),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.confirmation_number_outlined),
-              title: const Text('BKG-DEMO-001'),
-              subtitle: const Text('Marie N. • General Express'),
-              trailing: Chip(
-                label: Text(l.agencyBookingStatusLabel('Confirmed')),
-              ),
-            ),
+    return AdminMonitorList<AdminBookingRow>(
+      title: l.platformBookings,
+      emptyMessage: 'No booking has been made yet.',
+      load: AdminService.instance.getAllBookings,
+      itemBuilder: (BuildContext context, AdminBookingRow booking) {
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.confirmation_number_outlined),
+          title: Text(booking.bookingReference),
+          subtitle: Text(
+            '${booking.passengerName.isEmpty ? '—' : booking.passengerName} • '
+            '${booking.agencyName ?? '—'}\n'
+            '${booking.routeLabel}\n'
+            '${formatAdminAmount(booking.totalAmount)} • '
+            '${booking.numberOfSeats} '
+            '${booking.numberOfSeats == 1 ? 'seat' : 'seats'}',
           ),
-          const SizedBox(height: 12),
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.confirmation_number_outlined),
-              title: const Text('BKG-DEMO-002'),
-              subtitle: const Text('Paul T. • Global Travel'),
-              trailing: Chip(
-                label: Text(l.agencyBookingStatusLabel('Completed')),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          GlassContainer(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.confirmation_number_outlined),
-              title: const Text('BKG-DEMO-003'),
-              subtitle: const Text('Kevin A. • General Express'),
-              trailing: Chip(
-                label: Text(l.agencyBookingStatusLabel('Cancelled')),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          GlassContainer(child: Text(l.adminOperationsReadOnlyNotice)),
-        ],
-      ),
+          isThreeLine: true,
+          trailing: Chip(label: Text(booking.status)),
+        );
+      },
     );
   }
 }
