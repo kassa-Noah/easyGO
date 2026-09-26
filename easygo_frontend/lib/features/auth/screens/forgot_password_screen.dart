@@ -20,17 +20,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     super.dispose();
   }
 
-  void _submit() {
+  /// There is no self-service reset: the backend has no reset endpoint, so no
+  /// mail is sent. This used to answer "Password reset request is valid.", which
+  /// told somebody locked out of their account to wait for a message that was
+  /// never going to arrive. The screen now says what is true and keeps the
+  /// address on screen so it can be quoted to whoever resets the password.
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Password reset request is valid.')),
-    );
+    final String email = _emailController.text.trim();
 
-    // Backend password reset
-    // integration will be added later.
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.info_outline),
+        title: const Text('No reset email will be sent'),
+        content: Text(
+          'easyGO has no self-service password reset, so nothing has been sent '
+          'to $email and no reset link is on its way.\n\n'
+          'A platform administrator can set a new password on the account. Give '
+          'them that email address so they can find the right account.',
+          style: const TextStyle(height: 1.5),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -76,7 +103,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: 10),
 
                 const Text(
-                  'Enter the email address linked to your easyGO account.',
+                  'Enter the email address linked to your easyGO account. A platform '
+                  'administrator uses it to find the account and set a new password.',
                   style: TextStyle(
                     fontSize: 15,
                     height: 1.5,
@@ -84,7 +112,42 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 22),
+
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: AppColors.primaryLight.withValues(alpha: 0.25),
+                    ),
+                  ),
+                  child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 20,
+                        color: AppColors.primary,
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'easyGO cannot reset a password for you yet, so no reset '
+                          'email is sent from this screen.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            height: 1.45,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 26),
 
                 TextFormField(
                   controller: _emailController,
@@ -111,9 +174,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: 28),
 
                 ElevatedButton(
-                  onPressed: _submit,
+                  onPressed: () {
+                    _submit();
+                  },
                   child: const Text(
-                    'Send Reset Request',
+                    'I cannot sign in',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
