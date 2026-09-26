@@ -7,6 +7,8 @@ import '../../bookings/models/booking.dart';
 import '../../bookings/services/booking_service.dart';
 import '../../journeys/models/journey.dart';
 import '../../journeys/services/journey_service.dart';
+import '../../reviews/models/review.dart';
+import '../../reviews/screens/write_review_screen.dart';
 import '../booking/digital_ticket_screen.dart';
 import 'booking_luggage_screen.dart';
 
@@ -155,6 +157,12 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
       return 'Cancelled';
     }
 
+    // The backend's own status wins over the arrival-time guess, so a
+    // booking it has marked COMPLETED never reads as "Upcoming".
+    if (_booking.isCompleted) {
+      return 'Completed';
+    }
+
     final DateTime? arrival = _booking.arrivalTime;
 
     if (arrival != null && arrival.isBefore(DateTime.now().toUtc())) {
@@ -194,6 +202,33 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
       MaterialPageRoute(
         builder: (context) =>
             BookingLuggageScreen(trip: _buildLuggageCompatibilityMap()),
+      ),
+    );
+  }
+
+  /// Reviews are only accepted against a COMPLETED booking, and the
+  /// agency id comes from the trip, so both must be present.
+  bool get _canReview {
+    return _booking.isCompleted &&
+        (_booking.trip?.agencyId.trim().isNotEmpty ?? false);
+  }
+
+  Future<void> _openWriteReview() async {
+    final trip = _booking.trip;
+
+    if (!_canReview || trip == null) {
+      return;
+    }
+
+    await Navigator.push<Review>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WriteReviewScreen(
+          agencyId: trip.agencyId,
+          tripId: _booking.tripId,
+          agencyName: trip.agencyName,
+          routeLabel: '${trip.originCity} \u2192 ${trip.destinationCity}',
+        ),
       ),
     );
   }
@@ -675,6 +710,17 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 onPressed: _openLuggage,
                 icon: const Icon(Icons.luggage_outlined),
                 label: Text(l10n.trackLuggage),
+              ),
+            ),
+          ],
+          if (_canReview) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _openWriteReview,
+                icon: const Icon(Icons.rate_review_outlined),
+                label: Text(l10n.rateThisTrip),
               ),
             ),
           ],

@@ -72,6 +72,14 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
       return _cancelled;
     }
 
+    // The backend's own status wins over the date guess. Without this a trip it
+    // has already marked COMPLETED would sit under Upcoming whenever the trip's
+    // scheduled date has not arrived yet, and the actions that belong to a
+    // finished trip would look unavailable.
+    if (booking.isCompleted) {
+      return _completed;
+    }
+
     final DateTime? arrivalTime = booking.arrivalTime;
 
     if (arrivalTime != null && arrivalTime.isBefore(DateTime.now().toUtc())) {
@@ -383,7 +391,10 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
-                      SelectableText(
+                      // A SelectableText here would claim the card's semantics
+                      // node for itself, and the card would stop announcing
+                      // itself as something that can be opened.
+                      Text(
                         booking.bookingReference,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: AppColors.primary,

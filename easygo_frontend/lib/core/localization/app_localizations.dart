@@ -234,13 +234,38 @@ class AppLocalizations {
   String get enterReviewError =>
       isFrench ? 'Veuillez saisir un avis.' : 'Please enter a review.';
 
-  String get reviewAdded => isFrench
-      ? 'Avis ajouté à la démonstration frontend.'
-      : 'Review added to the frontend demonstration.';
+  String get reviewSubmittedTitle =>
+      isFrench ? 'Avis publié' : 'Review posted';
 
-  String get demoReviewsInformation => isFrench
-      ? 'Des avis de démonstration sont affichés pendant le développement frontend. Les avis réels seront récupérés depuis le backend.'
-      : 'Demonstration reviews are shown during frontend development. Production reviews will be retrieved from the backend.';
+  String reviewSubmittedMessage(String agencyName) {
+    return isFrench
+        ? 'Votre avis sur $agencyName a été enregistré et apparaît maintenant sur la page de l’agence.'
+        : 'Your review of $agencyName has been saved and now appears on the agency page.';
+  }
+
+  String get noReviewsYet => isFrench
+      ? 'Aucun avis pour le moment.'
+      : 'No reviews yet.';
+
+  String get noReviewsYetExplanation => isFrench
+      ? 'Les voyageurs peuvent noter une agence après avoir effectué un voyage avec elle.'
+      : 'Travellers can rate an agency once they have completed a journey with it.';
+
+  String get reviewsArePublic => isFrench
+      ? 'Les avis ci-dessous sont ceux laissés par les voyageurs qui ont effectué ce trajet.'
+      : 'The reviews below were left by travellers who completed a journey.';
+
+  String get rateThisTrip => isFrench
+      ? 'Noter ce voyage'
+      : 'Rate this trip';
+
+  String get reviewRecorded => isFrench
+      ? 'Vous avez noté ce voyage'
+      : 'You rated this trip';
+
+  String get rateThisTripRequiresCompleted => isFrench
+      ? 'Vous pourrez noter ce voyage une fois qu’il sera terminé.'
+      : 'You can rate this trip once it has been completed.';
 
   String agencyReviews(String agencyName) {
     return isFrench ? 'Avis sur $agencyName' : '$agencyName Reviews';

@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../agencies/models/agency.dart';
+import '../../reviews/widgets/agency_reviews_section.dart';
 import '../booking/booking_mode_screen.dart';
 import 'agency_conversation_screen.dart';
 
@@ -73,6 +74,13 @@ class AgencyDetailsScreen extends StatelessWidget {
                       const SizedBox(height: 12),
 
                       _buildBranches(context),
+
+                      const SizedBox(height: 28),
+
+                      AgencyReviewsSection(
+                        agencyId: agency.id,
+                        agencyName: agency.name,
+                      ),
 
                       const SizedBox(height: 30),
                     ],

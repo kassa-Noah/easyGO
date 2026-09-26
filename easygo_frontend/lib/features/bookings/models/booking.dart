@@ -62,6 +62,13 @@ class Booking {
     return status.toUpperCase() == 'PENDING';
   }
 
+  /// Whether the backend considers this trip travelled. Reviews are
+  /// only accepted for bookings in this state, so the UI must use the
+  /// same definition rather than inferring it from the arrival time.
+  bool get isCompleted {
+    return status.toUpperCase() == 'COMPLETED';
+  }
+
   bool get hasSuccessfulPayment {
     return payments.any(
       (payment) => payment.status.toUpperCase() == 'SUCCESSFUL',
