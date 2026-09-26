@@ -4,9 +4,11 @@
   "description": "Backend API for the easyGO interurban travel management and luggage tracking system",
   "main": "dist/server.js",
   "scripts": {
+    "postinstall": "node scripts/prisma-generate.mjs",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "generate": "prisma generate"
   },
   "keywords": [],
   "author": "",
