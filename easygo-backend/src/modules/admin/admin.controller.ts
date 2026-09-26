@@ -12,10 +12,18 @@ import {
   getAllParcelsForAdmin,
   getAllPaymentsForAdmin,
   getAllRoutesForAdmin,
+  getAgencyStaffForAdmin,
   getDashboardStatistics,
+  getStaffMembershipForUser,
+  getUserForStaff,
+  linkStaffToAgency,
+  unlinkStaffFromAgency,
 } from "./admin.service";
 
+import { attachStaffSchema } from "./admin.schema";
+
 import {
+  getAgencyById,
   getAllAgenciesForAdmin,
 } from "../agency/agency.service";
 
@@ -162,6 +170,169 @@ export const listAllLuggage =
         message:
           messageOf(error) ||
           "Unable to retrieve luggage",
+      });
+    }
+  };
+
+/**
+ * The staff of one agency.
+ *
+ * Membership is what decides whether an account can open the agency console
+ * at all, so it belongs next to the agency rather than being inferred from a
+ * count.
+ */
+export const listAgencyStaff =
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      const agencyId = String(req.params.agencyId);
+
+      const agency = await getAgencyById(agencyId);
+
+      if (!agency) {
+        return res.status(404).json({
+          success: false,
+          message: "Agency not found",
+        });
+      }
+
+      const staff = await getAgencyStaffForAdmin(agencyId);
+
+      return res.status(200).json({
+        success: true,
+        count: staff.length,
+        data: staff,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        success: false,
+
+        message:
+          messageOf(error) ||
+          "Unable to retrieve the agency staff",
+      });
+    }
+  };
+
+/**
+ * Attaches an existing account to an agency.
+ *
+ * There is no endpoint that creates an AGENCY_STAFF account and no endpoint
+ * that changes a role, so without this an agency could be created but nobody
+ * could ever operate it.
+ */
+export const attachStaff =
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      const agencyId = String(req.params.agencyId);
+
+      const agency = await getAgencyById(agencyId);
+
+      if (!agency) {
+        return res.status(404).json({
+          success: false,
+          message: "Agency not found",
+        });
+      }
+
+      const validatedData =
+        attachStaffSchema.parse(req.body);
+
+      const user = await getUserForStaff(
+        validatedData.userId
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      // An administrator already has every permission this membership would
+      // grant, and attaching would demote them to AGENCY_STAFF.
+      if (user.role === "ADMIN") {
+        return res.status(400).json({
+          success: false,
+          message:
+            "An administrator cannot be attached to an agency as staff",
+        });
+      }
+
+      const membership =
+        await getStaffMembershipForUser(
+          validatedData.userId
+        );
+
+      if (membership) {
+        return res.status(409).json({
+          success: false,
+          message:
+            membership.agencyId === agencyId
+              ? "This account is already staff of this agency"
+              : `This account is already staff of ${membership.agency.name}`,
+        });
+      }
+
+      const staff = await linkStaffToAgency(
+        agencyId,
+        validatedData.userId,
+        validatedData.role ?? "AGENT"
+      );
+
+      return res.status(201).json({
+        success: true,
+        message: "Staff member added successfully",
+        data: staff,
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          messageOf(error) ||
+          "Unable to add the staff member",
+      });
+    }
+  };
+
+/** Removes a staff member, putting the account back to CUSTOMER. */
+export const detachStaff =
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      const userId = String(req.params.userId);
+
+      const membership =
+        await getStaffMembershipForUser(userId);
+
+      if (!membership) {
+        return res.status(404).json({
+          success: false,
+          message: "This account is not staff of any agency",
+        });
+      }
+
+      await unlinkStaffFromAgency(userId);
+
+      return res.status(200).json({
+        success: true,
+        message: "Staff member removed successfully",
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          messageOf(error) ||
+          "Unable to remove the staff member",
       });
     }
   };

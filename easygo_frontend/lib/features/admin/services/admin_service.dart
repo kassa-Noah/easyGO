@@ -191,6 +191,47 @@ class AdminService {
     return _mapList(response, AdminParcelRow.fromJson);
   }
 
+  /// The people who can operate an agency's console.
+  Future<List<AdminStaffMember>> getAgencyStaff(String agencyId) async {
+    final dynamic response = await _apiClient.get(
+      '/admin/agencies/$agencyId/staff',
+      authenticated: true,
+    );
+
+    return _mapList(response, AdminStaffMember.fromJson);
+  }
+
+  /// Attaches an existing account to an agency.
+  ///
+  /// This also promotes the account's platform role to AGENCY_STAFF, because
+  /// every agency endpoint is gated on that role. The change lands in the
+  /// database, not in the account's existing token, so the person has to sign
+  /// in again before the agency console accepts them.
+  Future<AdminStaffMember> attachStaff({
+    required String agencyId,
+    required String userId,
+    String? role,
+  }) async {
+    final dynamic response = await _apiClient.post(
+      '/admin/agencies/$agencyId/staff',
+      authenticated: true,
+      body: {'userId': userId, 'role': ?role},
+    );
+
+    return AdminStaffMember.fromJson(_extractData(response));
+  }
+
+  /// Removes a staff member from an agency and returns the account to CUSTOMER.
+  Future<void> detachStaff({
+    required String agencyId,
+    required String userId,
+  }) async {
+    await _apiClient.delete(
+      '/admin/agencies/$agencyId/staff/$userId',
+      authenticated: true,
+    );
+  }
+
   /// Every route, including the ones that are no longer active.
   ///
   /// The public `/routes` list is filtered to active routes, so retiring one

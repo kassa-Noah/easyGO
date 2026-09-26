@@ -611,6 +611,126 @@ export const getAllRoutesForAdmin =
     });
   };
 
+/**
+ * The people who can operate an agency's console.
+ *
+ * Membership is one per account (`AgencyStaff.userId` is unique), and an
+ * account's platform role has to be AGENCY_STAFF for any agency endpoint to
+ * accept it, so the two are always changed together.
+ */
+export const getAgencyStaffForAdmin = async (agencyId: string) => {
+  return prisma.agencyStaff.findMany({
+    where: {
+      agencyId,
+    },
+
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+          role: true,
+          isActive: true,
+        },
+      },
+    },
+
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
+};
+
+export const getUserForStaff = async (userId: string) => {
+  return prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+};
+
+export const getStaffMembershipForUser = async (userId: string) => {
+  return prisma.agencyStaff.findUnique({
+    where: {
+      userId,
+    },
+
+    include: {
+      agency: true,
+    },
+  });
+};
+
+export const linkStaffToAgency = async (
+  agencyId: string,
+  userId: string,
+  role: "MANAGER" | "AGENT"
+) => {
+  return prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: {
+        id: userId,
+      },
+
+      data: {
+        role: "AGENCY_STAFF",
+      },
+    });
+
+    return tx.agencyStaff.create({
+      data: {
+        agencyId,
+        userId,
+        role,
+      },
+
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            phone: true,
+            role: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+  });
+};
+
+/**
+ * Removes a staff member from an agency.
+ *
+ * The account goes back to CUSTOMER, which is what it was before it was
+ * attached. Leaving it as AGENCY_STAFF would keep the platform role without
+ * the membership that justifies it.
+ */
+export const unlinkStaffFromAgency = async (userId: string) => {
+  return prisma.$transaction(async (tx) => {
+    await tx.agencyStaff.delete({
+      where: {
+        userId,
+      },
+    });
+
+    return tx.user.update({
+      where: {
+        id: userId,
+      },
+
+      data: {
+        role: "CUSTOMER",
+      },
+    });
+  });
+};
+
 export const getAllParcelsForAdmin =
   async () => {
     return prisma.parcel.findMany({

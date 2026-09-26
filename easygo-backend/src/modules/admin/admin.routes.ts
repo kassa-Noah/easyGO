@@ -3,8 +3,11 @@ import {
 } from "express";
 
 import {
+  attachStaff,
   dashboard,
   dashboardStatistics,
+  detachStaff,
+  listAgencyStaff,
   listAllAgencies,
   listAllBookings,
   listAllLuggage,
@@ -46,6 +49,21 @@ router.get(
 router.get(
   "/agencies",
   listAllAgencies
+);
+
+router.get(
+  "/agencies/:agencyId/staff",
+  listAgencyStaff
+);
+
+router.post(
+  "/agencies/:agencyId/staff",
+  attachStaff
+);
+
+router.delete(
+  "/agencies/:agencyId/staff/:userId",
+  detachStaff
 );
 
 router.get(

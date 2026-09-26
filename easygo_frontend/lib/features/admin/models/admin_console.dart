@@ -505,6 +505,62 @@ class AdminPaymentRow {
   }
 }
 
+/// A member of an agency's staff.
+///
+/// Membership is one per account, so the platform role and the agency are two
+/// halves of the same thing: attaching an account sets it to AGENCY_STAFF, and
+/// detaching puts it back to CUSTOMER.
+class AdminStaffMember {
+  final String id;
+
+  final String userId;
+  final String name;
+  final String email;
+  final String? phone;
+
+  /// MANAGER or AGENT, on the agency's side rather than the platform's.
+  final String role;
+
+  final bool isActive;
+
+  const AdminStaffMember({
+    required this.id,
+    required this.userId,
+    required this.name,
+    required this.email,
+    required this.phone,
+    required this.role,
+    required this.isActive,
+  });
+
+  factory AdminStaffMember.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? user = _toMap(json['user']);
+
+    final String name = [
+      user?['firstName'],
+      user?['lastName'],
+    ].where((dynamic part) => part != null && '$part'.trim().isNotEmpty)
+     .join(' ');
+
+    return AdminStaffMember(
+      id: json['id']?.toString() ?? '',
+      userId: user?['id']?.toString() ?? json['userId']?.toString() ?? '',
+      name: name,
+      email: user?['email']?.toString() ?? '',
+      phone: _toNullableString(user?['phone']),
+      role: adminStaffRoleLabel(json['role']?.toString() ?? ''),
+      isActive: json['isActive'] as bool? ?? false,
+    );
+  }
+}
+
+/// The two agency-side roles a member of staff can hold.
+String adminStaffRoleLabel(String role) => switch (role) {
+  'MANAGER' => 'Manager',
+  'AGENT' => 'Agent',
+  _ => _humanise(role),
+};
+
 /// A trip as the platform monitor shows it.
 class AdminTripRow {
   final String id;
