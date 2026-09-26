@@ -10,6 +10,7 @@ import {
   listAllLuggage,
   listAllParcels,
   listAllPayments,
+  listAllRoutes,
 } from "./admin.controller";
 
 import {
@@ -50,6 +51,11 @@ router.get(
 router.get(
   "/payments",
   listAllPayments
+);
+
+router.get(
+  "/routes",
+  listAllRoutes
 );
 
 router.get(

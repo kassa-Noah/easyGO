@@ -177,6 +177,119 @@ class AdminService {
     return _mapList(response, AdminParcelRow.fromJson);
   }
 
+  /// Every route, including the ones that are no longer active.
+  ///
+  /// The public `/routes` list is filtered to active routes, so retiring one
+  /// would remove it from the only list that could bring it back. This goes
+  /// through the admin endpoint instead.
+  Future<List<AdminRoute>> getRoutes() async {
+    final dynamic response = await _apiClient.get(
+      '/admin/routes',
+      authenticated: true,
+    );
+
+    return _mapList(response, AdminRoute.fromJson);
+  }
+
+  /// Every branch on the platform, with the agency that owns it.
+  ///
+  /// Routes join two branches by id, so the editor needs the ids and not just
+  /// the cities. The admin agency list carries each agency's branches, which
+  /// also keeps the branches of a suspended agency visible here.
+  Future<List<AdminBranch>> getBranches() async {
+    final dynamic response = await _apiClient.get(
+      '/admin/agencies',
+      authenticated: true,
+    );
+
+    final List<AdminBranch> branches = <AdminBranch>[];
+
+    for (final dynamic item in _extractList(response)) {
+      if (item is! Map) {
+        continue;
+      }
+
+      final Map<String, dynamic> agency = Map<String, dynamic>.from(item);
+      final dynamic rawBranches = agency['branches'];
+
+      if (rawBranches is! List) {
+        continue;
+      }
+
+      for (final dynamic rawBranch in rawBranches) {
+        if (rawBranch is! Map) {
+          continue;
+        }
+
+        final AdminBranch? branch = AdminBranch.fromAgencyJson(
+          agency,
+          Map<String, dynamic>.from(rawBranch),
+        );
+
+        if (branch != null) {
+          branches.add(branch);
+        }
+      }
+    }
+
+    branches.sort((AdminBranch a, AdminBranch b) => a.label.compareTo(b.label));
+
+    return branches;
+  }
+
+  /// Creates a route between two branches.
+  ///
+  /// The backend rejects two identical branches, a branch that does not exist
+  /// and a pair that already has a route, so the caller only needs to surface
+  /// the message it returns.
+  Future<AdminRoute> createRoute({
+    required String originBranchId,
+    required String destinationBranchId,
+    required double baseFare,
+    double? distanceKm,
+    int? estimatedDurationMinutes,
+  }) async {
+    final dynamic response = await _apiClient.post(
+      '/routes',
+      authenticated: true,
+      body: {
+        'originBranchId': originBranchId,
+        'destinationBranchId': destinationBranchId,
+        'baseFare': baseFare,
+        'distanceKm': ?distanceKm,
+        'estimatedDurationMinutes': ?estimatedDurationMinutes,
+      },
+    );
+
+    return AdminRoute.fromJson(_extractData(response));
+  }
+
+  /// Updates a route. Omitted fields are left as they are.
+  Future<AdminRoute> updateRoute({
+    required String routeId,
+    String? originBranchId,
+    String? destinationBranchId,
+    double? baseFare,
+    double? distanceKm,
+    int? estimatedDurationMinutes,
+    bool? isActive,
+  }) async {
+    final dynamic response = await _apiClient.patch(
+      '/routes/$routeId',
+      authenticated: true,
+      body: {
+        'originBranchId': ?originBranchId,
+        'destinationBranchId': ?destinationBranchId,
+        'baseFare': ?baseFare,
+        'distanceKm': ?distanceKm,
+        'estimatedDurationMinutes': ?estimatedDurationMinutes,
+        'isActive': ?isActive,
+      },
+    );
+
+    return AdminRoute.fromJson(_extractData(response));
+  }
+
   Map<String, dynamic> _extractData(dynamic response) {
     if (response is! Map) {
       throw const ApiException(

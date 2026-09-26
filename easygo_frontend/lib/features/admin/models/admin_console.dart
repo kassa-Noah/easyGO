@@ -627,3 +627,142 @@ class AdminDashboard {
     return accounts;
   }
 }
+
+/// A branch, as the route editor needs it.
+///
+/// [AdminAgency] only keeps branch *cities*, which is enough to describe an
+/// agency but not enough to build a route: a route joins two branches by id.
+class AdminBranch {
+  final String id;
+  final String name;
+  final String city;
+  final String agencyId;
+  final String agencyName;
+
+  const AdminBranch({
+    required this.id,
+    required this.name,
+    required this.city,
+    required this.agencyId,
+    required this.agencyName,
+  });
+
+  /// "Finexs Voyages — Yaounde Main Branch (Yaounde)"
+  String get label => '$agencyName — $name ($city)';
+
+  /// Reads one branch out of the `branches` array an agency carries.
+  static AdminBranch? fromAgencyJson(
+    Map<String, dynamic> json,
+    Map<String, dynamic> branch,
+  ) {
+    final String id = branch['id']?.toString() ?? '';
+
+    if (id.isEmpty) {
+      return null;
+    }
+
+    return AdminBranch(
+      id: id,
+      name: branch['name']?.toString() ?? '',
+      city: branch['city']?.toString() ?? '',
+      agencyId: json['id']?.toString() ?? '',
+      agencyName: json['name']?.toString() ?? '',
+    );
+  }
+}
+
+/// A route: the pair of branches a trip runs between, and what it costs.
+class AdminRoute {
+  final String id;
+
+  final String originBranchId;
+  final String destinationBranchId;
+
+  final String originBranchName;
+  final String originCity;
+  final String destinationBranchName;
+  final String destinationCity;
+
+  /// Routes are platform-wide, so the agency is read from the origin branch.
+  final String agencyName;
+
+  final double baseFare;
+
+  /// Both are optional on the record; null means "not recorded".
+  final double? distanceKm;
+  final int? estimatedDurationMinutes;
+
+  final bool isActive;
+
+  const AdminRoute({
+    required this.id,
+    required this.originBranchId,
+    required this.destinationBranchId,
+    required this.originBranchName,
+    required this.originCity,
+    required this.destinationBranchName,
+    required this.destinationCity,
+    required this.agencyName,
+    required this.baseFare,
+    required this.distanceKm,
+    required this.estimatedDurationMinutes,
+    required this.isActive,
+  });
+
+  factory AdminRoute.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? origin = _toMap(json['originBranch']);
+    final Map<String, dynamic>? destination = _toMap(json['destinationBranch']);
+
+    return AdminRoute(
+      id: json['id']?.toString() ?? '',
+      originBranchId: json['originBranchId']?.toString() ?? '',
+      destinationBranchId: json['destinationBranchId']?.toString() ?? '',
+      originBranchName: origin?['name']?.toString() ?? '',
+      originCity: origin?['city']?.toString() ?? '',
+      destinationBranchName: destination?['name']?.toString() ?? '',
+      destinationCity: destination?['city']?.toString() ?? '',
+      agencyName:
+          _toMap(origin?['agency'])?['name']?.toString() ??
+          _toMap(destination?['agency'])?['name']?.toString() ??
+          '',
+      baseFare: _toDouble(json['baseFare']),
+      distanceKm: json['distanceKm'] == null
+          ? null
+          : _toDouble(json['distanceKm']),
+      estimatedDurationMinutes: json['estimatedDurationMinutes'] == null
+          ? null
+          : _toInt(json['estimatedDurationMinutes']),
+      isActive: json['isActive'] as bool? ?? false,
+    );
+  }
+
+  String get label => '$originCity → $destinationCity';
+
+  /// The distance and duration are optional on the record, so they are shown as
+  /// absent rather than as a zero.
+  String get distanceLabel =>
+      distanceKm == null ? 'Distance not recorded' : '${_trim(distanceKm!)} km';
+
+  String get durationLabel {
+    final int? minutes = estimatedDurationMinutes;
+
+    if (minutes == null) {
+      return 'Duration not recorded';
+    }
+
+    final int hours = minutes ~/ 60;
+    final int rest = minutes % 60;
+
+    if (hours == 0) {
+      return '$rest min';
+    }
+
+    return rest == 0 ? '$hours h' : '$hours h $rest min';
+  }
+
+  static String _trim(double value) {
+    return value == value.roundToDouble()
+        ? value.round().toString()
+        : value.toString();
+  }
+}

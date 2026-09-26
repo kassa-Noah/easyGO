@@ -11,6 +11,7 @@ import {
   getAllLuggageForAdmin,
   getAllParcelsForAdmin,
   getAllPaymentsForAdmin,
+  getAllRoutesForAdmin,
   getDashboardStatistics,
 } from "./admin.service";
 
@@ -193,6 +194,39 @@ export const listAllAgencies =
         message:
           messageOf(error) ||
           "Unable to retrieve agencies",
+      });
+    }
+  };
+
+/**
+ * Every route, including the retired ones.
+ *
+ * The public `GET /routes` is filtered to `isActive: true`, so an
+ * administrator could retire a route and then never see it again — the only
+ * list that could bring it back would have dropped it. This endpoint is what
+ * makes retiring a route a reversible decision.
+ */
+export const listAllRoutes =
+  async (
+    _req: Request,
+    res: Response
+  ) => {
+    try {
+      const routes =
+        await getAllRoutesForAdmin();
+
+      return res.status(200).json({
+        success: true,
+        count: routes.length,
+        data: routes,
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        success: false,
+
+        message:
+          messageOf(error) ||
+          "Unable to retrieve routes",
       });
     }
   };

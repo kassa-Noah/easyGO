@@ -5,6 +5,7 @@ import '../agencies/admin_agencies_screen.dart';
 import '../dashboard/admin_dashboard_screen.dart';
 import '../operations/admin_operations_screen.dart';
 import '../profile/admin_profile_screen.dart';
+import '../routes/admin_routes_screen.dart';
 import '../users/admin_users_screen.dart';
 
 class AdminMainNavigation extends StatefulWidget {
@@ -21,6 +22,13 @@ class _AdminMainNavigationState extends State<AdminMainNavigation> {
     setState(() => _selectedIndex = index);
   }
 
+  void _openRoutes() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AdminRoutesScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -30,6 +38,9 @@ class _AdminMainNavigationState extends State<AdminMainNavigation> {
         onOpenAgencies: () => _select(1),
         onOpenUsers: () => _select(2),
         onOpenOperations: () => _select(3),
+        // Routes have no tab of their own, so this opens the screen directly
+        // rather than switching to one.
+        onOpenRoutes: _openRoutes,
       ),
       const AdminAgenciesScreen(),
       const AdminUsersScreen(),

@@ -13,12 +13,14 @@ class AdminDashboardScreen extends StatefulWidget {
   final VoidCallback onOpenAgencies;
   final VoidCallback onOpenUsers;
   final VoidCallback onOpenOperations;
+  final VoidCallback onOpenRoutes;
 
   const AdminDashboardScreen({
     super.key,
     required this.onOpenAgencies,
     required this.onOpenUsers,
     required this.onOpenOperations,
+    required this.onOpenRoutes,
   });
 
   @override
@@ -286,6 +288,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   title: l.monitorOperations,
                   subtitle: l.monitorOperationsDescription,
                   onTap: widget.onOpenOperations,
+                ),
+                const SizedBox(height: 10),
+                _Action(
+                  icon: Icons.alt_route_outlined,
+                  title: l.manageRoutes,
+                  subtitle: l.manageRoutesDescription,
+                  onTap: widget.onOpenRoutes,
                 ),
                 const SizedBox(height: 28),
                 Text(

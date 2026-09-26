@@ -190,6 +190,23 @@ export const editRoute = async (
       }
     }
 
+    // Moving a route onto a pair that already has one hits the unique
+    // constraint on (originBranchId, destinationBranchId). Left to Prisma that
+    // surfaced as a raw "Unique constraint failed" message quoting the path of
+    // route.service.ts, so the pair is checked here instead and answered the
+    // same way POST already answers it.
+    const duplicate = await findExistingRoute(
+      originBranchId,
+      destinationBranchId
+    );
+
+    if (duplicate && duplicate.id !== routeId) {
+      return res.status(409).json({
+        success: false,
+        message: "This route already exists",
+      });
+    }
+
     const route = await updateRoute(
       routeId,
       validatedData

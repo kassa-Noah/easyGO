@@ -1630,8 +1630,8 @@ class AppLocalizations {
   String get manageAgencies =>
       isFrench ? 'Gérer les agences' : 'Manage Agencies';
   String get manageAgenciesDescription => isFrench
-      ? 'Consultez, vérifiez et supervisez les agences de transport enregistrées.'
-      : 'Review, verify and monitor registered transport agencies.';
+      ? 'Consultez et supervisez les agences de transport enregistrées.'
+      : 'Review and monitor registered transport agencies.';
   String get manageUsers =>
       isFrench ? 'Gérer les utilisateurs' : 'Manage Users';
   String get manageUsersDescription => isFrench
@@ -1642,6 +1642,11 @@ class AppLocalizations {
   String get monitorOperationsDescription => isFrench
       ? 'Supervisez les voyages, réservations, bagages et colis sur la plateforme.'
       : 'Monitor trips, bookings, luggage and parcel operations across the platform.';
+  String get manageRoutes =>
+      isFrench ? 'Gérer les itinéraires' : 'Manage Routes';
+  String get manageRoutesDescription => isFrench
+      ? 'Ajoutez et modifiez les itinéraires entre deux succursales, et le tarif du trajet.'
+      : 'Add and amend the routes between two branches, and the fare for the journey.';
   String get agencyVerification =>
       isFrench ? 'Vérification des agences' : 'Agency Verification';
   String get verified => isFrench ? 'Vérifiée' : 'Verified';

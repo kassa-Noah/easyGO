@@ -571,6 +571,37 @@ export const getAllPaymentsForAdmin =
     });
   };
 
+/**
+ * Every route, including the retired ones.
+ *
+ * `GET /routes` is public and filtered to `isActive: true`, which is right for
+ * the customer-facing service list but wrong here: a route that an
+ * administrator retires would disappear from the only list that could bring it
+ * back. This one is unfiltered so retiring a route stays reversible.
+ */
+export const getAllRoutesForAdmin =
+  async () => {
+    return prisma.route.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+
+      include: {
+        originBranch: {
+          include: {
+            agency: true,
+          },
+        },
+
+        destinationBranch: {
+          include: {
+            agency: true,
+          },
+        },
+      },
+    });
+  };
+
 export const getAllParcelsForAdmin =
   async () => {
     return prisma.parcel.findMany({
