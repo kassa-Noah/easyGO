@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createAgency,
   createAgencyBranch,
@@ -58,7 +60,7 @@ export const listAgencies = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve agencies",
+      message: messageOf(error) || "Unable to retrieve agencies",
     });
   }
 };
@@ -86,7 +88,7 @@ export const getAgency = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve agency",
+      message: messageOf(error) || "Unable to retrieve agency",
     });
   }
 };
@@ -108,7 +110,7 @@ export const addAgency = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to create agency",
+      message: messageOf(error) || "Unable to create agency",
     });
   }
 };
@@ -148,7 +150,7 @@ export const editAgency = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to update agency",
+      message: messageOf(error) || "Unable to update agency",
     });
   }
 };
@@ -178,7 +180,7 @@ export const listBranches = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve branches",
+      message: messageOf(error) || "Unable to retrieve branches",
     });
   }
 };
@@ -218,7 +220,7 @@ export const addBranch = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to create branch",
+      message: messageOf(error) || "Unable to create branch",
     });
   }
 };
@@ -275,7 +277,7 @@ export const editBranch = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to update branch",
+      message: messageOf(error) || "Unable to update branch",
     });
   }
 };

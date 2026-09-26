@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createTaxiAssignment,
   getAgencyStaffMembership,
@@ -215,7 +217,7 @@ export const assignTaxi = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to create taxi assignment",
     });
   }
@@ -288,7 +290,7 @@ export const listJourneyTaxiAssignments =
       return res.status(500).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve taxi assignments",
       });
     }
@@ -356,7 +358,7 @@ export const getTaxiAssignment =
       return res.status(500).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve taxi assignment",
       });
     }
@@ -471,7 +473,7 @@ export const changeTaxiAssignment =
       return res.status(400).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to update taxi assignment",
       });
     }

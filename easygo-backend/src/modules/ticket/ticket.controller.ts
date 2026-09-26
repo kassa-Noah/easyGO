@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createTicket,
   getAgencyStaffMembership,
@@ -100,7 +102,7 @@ export const generateTicket = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to generate digital ticket",
     });
   }
@@ -125,7 +127,7 @@ export const listMyTickets = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve tickets",
     });
   }
@@ -195,7 +197,7 @@ export const getTicket = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve ticket",
     });
   }
@@ -266,7 +268,7 @@ export const getBookingTicket =
       return res.status(500).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve ticket",
       });
     }
@@ -328,7 +330,7 @@ export const verifyTicket = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to verify ticket",
     });
   }

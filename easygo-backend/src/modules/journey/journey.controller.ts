@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createJourney,
   getBookingForJourney,
@@ -82,7 +84,7 @@ export const addJourney = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to create door-to-door journey",
     });
   }
@@ -106,7 +108,7 @@ export const listMyJourneys = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve journeys",
     });
   }
@@ -147,7 +149,7 @@ export const getJourney = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve journey",
     });
   }
@@ -217,7 +219,7 @@ export const changeJourneyStatus = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to update journey status",
     });
   }

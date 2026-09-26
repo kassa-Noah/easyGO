@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { messageOf } from "../../lib/error-message";
 import { changePasswordSchema, loginSchema, registerSchema } from "./auth.schema";
 import { loginUser, registerUser } from "./auth.service";
 import { changePasswordForUser } from "./change-password.service";
@@ -17,7 +18,7 @@ export const register = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(400).json({
       success: false,
-      message: error.message || "Registration failed",
+      message: messageOf(error) || "Registration failed",
     });
   }
 };
@@ -36,7 +37,7 @@ export const login = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(400).json({
       success: false,
-      message: error.message || "Login failed",
+      message: messageOf(error) || "Login failed",
     });
   }
 };
@@ -67,7 +68,7 @@ export const changePassword = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(400).json({
       success: false,
-      message: error.message || "Unable to change the password",
+      message: messageOf(error) || "Unable to change the password",
     });
   }
 };

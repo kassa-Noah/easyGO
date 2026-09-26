@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createRoute,
   findExistingRoute,
@@ -28,7 +30,7 @@ export const listRoutes = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve routes",
+      message: messageOf(error) || "Unable to retrieve routes",
     });
   }
 };
@@ -56,7 +58,7 @@ export const getRoute = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve route",
+      message: messageOf(error) || "Unable to retrieve route",
     });
   }
 };
@@ -123,7 +125,7 @@ export const addRoute = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to create route",
+      message: messageOf(error) || "Unable to create route",
     });
   }
 };
@@ -201,7 +203,7 @@ export const editRoute = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to update route",
+      message: messageOf(error) || "Unable to update route",
     });
   }
 };

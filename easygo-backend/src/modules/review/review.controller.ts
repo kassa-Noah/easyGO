@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createReview,
   deleteReview,
@@ -122,7 +124,7 @@ export const addReview = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to create review",
     });
   }
@@ -190,7 +192,7 @@ export const listAgencyReviews =
       return res.status(500).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve agency reviews",
       });
     }
@@ -215,7 +217,7 @@ export const listMyReviews = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve reviews",
     });
   }
@@ -275,7 +277,7 @@ export const editReview = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to update review",
     });
   }
@@ -327,7 +329,7 @@ export const removeReview = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to delete review",
     });
   }

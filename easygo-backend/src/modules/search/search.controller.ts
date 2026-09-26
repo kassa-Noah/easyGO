@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+
+import { messageOf } from "../../lib/error-message";
 import { searchTripsSchema } from "./search.schema";
 import { searchTrips } from "./search.service";
 
@@ -33,7 +35,7 @@ export const searchAvailableTrips = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Trip search failed",
+      message: messageOf(error) || "Trip search failed",
     });
   }
 };

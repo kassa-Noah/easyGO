@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   cancelBooking,
   createBooking,
@@ -91,7 +93,7 @@ export const addBooking = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to create booking",
     });
   }
@@ -116,7 +118,7 @@ export const listMyBookings = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve bookings",
     });
   }
@@ -183,7 +185,7 @@ export const getBooking = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve booking",
     });
   }
@@ -238,7 +240,7 @@ export const cancelMyBooking =
       return res.status(400).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to cancel booking",
       });
     }
@@ -305,7 +307,7 @@ export const changeBookingStatus = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to update booking status",
     });
   }

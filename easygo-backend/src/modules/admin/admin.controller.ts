@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   getAdminDashboard,
   getAllBookingsForAdmin,
@@ -33,7 +35,7 @@ export const dashboard = async (
       success: false,
 
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve admin dashboard",
     });
   }
@@ -57,7 +59,7 @@ export const dashboardStatistics =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve dashboard statistics",
       });
     }
@@ -82,7 +84,7 @@ export const listAllBookings =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve bookings",
       });
     }
@@ -107,7 +109,7 @@ export const listAllPayments =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve payments",
       });
     }
@@ -132,7 +134,7 @@ export const listAllParcels =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve parcels",
       });
     }
@@ -157,7 +159,7 @@ export const listAllLuggage =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve luggage",
       });
     }
@@ -189,7 +191,7 @@ export const listAllAgencies =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve agencies",
       });
     }

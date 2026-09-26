@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createConversation,
   createMessage,
@@ -165,7 +167,7 @@ export const startConversation = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to start the conversation",
     });
   }
@@ -233,7 +235,7 @@ export const listMyConversations = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve conversations",
     });
   }
@@ -289,7 +291,7 @@ export const getConversation = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve the conversation",
     });
   }
@@ -396,7 +398,7 @@ export const sendMessage = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message || "Unable to send the message",
+        messageOf(error) || "Unable to send the message",
     });
   }
 };
@@ -453,7 +455,7 @@ export const markRead = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to mark the conversation as read",
     });
   }

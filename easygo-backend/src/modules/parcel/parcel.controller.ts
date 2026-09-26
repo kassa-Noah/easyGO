@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createParcel,
   getAgencyStaffMembership,
@@ -180,7 +182,7 @@ export const registerParcel = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to register parcel",
     });
   }
@@ -207,7 +209,7 @@ export const listMyParcels = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve parcels",
     });
   }
@@ -295,7 +297,7 @@ export const getParcel = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve parcel",
     });
   }
@@ -332,7 +334,7 @@ export const trackParcel = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to track parcel",
     });
   }
@@ -439,7 +441,7 @@ export const changeParcelStatus =
       return res.status(400).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to update parcel status",
       });
     }

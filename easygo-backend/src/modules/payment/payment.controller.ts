@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   completeSimulatedPayment,
   createPayment,
@@ -162,7 +164,7 @@ export const initiatePayment =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to initiate payment",
       });
     }
@@ -235,7 +237,7 @@ export const getPayment =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve payment",
       });
     }
@@ -319,7 +321,7 @@ export const listBookingPayments =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve payments",
       });
     }
@@ -431,7 +433,7 @@ export const simulatePayment =
         success: false,
 
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to process payment",
       });
     }

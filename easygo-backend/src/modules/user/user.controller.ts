@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   getAllUsers,
   getCurrentUser,
@@ -31,7 +33,7 @@ export const getMe = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve user profile",
+      message: messageOf(error) || "Unable to retrieve user profile",
     });
   }
 };
@@ -53,7 +55,7 @@ export const updateMe = async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to update profile",
+      message: messageOf(error) || "Unable to update profile",
     });
   }
 };
@@ -72,7 +74,7 @@ export const listUsers = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve users",
+      message: messageOf(error) || "Unable to retrieve users",
     });
   }
 };
@@ -100,7 +102,7 @@ export const getUser = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve user",
+      message: messageOf(error) || "Unable to retrieve user",
     });
   }
 };
@@ -127,7 +129,7 @@ export const changeUserStatus = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to update user status",
+      message: messageOf(error) || "Unable to update user status",
     });
   }
 };

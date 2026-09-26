@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createLuggage,
   getAgencyStaffMembership,
@@ -81,7 +83,7 @@ export const registerLuggage = async (
     return res.status(400).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to register luggage",
     });
   }
@@ -106,7 +108,7 @@ export const listMyLuggage = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve luggage",
     });
   }
@@ -171,7 +173,7 @@ export const getLuggage = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve luggage",
     });
   }
@@ -216,7 +218,7 @@ export const trackLuggage = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to track luggage",
     });
   }
@@ -311,7 +313,7 @@ export const changeLuggageStatus =
       return res.status(400).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to update luggage status",
       });
     }

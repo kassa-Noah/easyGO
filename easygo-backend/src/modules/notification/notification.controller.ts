@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   getNotificationById,
   getUnreadNotificationCount,
@@ -31,7 +33,7 @@ export const listMyNotifications =
       return res.status(500).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to retrieve notifications",
       });
     }
@@ -57,7 +59,7 @@ export const getUnreadCount = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve unread notification count",
     });
   }
@@ -122,7 +124,7 @@ export const readNotification = async (
     return res.status(500).json({
       success: false,
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to update notification",
     });
   }
@@ -152,7 +154,7 @@ export const readAllNotifications =
       return res.status(500).json({
         success: false,
         message:
-          error.message ||
+          messageOf(error) ||
           "Unable to update notifications",
       });
     }

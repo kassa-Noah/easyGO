@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   createTrip,
   getAgencyById,
@@ -51,7 +53,7 @@ export const listTrips = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve trips",
+      message: messageOf(error) || "Unable to retrieve trips",
     });
   }
 };
@@ -79,7 +81,7 @@ export const getTrip = async (
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      message: error.message || "Unable to retrieve trip",
+      message: messageOf(error) || "Unable to retrieve trip",
     });
   }
 };
@@ -208,7 +210,7 @@ export const addTrip = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to create trip",
+      message: messageOf(error) || "Unable to create trip",
     });
   }
 };
@@ -285,7 +287,7 @@ export const editTrip = async (
   } catch (error: any) {
     return res.status(400).json({
       success: false,
-      message: error.message || "Unable to update trip",
+      message: messageOf(error) || "Unable to update trip",
     });
   }
 };

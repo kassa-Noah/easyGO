@@ -3,6 +3,8 @@ import {
   Response,
 } from "express";
 
+import { messageOf } from "../../lib/error-message";
+
 import {
   getAgencyBookings,
   getAgencyDashboard,
@@ -63,7 +65,7 @@ export const getMyAgency = async (
       success: false,
 
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve the agency",
     });
   }
@@ -96,7 +98,7 @@ export const getDashboard = async (
       success: false,
 
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve the agency dashboard",
     });
   }
@@ -130,7 +132,7 @@ export const listTrips = async (
       success: false,
 
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve the agency trips",
     });
   }
@@ -164,7 +166,7 @@ export const listBookings = async (
       success: false,
 
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve the agency bookings",
     });
   }
@@ -198,7 +200,7 @@ export const listLuggage = async (
       success: false,
 
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve the agency luggage",
     });
   }
@@ -232,7 +234,7 @@ export const listParcels = async (
       success: false,
 
       message:
-        error.message ||
+        messageOf(error) ||
         "Unable to retrieve the agency parcels",
     });
   }
