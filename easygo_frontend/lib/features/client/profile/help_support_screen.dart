@@ -5,30 +5,6 @@ import '../../../../core/constants/app_colors.dart';
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
 
-  void _showSupportInformation(
-    BuildContext context,
-    String title,
-    String message,
-  ) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(title),
-          content: Text(message, style: const TextStyle(height: 1.5)),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-              },
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,7 +79,7 @@ class HelpSupportScreen extends StatelessWidget {
             const _FaqItem(
               question: 'What happens after I pay?',
               answer:
-                  'After successful payment, the booking or parcel shipment is confirmed and the corresponding reference information is created. During backend integration, payment confirmation and reference generation will be performed by the server.',
+                  'The server confirms the booking once the payment has settled and issues the ticket and booking references you see on the confirmation screen. A parcel shipment needs no payment: it is registered when you submit it and gets its tracking reference immediately.',
             ),
 
             const SizedBox(height: 28),
@@ -119,58 +95,21 @@ class HelpSupportScreen extends StatelessWidget {
 
             const SizedBox(height: 6),
 
+            // This used to offer Email Support, Phone Support and Report a
+            // Problem, and every one of them opened a dialog saying the channel
+            // was not connected. A support address and telephone line are set up
+            // at deployment, so there is nothing to offer here yet; the screen
+            // says so and points at the one channel that does work.
             const Text(
-              'Use the appropriate support channel when you need additional assistance.',
+              'easyGO support channels are configured when the platform is deployed, '
+              'so no support email address, telephone line or in-app request form is '
+              'available in this build. To reach the agency handling your journey, open '
+              'it from the Home screen and choose Message Agency.',
               style: TextStyle(
                 fontSize: 12,
                 height: 1.5,
                 color: AppColors.textSecondary,
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            _SupportOption(
-              icon: Icons.email_outlined,
-              title: 'Email Support',
-              subtitle: 'Contact the easyGO support service',
-              onTap: () {
-                _showSupportInformation(
-                  context,
-                  'Email Support',
-                  'Direct email communication will be connected later. During backend and deployment integration, the official easyGO support address will be configured here.',
-                );
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _SupportOption(
-              icon: Icons.phone_outlined,
-              title: 'Phone Support',
-              subtitle: 'Speak with the support service',
-              onTap: () {
-                _showSupportInformation(
-                  context,
-                  'Phone Support',
-                  'The official easyGO support telephone number will be configured during deployment. No demonstration phone number is treated as an operational support line.',
-                );
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _SupportOption(
-              icon: Icons.chat_bubble_outline,
-              title: 'Report a Problem',
-              subtitle: 'Report a booking, tracking or application issue',
-              onTap: () {
-                _showSupportInformation(
-                  context,
-                  'Report a Problem',
-                  'A support-request workflow can later send the issue category, description and authenticated client information to the backend support service.',
-                );
-              },
             ),
 
             const SizedBox(height: 24),
@@ -308,82 +247,6 @@ class _FaqItem extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SupportOption extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _SupportOption({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(15),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(15),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 45,
-                height: 45,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: AppColors.primary, size: 22),
-              ),
-
-              const SizedBox(width: 13),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
-            ],
-          ),
-        ),
       ),
     );
   }
