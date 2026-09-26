@@ -6,6 +6,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../models/agency_console.dart';
 import '../services/agency_console_service.dart';
+import 'agency_branches_screen.dart';
 import 'edit_agency_profile_screen.dart';
 
 class AgencyProfileScreen extends StatefulWidget {
@@ -106,6 +107,19 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
     // The API is the source of truth, so re-read instead of trusting the map
     // handed back by the edit screen.
     if (saved == true && mounted) {
+      await _loadProfile();
+    }
+  }
+
+  /// Branch addresses and coordinates are what routes are built from, so this
+  /// is a first-class action rather than something buried in the edit form.
+  Future<void> _manageBranches() async {
+    final bool? changed = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const AgencyBranchesScreen()),
+    );
+
+    if (changed == true && mounted) {
       await _loadProfile();
     }
   }
@@ -359,6 +373,7 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
     return _SectionCard(
       title: 'Branches',
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (_branches.isEmpty)
             Text(
@@ -376,6 +391,17 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
                     '${_branches[index].phone == null ? '' : ' • ${_branches[index].phone}'}',
               ),
             ],
+          const SizedBox(height: 14),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: _isLoading || _agency.isEmpty ? null : _manageBranches,
+              icon: const Icon(Icons.edit_location_alt_outlined, size: 18),
+              label: Text(
+                _branches.isEmpty ? 'Add a branch' : 'Manage branches',
+              ),
+            ),
+          ),
         ],
       ),
     );

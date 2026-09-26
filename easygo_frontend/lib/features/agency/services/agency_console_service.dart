@@ -228,6 +228,66 @@ class AgencyConsoleService {
     return ConsoleTrip.fromJson(_extractData(response));
   }
 
+  /// Adds a branch to the agency.
+  ///
+  /// The backend requires coordinates on a new branch even though the app has
+  /// no map to pick them from, so the caller supplies them and the form that
+  /// collects them says so.
+  Future<ConsoleBranch> createBranch({
+    required String agencyId,
+    required String name,
+    required String city,
+    required String address,
+    required double latitude,
+    required double longitude,
+    String? phone,
+  }) async {
+    final dynamic response = await _apiClient.post(
+      '/agencies/$agencyId/branches',
+      authenticated: true,
+      body: {
+        'name': name,
+        'city': city,
+        'address': address,
+        'latitude': latitude,
+        'longitude': longitude,
+        'phone': ?phone,
+      },
+    );
+
+    return ConsoleBranch.fromJson(_extractData(response));
+  }
+
+  /// Updates a branch that already belongs to the agency.
+  ///
+  /// Every field is optional, so the caller can send only what changed and
+  /// leave the coordinates the API already holds untouched.
+  Future<ConsoleBranch> updateBranch({
+    required String agencyId,
+    required String branchId,
+    String? name,
+    String? city,
+    String? address,
+    double? latitude,
+    double? longitude,
+    String? phone,
+  }) async {
+    final dynamic response = await _apiClient.patch(
+      '/agencies/$agencyId/branches/$branchId',
+      authenticated: true,
+      body: {
+        'name': ?name,
+        'city': ?city,
+        'address': ?address,
+        'latitude': ?latitude,
+        'longitude': ?longitude,
+        'phone': ?phone,
+      },
+    );
+
+    return ConsoleBranch.fromJson(_extractData(response));
+  }
+
   Map<String, dynamic> _extractData(dynamic response) {
     if (response is! Map) {
       throw const ApiException(

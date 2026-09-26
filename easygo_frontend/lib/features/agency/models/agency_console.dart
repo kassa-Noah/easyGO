@@ -79,6 +79,13 @@ class ConsoleBranch {
   final String name;
   final String city;
   final String address;
+
+  /// Kept so the edit form can show what the API already holds. The backend
+  /// requires coordinates when a branch is created, so losing them here would
+  /// mean asking staff to type a location the platform already knows.
+  final double? latitude;
+  final double? longitude;
+
   final String? phone;
   final bool isActive;
 
@@ -87,6 +94,8 @@ class ConsoleBranch {
     required this.name,
     required this.city,
     required this.address,
+    required this.latitude,
+    required this.longitude,
     required this.phone,
     required this.isActive,
   });
@@ -97,6 +106,8 @@ class ConsoleBranch {
       name: json['name']?.toString() ?? '',
       city: json['city']?.toString() ?? '',
       address: json['address']?.toString() ?? '',
+      latitude: _toNullableDouble(json['latitude']),
+      longitude: _toNullableDouble(json['longitude']),
       phone: _toNullableString(json['phone']),
       isActive: json['isActive'] as bool? ?? false,
     );
