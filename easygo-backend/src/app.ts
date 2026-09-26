@@ -20,14 +20,6 @@ import reviewRoutes from "./modules/review/review.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import staffRoutes from "./modules/staff/staff.routes";
 
-import {
-  authenticate,
-} from "./middleware/auth.middleware";
-
-import {
-  authorizeRoles,
-} from "./middleware/role.middleware";
-
 const app = express();
 
 app.use(cors());
@@ -132,73 +124,6 @@ app.use(
 app.use(
   "/api/staff",
   staffRoutes
-);
-
-// Temporary authorization test routes
-
-app.get(
-  "/api/customer-only",
-  authenticate,
-  authorizeRoles("CUSTOMER"),
-  (req, res) => {
-    res.status(200).json({
-      success: true,
-
-      message:
-        "Customer route accessed successfully",
-
-      user: req.user,
-    });
-  }
-);
-
-app.get(
-  "/api/agency-only",
-  authenticate,
-  authorizeRoles(
-    "AGENCY_STAFF"
-  ),
-  (req, res) => {
-    res.status(200).json({
-      success: true,
-
-      message:
-        "Agency staff route accessed successfully",
-
-      user: req.user,
-    });
-  }
-);
-
-app.get(
-  "/api/admin-only",
-  authenticate,
-  authorizeRoles("ADMIN"),
-  (req, res) => {
-    res.status(200).json({
-      success: true,
-
-      message:
-        "Admin route accessed successfully",
-
-      user: req.user,
-    });
-  }
-);
-
-app.get(
-  "/api/protected",
-  authenticate,
-  (req, res) => {
-    res.status(200).json({
-      success: true,
-
-      message:
-        "Protected route accessed successfully",
-
-      user: req.user,
-    });
-  }
 );
 
 export default app;
