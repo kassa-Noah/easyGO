@@ -53,7 +53,33 @@ class AdminService {
     return accounts;
   }
 
-  /// Enables or disables an account. The backend refuses an invalid value.
+  /// Registers a new agency on the platform.
+  ///
+  /// This creates the agency record only. It has no branches, no routes and no
+  /// staff, so nothing can be sold from it until those exist: branches are
+  /// added by staff once an account is attached, and routes by an
+  /// administrator. The screen that calls this says so.
+  Future<AdminAgency> createAgency({
+    required String name,
+    String? description,
+    String? email,
+    String? phone,
+  }) async {
+    final dynamic response = await _apiClient.post(
+      '/agencies',
+      authenticated: true,
+      body: {
+        'name': name,
+        'description': ?description,
+        'email': ?email,
+        'phone': ?phone,
+      },
+    );
+
+    return AdminAgency.fromJson(_extractData(response));
+  }
+
+  /// Enables or disables a user account. The backend refuses an invalid value.
   Future<AdminAccount> updateUserStatus({
     required String userId,
     required bool isActive,

@@ -6,6 +6,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../shared/widgets/glass_container.dart';
 import '../models/admin_console.dart';
 import '../services/admin_service.dart';
+import 'add_agency_screen.dart';
 import 'admin_agency_details_screen.dart';
 
 class AdminAgenciesScreen extends StatefulWidget {
@@ -81,6 +82,17 @@ class _AdminAgenciesScreenState extends State<AdminAgenciesScreen> {
     }
   }
 
+  Future<void> _addAgency() async {
+    final AdminAgency? created = await Navigator.push<AdminAgency>(
+      context,
+      MaterialPageRoute(builder: (context) => const AddAgencyScreen()),
+    );
+
+    if (created != null && mounted) {
+      await _loadAgencies();
+    }
+  }
+
   List<AdminAgency> get _visibleAgencies {
     final String query = _query.toLowerCase();
 
@@ -113,8 +125,13 @@ class _AdminAgenciesScreenState extends State<AdminAgenciesScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l.agencyManagement)),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _addAgency,
+        icon: const Icon(Icons.add_business_outlined),
+        label: const Text('Add agency'),
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
         children: [
           TextField(
             onChanged: (value) => setState(() => _query = value),
