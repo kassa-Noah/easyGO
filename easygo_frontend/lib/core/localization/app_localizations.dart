@@ -177,7 +177,14 @@ class AppLocalizations {
 
   String get status => isFrench ? 'Statut' : 'Status';
 
-  String get verifiedAgency => isFrench ? 'Agence vérifiée' : 'Verified Agency';
+  /// The agency record holds a single status flag. It says whether the platform
+  /// still lists the agency, not whether anyone vetted it, so the label must not
+  /// read as a verification.
+  String get activeAgency =>
+      isFrench ? 'Agence active' : 'Active agency';
+
+  String get inactiveAgency =>
+      isFrench ? 'Agence inactive' : 'Inactive agency';
 
   String get agencyLocation =>
       isFrench ? 'Localisation de l’agence' : 'Agency Location';
@@ -1459,8 +1466,8 @@ class AppLocalizations {
       : 'This information helps travelers identify and view the agency details in easyGO.';
 
   String get publicAgencyVisibilityNotice => isFrench
-      ? 'Les informations validées de l’agence pourront être affichées aux clients dans la recherche, les détails de l’agence et les services associés.'
-      : 'Validated agency information can be displayed to clients in search, agency details and related services.';
+      ? 'Le nom, la description et les succursales ci-dessus sont ce que les voyageurs voient dans la recherche et sur la page de l’agence.'
+      : 'The name, description and branches above are what travellers see in search and on the agency page.';
 
   String get profileManagement =>
       isFrench ? 'Gestion du profil' : 'Profile Management';

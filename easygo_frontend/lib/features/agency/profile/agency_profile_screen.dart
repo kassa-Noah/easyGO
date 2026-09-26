@@ -88,7 +88,10 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
       'staffRole': profile.staffRole,
       'headOffice': dashIfEmpty(primary?.city),
       'address': dashIfEmpty(primary?.address),
-      'verified': profile.isActive,
+      // The record holds one status flag, `isActive`, which means the platform
+      // still lists the agency. There is no verification field, so nothing here
+      // may claim the agency was vetted.
+      'isActive': profile.isActive,
     };
   }
 
@@ -228,7 +231,7 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
     BuildContext context,
     AppLocalizations localizations,
   ) {
-    final bool verified = _agency['verified'] as bool;
+    final bool isActive = _agency['isActive'] as bool;
 
     return GlassContainer(
       width: double.infinity,
@@ -267,9 +270,13 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
                   ),
                 ),
               ),
-              if (verified) ...[
+              if (isActive) ...[
                 const SizedBox(width: 7),
-                const Icon(Icons.verified, color: AppColors.primary, size: 20),
+                const Icon(
+                  Icons.check_circle,
+                  color: AppColors.success,
+                  size: 20,
+                ),
               ],
             ],
           ),
@@ -301,12 +308,15 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
                   text: _agency['staffRole'] as String,
                   color: AppColors.secondary,
                 ),
-              if (verified)
-                _ProfileBadge(
-                  icon: Icons.verified_outlined,
-                  text: localizations.verifiedAgency,
-                  color: AppColors.success,
-                ),
+              _ProfileBadge(
+                icon: isActive
+                    ? Icons.toggle_on_outlined
+                    : Icons.toggle_off_outlined,
+                text: isActive
+                    ? localizations.activeAgency
+                    : localizations.inactiveAgency,
+                color: isActive ? AppColors.success : AppColors.warning,
+              ),
             ],
           ),
         ],

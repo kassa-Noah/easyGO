@@ -31,7 +31,7 @@ class AgencyDetailsScreen extends StatelessWidget {
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(20),
                     children: [
-                      _buildAgencyHeader(context),
+                      _buildAgencyHeader(context, l10n),
 
                       const SizedBox(height: 24),
 
@@ -106,7 +106,7 @@ class AgencyDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAgencyHeader(BuildContext context) {
+  Widget _buildAgencyHeader(BuildContext context, AppLocalizations l10n) {
     return GlassContainer(
       padding: const EdgeInsets.all(18),
       child: Row(
@@ -178,7 +178,9 @@ class AgencyDetailsScreen extends StatelessWidget {
                     const SizedBox(width: 5),
 
                     Text(
-                      agency.isActive ? 'Active agency' : 'Inactive agency',
+                      agency.isActive
+                          ? l10n.activeAgency
+                          : l10n.inactiveAgency,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
