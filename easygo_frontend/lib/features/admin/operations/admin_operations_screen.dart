@@ -5,6 +5,7 @@ import '../../../shared/widgets/glass_container.dart';
 import 'admin_bookings_screen.dart';
 import 'admin_luggage_screen.dart';
 import 'admin_parcels_screen.dart';
+import 'admin_payments_screen.dart';
 import 'admin_trips_screen.dart';
 
 class AdminOperationsScreen extends StatelessWidget {
@@ -26,6 +27,11 @@ class AdminOperationsScreen extends StatelessWidget {
         l.monitorParcels,
         Icons.inventory_2_outlined,
         const AdminParcelsScreen(),
+      ),
+      (
+        l.monitorPayments,
+        Icons.payments_outlined,
+        const AdminPaymentsScreen(),
       ),
     ];
 

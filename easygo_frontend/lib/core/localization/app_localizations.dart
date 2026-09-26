@@ -1715,6 +1715,8 @@ class AppLocalizations {
       isFrench ? 'Superviser les bagages' : 'Monitor Luggage';
   String get monitorParcels =>
       isFrench ? 'Superviser les colis' : 'Monitor Parcels';
+  String get monitorPayments =>
+      isFrench ? 'Superviser les paiements' : 'Monitor Payments';
   String get platformTrips =>
       isFrench ? 'Voyages de la plateforme' : 'Platform Trips';
   String get platformBookings =>
@@ -1723,6 +1725,8 @@ class AppLocalizations {
       isFrench ? 'Bagages de la plateforme' : 'Platform Luggage';
   String get platformParcels =>
       isFrench ? 'Colis de la plateforme' : 'Platform Parcels';
+  String get platformPayments =>
+      isFrench ? 'Paiements de la plateforme' : 'Platform Payments';
   String get adminOperationsReadOnlyNotice => isFrench
       ? 'L’administrateur supervise ces opérations. La gestion opérationnelle normale reste sous la responsabilité de l’agence concernée.'
       : 'The administrator monitors these operations. Normal operational management remains the responsibility of the relevant agency.';

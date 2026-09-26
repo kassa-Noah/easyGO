@@ -563,6 +563,15 @@ export const getAllPaymentsForAdmin =
             trip: {
               include: {
                 agency: true,
+
+                // The route is what names the two cities, so without it the
+                // payments monitor can only show a booking reference.
+                route: {
+                  include: {
+                    originBranch: true,
+                    destinationBranch: true,
+                  },
+                },
               },
             },
           },

@@ -167,6 +167,20 @@ class AdminService {
     return _mapList(response, AdminLuggageRow.fromJson);
   }
 
+  /// Every payment on the platform.
+  ///
+  /// The booking comes with it, carrying the agency, the route and the
+  /// traveller, so the monitor can say which journey was paid for and by whom
+  /// rather than showing a bare transaction reference.
+  Future<List<AdminPaymentRow>> getAllPayments() async {
+    final dynamic response = await _apiClient.get(
+      '/admin/payments',
+      authenticated: true,
+    );
+
+    return _mapList(response, AdminPaymentRow.fromJson);
+  }
+
   /// Every parcel on the platform.
   Future<List<AdminParcelRow>> getAllParcels() async {
     final dynamic response = await _apiClient.get(

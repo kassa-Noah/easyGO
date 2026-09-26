@@ -388,6 +388,123 @@ String adminTrackingStatusLabel(String status) => switch (status) {
   _ => _humanise(status),
 };
 
+/// The payment states, which are the ones a settlement can be in.
+String adminPaymentStatusLabel(String status) => switch (status) {
+  'PENDING' => 'Pending',
+  'SUCCESSFUL' => 'Successful',
+  'FAILED' => 'Failed',
+  'REFUNDED' => 'Refunded',
+  _ => _humanise(status),
+};
+
+/// How a payment was taken. The platform only has one live method.
+String adminPaymentMethodLabel(String method) => switch (method) {
+  'SIMULATED' => 'Simulated',
+  'MTN_MOBILE_MONEY' => 'MTN Mobile Money',
+  'ORANGE_MONEY' => 'Orange Money',
+  'CARD' => 'Card',
+  'CASH' => 'Cash',
+  _ => _humanise(method),
+};
+
+/// A payment as the platform monitor shows it.
+///
+/// Everything here comes off the record; a payment that has not settled has no
+/// `paidAt`, and the monitor says so rather than inventing a date.
+class AdminPaymentRow {
+  final String id;
+  final String transactionReference;
+  final double amount;
+  final String method;
+  final String status;
+
+  /// The provider's own reference, absent for a simulated payment.
+  final String? providerReference;
+
+  final DateTime? paidAt;
+  final DateTime? createdAt;
+
+  final String bookingReference;
+  final String bookingStatus;
+
+  /// Who paid, as the booking records them.
+  final String customerName;
+  final String? customerEmail;
+
+  final String agencyName;
+  final String routeLabel;
+
+  const AdminPaymentRow({
+    required this.id,
+    required this.transactionReference,
+    required this.amount,
+    required this.method,
+    required this.status,
+    required this.providerReference,
+    required this.paidAt,
+    required this.createdAt,
+    required this.bookingReference,
+    required this.bookingStatus,
+    required this.customerName,
+    required this.customerEmail,
+    required this.agencyName,
+    required this.routeLabel,
+  });
+
+  factory AdminPaymentRow.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? booking = _toMap(json['booking']);
+    final Map<String, dynamic>? user = _toMap(booking?['user']);
+    final Map<String, dynamic>? trip = _toMap(booking?['trip']);
+    final Map<String, dynamic>? route = _toMap(trip?['route']);
+
+    final String name = [
+      user?['firstName'],
+      user?['lastName'],
+    ].where((dynamic part) => part != null && '$part'.trim().isNotEmpty)
+     .join(' ');
+
+    return AdminPaymentRow(
+      id: json['id']?.toString() ?? '',
+      transactionReference: json['transactionReference']?.toString() ?? '',
+      amount: _toDouble(json['amount']),
+      method: adminPaymentMethodLabel(json['method']?.toString() ?? ''),
+      status: adminPaymentStatusLabel(json['status']?.toString() ?? ''),
+      providerReference: _toNullableString(json['providerReference']),
+      paidAt: _toNullableDateTime(json['paidAt']),
+      createdAt: _toNullableDateTime(json['createdAt']),
+      bookingReference: booking?['bookingReference']?.toString() ?? '',
+      bookingStatus: adminBookingStatusLabel(
+        booking?['status']?.toString() ?? '',
+      ),
+      customerName: name,
+      customerEmail: _toNullableString(user?['email']),
+      agencyName: _toMap(trip?['agency'])?['name']?.toString() ?? '',
+      routeLabel: _routeLabelOf(route, trip),
+    );
+  }
+
+  /// "Yaounde → Douala", read from the trip's route when it is attached.
+  static String _routeLabelOf(
+    Map<String, dynamic>? route,
+    Map<String, dynamic>? trip,
+  ) {
+    if (route == null) {
+      return trip == null ? '' : 'Route not attached';
+    }
+
+    final String origin =
+        _toMap(route['originBranch'])?['city']?.toString() ?? '';
+    final String destination =
+        _toMap(route['destinationBranch'])?['city']?.toString() ?? '';
+
+    if (origin.isEmpty || destination.isEmpty) {
+      return '';
+    }
+
+    return '$origin → $destination';
+  }
+}
+
 /// A trip as the platform monitor shows it.
 class AdminTripRow {
   final String id;
