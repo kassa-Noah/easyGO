@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/maps/maps_config.dart';
 
 /// A branch to place on the map.
 ///
@@ -25,18 +25,24 @@ class MapPoint {
   });
 }
 
-/// The branches of an agency, on a Google map.
+/// The branches of an agency, on a map.
 ///
-/// The platform used to draw a panel here saying the coordinates were known but
-/// that there was no map to show them on. This shows the map when a Google Maps
-/// key is configured, and when one is not it says exactly what is missing and
-/// keeps the coordinates readable — it never draws a fake map or an empty grey
-/// box that looks like a failure.
+/// The tiles come from OpenStreetMap, which is why there is no key to configure
+/// and no "map not configured" state. That state used to exist and had to be
+/// explained to the reader; using OpenStreetMap removes it rather than hiding
+/// it.
+///
+/// OpenStreetMap's public tile server is free to use but not free of rules. It
+/// asks to be identified, which `userAgentPackageName` does, and it requires the
+/// attribution in the corner, which [RichAttributionWidget] draws. Its capacity
+/// is donated, so an application with real traffic should point
+/// [tileServerUrl] at its own tile server — see the README.
 class BranchMap extends StatefulWidget {
   const BranchMap({
     super.key,
     required this.points,
     this.height = 220,
+    this.tileServerUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   });
 
   /// Every branch to place. An empty list is a normal state: an agency can
@@ -45,74 +51,18 @@ class BranchMap extends StatefulWidget {
 
   final double height;
 
+  /// The tile source. Public OpenStreetMap tiles are the default so the widget
+  /// works out of the box; a deployment with traffic should supply its own.
+  final String tileServerUrl;
+
   @override
   State<BranchMap> createState() => _BranchMapState();
 }
 
 class _BranchMapState extends State<BranchMap> {
-  GoogleMapController? _controller;
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  /// A CameraUpdate that frames every point.
-  ///
-  /// Fitting the bounds rather than picking a zoom means two branches in
-  /// different cities are both visible, instead of the second one being off
-  /// screen.
-  CameraUpdate? get _initialCamera {
-    final List<MapPoint> points = widget.points;
-
-    if (points.isEmpty) {
-      return null;
-    }
-
-    if (points.length == 1) {
-      return CameraUpdate.newLatLngZoom(
-        LatLng(points.first.latitude, points.first.longitude),
-        13,
-      );
-    }
-
-    double minLat = points.first.latitude;
-    double maxLat = points.first.latitude;
-    double minLng = points.first.longitude;
-    double maxLng = points.first.longitude;
-
-    for (final MapPoint point in points) {
-      minLat = point.latitude < minLat ? point.latitude : minLat;
-      maxLat = point.latitude > maxLat ? point.latitude : maxLat;
-      minLng = point.longitude < minLng ? point.longitude : minLng;
-      maxLng = point.longitude > maxLng ? point.longitude : maxLng;
-    }
-
-    return CameraUpdate.newLatLngBounds(
-      LatLngBounds(
-        southwest: LatLng(minLat, minLng),
-        northeast: LatLng(maxLat, maxLng),
-      ),
-      // Room for the markers themselves, which sit above their coordinate.
-      56,
-    );
-  }
-
-  Set<Marker> get _markers {
-    return widget.points
-        .map(
-          (MapPoint point) => Marker(
-            markerId: MarkerId(point.id),
-            position: LatLng(point.latitude, point.longitude),
-            infoWindow: InfoWindow(
-              title: point.title,
-              snippet: point.description,
-            ),
-          ),
-        )
-        .toSet();
-  }
+  /// The application id, which OpenStreetMap asks for so it can tell an
+  /// application apart from a scraper. It identifies the app, not the user.
+  static const String _userAgentPackageName = 'com.example.easygo_frontend';
 
   @override
   Widget build(BuildContext context) {
@@ -128,67 +78,88 @@ class _BranchMapState extends State<BranchMap> {
       );
     }
 
-    if (!MapsConfig.isConfigured) {
-      return _frame(
-        context,
-        child: _centred(
-          context,
-          icon: Icons.map_outlined,
-          title: 'Map not configured',
-          detail: MapsConfig.setupHint,
-          footer: _coordinateList(context),
-        ),
-      );
-    }
-
     return _frame(
       context,
       padding: EdgeInsets.zero,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
-        child: GoogleMap(
-          onMapCreated: (GoogleMapController controller) {
-            _controller = controller;
-
-            final CameraUpdate? camera = _initialCamera;
-
-            if (camera != null) {
-              controller.moveCamera(camera);
-            }
-          },
-          initialCameraPosition: CameraPosition(
-            target: LatLng(
-              widget.points.first.latitude,
-              widget.points.first.longitude,
+        child: FlutterMap(
+          options: MapOptions(
+            // Framing the points rather than fixing a zoom means two branches in
+            // different cities are both visible, instead of the second one being
+            // off screen. Capped so a single branch does not zoom to a street
+            // corner.
+            initialCameraFit: CameraFit.coordinates(
+              coordinates: <LatLng>[
+                for (final MapPoint point in widget.points)
+                  LatLng(point.latitude, point.longitude),
+              ],
+              padding: const EdgeInsets.all(48),
+              maxZoom: 15,
             ),
-            zoom: 11,
+            // The points are branches, not a route, so the map is for looking at
+            // rather than travelling. Panning and zooming stay; rotating a
+            // street map under the reader only makes it harder to read.
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+            ),
           ),
-          markers: _markers,
-          // The points are branches, not a route, so the map is for looking at
-          // rather than travelling: no zoom buttons cluttering a small card, but
-          // still pannable and zoomable by gesture.
-          zoomControlsEnabled: false,
-          mapToolbarEnabled: false,
-          myLocationButtonEnabled: false,
+          children: <Widget>[
+            TileLayer(
+              urlTemplate: widget.tileServerUrl,
+              userAgentPackageName: _userAgentPackageName,
+              maxZoom: 19,
+            ),
+
+            // A pin, not a numbered dot: the sheet shows one branch at a time,
+            // so a number would refer to a list that is not on screen.
+            MarkerLayer(
+              markers: <Marker>[
+                for (final MapPoint point in widget.points)
+                  Marker(
+                    point: LatLng(point.latitude, point.longitude),
+                    width: 44,
+                    height: 44,
+                    // The pin's tip is at the widget's bottom centre, so placing
+                    // the widget above the point puts the tip on it rather than
+                    // half a pin off.
+                    alignment: Alignment.topCenter,
+                    child: Tooltip(
+                      message: point.title,
+                      child: _marker(),
+                    ),
+                  ),
+              ],
+            ),
+
+            // Required by OpenStreetMap, and the honest thing to show anyway.
+            //
+            // This is the bar that shows the credit rather than the one that
+            // hides it behind a button: OpenStreetMap's tile policy asks for
+            // attribution, and a credit a reader has to go looking for is not
+            // really on display. The default text size is shrunk to fit a card
+            // this small.
+            DefaultTextStyle(
+              style: const TextStyle(fontSize: 9),
+              child: SimpleAttributionWidget(
+                source: const Text('OpenStreetMap contributors'),
+                backgroundColor: Colors.white.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _coordinateList(BuildContext context) {
-    return Column(
-      children: [
-        for (final MapPoint point in widget.points)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Text(
-              '${point.title}: '
-              '${point.latitude.toStringAsFixed(4)}, '
-              '${point.longitude.toStringAsFixed(4)}',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ),
+  /// A pin with a white halo, so it stays visible over pale and dark tiles
+  /// alike. Map imagery is not a controlled background.
+  Widget _marker() {
+    return Stack(
+      alignment: Alignment.center,
+      children: const <Widget>[
+        Icon(Icons.location_on, size: 44, color: Colors.white),
+        Icon(Icons.location_on, size: 34, color: AppColors.primary),
       ],
     );
   }
@@ -216,30 +187,26 @@ class _BranchMapState extends State<BranchMap> {
     required IconData icon,
     required String title,
     required String detail,
-    Widget? footer,
   }) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 40, color: AppColors.primary),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            detail,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          ?footer,
-        ],
-      ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 40, color: AppColors.primary),
+        const SizedBox(height: 10),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          detail,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
     );
   }
 }

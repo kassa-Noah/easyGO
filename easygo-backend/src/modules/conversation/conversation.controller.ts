@@ -154,7 +154,10 @@ export const startConversation = async (
           `${agency.name} received a new message from ` +
           `${full?.customer.firstName ?? "a customer"}.`,
 
-        type: "SYSTEM",
+        type: "MESSAGE",
+
+        referenceType: "CONVERSATION",
+        referenceId: conversation.id,
       });
     }
 
@@ -373,7 +376,10 @@ export const sendMessage = async (
             `You have a new message from ` +
             `${conversation.customer.firstName}.`,
 
-          type: "SYSTEM",
+          type: "MESSAGE",
+
+          referenceType: "CONVERSATION",
+          referenceId: conversationId,
         });
       }
     } else {
@@ -385,7 +391,10 @@ export const sendMessage = async (
         message:
           `${conversation.agency.name} replied to your conversation.`,
 
-        type: "SYSTEM",
+        type: "MESSAGE",
+
+        referenceType: "CONVERSATION",
+        referenceId: conversationId,
       });
     }
 

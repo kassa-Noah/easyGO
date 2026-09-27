@@ -3,7 +3,25 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_exception.dart';
+import '../../admin/agencies/admin_agencies_screen.dart';
+import '../../admin/operations/admin_bookings_screen.dart';
+import '../../admin/operations/admin_luggage_screen.dart';
+import '../../admin/operations/admin_parcels_screen.dart';
+import '../../admin/operations/admin_trips_screen.dart';
+import '../../agency/bookings/agency_bookings_screen.dart';
+import '../../agency/luggage/agency_luggage_screen.dart';
+import '../../agency/messages/agency_chat_screen.dart';
+import '../../agency/parcels/agency_parcels_screen.dart';
+import '../../agency/trips/agency_trips_screen.dart';
+import '../../auth/services/auth_service.dart';
+import '../../client/agencies/agency_conversation_screen.dart';
+import '../../client/tracking/my_parcels_screen.dart';
+import '../../client/tracking/traveler_luggage_screen.dart';
+import '../../client/trips/my_trips_screen.dart';
+import '../../messages/models/conversation.dart';
+import '../../messages/services/messaging_service.dart';
 import '../models/app_notification.dart';
+import '../notification_route.dart';
 import '../services/notification_service.dart';
 
 /// The signed-in account's notifications.
@@ -21,7 +39,19 @@ class NotificationsScreen extends StatefulWidget {
 class _NotificationsScreenState extends State<NotificationsScreen> {
   final NotificationService _service = NotificationService.instance;
 
+  final MessagingService _messaging = MessagingService.instance;
+
+  final AuthService _auth = AuthService.instance;
+
   String _selectedFilter = 'All';
+
+  /// The role the account signs in with, which decides which console a
+  /// notification opens. Read once, when the list is first loaded.
+  String? _role;
+
+  /// The notification currently being opened, so its card can show that
+  /// something is happening rather than looking unchanged.
+  String? _openingId;
 
   /// The filters follow the categories the API stores, grouped into the three
   /// headings a reader scans for.
@@ -54,6 +84,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       final List<AppNotification> items = await _service.getMine();
 
+      // The console a notification opens depends on the role, and the role is
+      // not carried around the app. A failure here is not fatal: every
+      // notification still reads, and only the role-dependent links are lost.
+      await _loadRoleOnce();
+
       if (!mounted) {
         return;
       }
@@ -76,6 +111,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _loadRoleOnce() async {
+    if (_role != null) {
+      return;
+    }
+
+    try {
+      _role = (await _auth.getCurrentUser()).role;
+    } on ApiException {
+      // Left unknown. `notificationDestination` resolves what it can without it
+      // and offers no link for the rest.
+      _role = null;
+    }
+  }
+
   /// Projects a notification onto the keys the card renders.
   Map<String, dynamic> _toCard(AppNotification notification) {
     return <String, dynamic>{
@@ -86,6 +135,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       'time': notification.ageLabel(),
       'isRead': notification.isRead,
       'icon': notification.icon,
+      'referenceType': notification.referenceType,
+      'referenceId': notification.referenceId,
+      'destination': notificationDestination(
+        referenceType: notification.referenceType,
+        role: _role,
+      ),
     };
   }
 
@@ -111,6 +166,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         .length;
   }
 
+  /// Records that the reader has seen this notification.
+  ///
+  /// The card is updated in place rather than by reloading the list. Reloading
+  /// set `_isLoading`, so the whole list was replaced by a spinner and came back
+  /// a moment later — tapping a notification made the screen flash.
   Future<void> _markAsRead(Map<String, dynamic> notification) async {
     if (notification['isRead'] == true) {
       return;
@@ -121,12 +181,152 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       await _service.markAsRead(id);
     } on ApiException {
-      // The list is re-read below either way, so a failure here simply leaves
-      // the notification unread rather than reporting success.
+      // Left unread rather than reported as read.
+      return;
     }
 
-    if (mounted) {
-      await _load();
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      notification['isRead'] = true;
+    });
+  }
+
+  /// Opens a notification: reads it, and goes where it points if it points
+  /// anywhere.
+  Future<void> _open(Map<String, dynamic> notification) async {
+    final NotificationDestination destination =
+        notification['destination'] as NotificationDestination? ??
+        NotificationDestination.none;
+
+    if (destination == NotificationDestination.none) {
+      // Nothing points anywhere, which the card already said by carrying no
+      // chevron. Marking it read is the whole of what tapping it does.
+      await _markAsRead(notification);
+      return;
+    }
+
+    setState(() {
+      _openingId = notification['id'] as String?;
+    });
+
+    try {
+      await _markAsRead(notification);
+
+      if (!mounted) {
+        return;
+      }
+
+      if (destination == NotificationDestination.conversation) {
+        await _openConversation(notification['referenceId'] as String);
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(builder: (_) => _screenFor(destination)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _openingId = null;
+        });
+      }
+    }
+  }
+
+  /// Opens the thread a message notification came from.
+  ///
+  /// The thread is fetched by id rather than taken from the message, because the
+  /// notification records which conversation it is about and not what was said
+  /// in it.
+  Future<void> _openConversation(String conversationId) async {
+    try {
+      final Conversation conversation = await _messaging.getConversation(
+        conversationId,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      // The customer reads a thread as a conversation with an agency and the
+      // agency reads the same thread as a conversation with a client. The two
+      // screens differ in whose name is at the top, which is the whole point of
+      // having two, so the role decides which one opens.
+      final Widget screen = _role == roleCustomer
+          ? AgencyConversationScreen(
+              agency: <String, dynamic>{
+                'id': conversation.agencyId,
+                'name': conversation.agencyName,
+              },
+            )
+          : AgencyChatScreen(conversation: conversationToCard(conversation));
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(builder: (_) => screen),
+      );
+    } on ApiException catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+    }
+  }
+
+  /// The screen a destination names.
+  ///
+  /// Every one of these is a list that contains the record, not the record's own
+  /// page; `notification_route.dart` says why.
+  Widget _screenFor(NotificationDestination destination) {
+    switch (destination) {
+      case NotificationDestination.clientTrips:
+        return const MyTripsScreen();
+
+      case NotificationDestination.agencyBookings:
+        return const AgencyBookingsScreen();
+
+      case NotificationDestination.adminBookings:
+        return const AdminBookingsScreen();
+
+      case NotificationDestination.agencyTrips:
+        return const AgencyTripsScreen();
+
+      case NotificationDestination.adminTrips:
+        return const AdminTripsScreen();
+
+      case NotificationDestination.clientParcels:
+        return const MyParcelsScreen();
+
+      case NotificationDestination.agencyParcels:
+        return const AgencyParcelsScreen();
+
+      case NotificationDestination.adminParcels:
+        return const AdminParcelsScreen();
+
+      case NotificationDestination.clientLuggage:
+        return const TravelerLuggageScreen();
+
+      case NotificationDestination.agencyLuggage:
+        return const AgencyLuggageScreen();
+
+      case NotificationDestination.adminLuggage:
+        return const AdminLuggageScreen();
+
+      case NotificationDestination.adminAgencies:
+        return const AdminAgenciesScreen();
+
+      case NotificationDestination.conversation:
+      case NotificationDestination.none:
+        // Neither reaches here: a conversation is opened by id above, and `none`
+        // is returned from before this is called.
+        return const SizedBox.shrink();
     }
   }
 
@@ -178,6 +378,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     switch (type) {
       case 'Tracking':
         return AppColors.secondary;
+
+      case 'Messages':
+        return AppColors.primaryDark;
 
       case 'System':
         return AppColors.warning;
@@ -351,13 +554,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     final Color typeColor = _typeColor(type);
 
+    final NotificationDestination destination =
+        notification['destination'] as NotificationDestination? ??
+        NotificationDestination.none;
+
+    final bool isOpening = _openingId == notification['id'];
+
     return Material(
       color: AppColors.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
-          _markAsRead(notification);
+          _open(notification);
         },
         child: Container(
           padding: const EdgeInsets.all(16),
@@ -473,6 +682,24 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ],
                 ),
               ),
+
+              // A card that leads somewhere says so; one that does not carries
+              // no chevron. Tapping used to do nothing visible on either kind,
+              // which gave the reader no way to tell them apart.
+              if (isOpening) ...[
+                const SizedBox(width: 10),
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ] else if (destination != NotificationDestination.none) ...[
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textLight,
+                ),
+              ],
             ],
           ),
         ),

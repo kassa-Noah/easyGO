@@ -301,6 +301,9 @@ export const changeLuggageStatus =
           `${validatedData.status.toLowerCase().split("_").join(" ")}.`,
 
         type: "LUGGAGE",
+
+        referenceType: "LUGGAGE",
+        referenceId: luggage.id,
       });
 
       return res.status(200).json({

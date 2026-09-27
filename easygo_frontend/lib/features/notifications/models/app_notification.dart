@@ -13,10 +13,19 @@ DateTime? _toNullableDateTime(dynamic value) {
   return DateTime.tryParse(value.toString());
 }
 
+/// A string the API sent, or null when it sent nothing usable.
+String? _toNonEmpty(dynamic value) {
+  final String text = value?.toString().trim() ?? '';
+
+  return text.isEmpty ? null : text;
+}
+
 /// The stored notification categories.
 ///
-/// The API keeps eight of them; the interface groups them into the three
-/// headings a reader actually scans for.
+/// The API keeps nine of them; the interface groups them into the four headings
+/// a reader actually scans for. A message from a person is kept apart from a
+/// system notice, because the two are not the same thing and a reader looks for
+/// them in different places.
 const Map<String, String> _groupByType = <String, String>{
   'BOOKING': 'Journey',
   'PAYMENT': 'Journey',
@@ -25,6 +34,7 @@ const Map<String, String> _groupByType = <String, String>{
   'TRIP': 'Journey',
   'LUGGAGE': 'Tracking',
   'PARCEL': 'Tracking',
+  'MESSAGE': 'Messages',
   'SYSTEM': 'System',
 };
 
@@ -36,11 +46,13 @@ const Map<String, IconData> _iconByType = <String, IconData>{
   'TRIP': Icons.directions_bus_outlined,
   'LUGGAGE': Icons.luggage_outlined,
   'PARCEL': Icons.inventory_2_outlined,
+  'MESSAGE': Icons.chat_bubble_outline,
   'SYSTEM': Icons.info_outline,
 };
 
 /// The groups the notification lists filter by, in display order.
 const List<String> notificationGroups = <String>[
+  'Messages',
   'Journey',
   'Tracking',
   'System',
@@ -60,6 +72,14 @@ class AppNotification {
   final DateTime? createdAt;
   final DateTime? readAt;
 
+  /// What this notification is about, if it is about one record: one of
+  /// CONVERSATION, BOOKING, TRIP, PARCEL, LUGGAGE or AGENCY. Null on a
+  /// platform-wide notice, which leads nowhere.
+  final String? referenceType;
+
+  /// The id of that record. Only meaningful alongside [referenceType].
+  final String? referenceId;
+
   const AppNotification({
     required this.id,
     required this.title,
@@ -68,6 +88,8 @@ class AppNotification {
     required this.status,
     required this.createdAt,
     required this.readAt,
+    required this.referenceType,
+    required this.referenceId,
   });
 
   factory AppNotification.fromJson(Map<String, dynamic> json) {
@@ -79,8 +101,19 @@ class AppNotification {
       status: json['status']?.toString() ?? 'UNREAD',
       createdAt: _toNullableDateTime(json['createdAt']),
       readAt: _toNullableDateTime(json['readAt']),
+      referenceType: _toNonEmpty(json['referenceType']),
+      referenceId: _toNonEmpty(json['referenceId']),
     );
   }
+
+  /// Whether this notification knows which record it is about.
+  ///
+  /// A reference is only usable with both halves, so a half-written one counts
+  /// as none: the interface offers a link for this and not for the rest, and a
+  /// link that leads nowhere is worse than no link.
+  bool get hasReference =>
+      (referenceType?.isNotEmpty ?? false) &&
+      (referenceId?.isNotEmpty ?? false);
 
   bool get isRead => status == 'READ';
 

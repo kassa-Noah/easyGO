@@ -348,6 +348,9 @@ export const editTrip = async (
           ),
 
           type: "TRIP",
+
+          referenceType: "TRIP",
+          referenceId: tripId,
         });
       }
     }

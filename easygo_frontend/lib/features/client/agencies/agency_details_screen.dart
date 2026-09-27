@@ -564,6 +564,20 @@ class AgencyDetailsScreen extends StatelessWidget {
                       value: branch.address,
                     ),
 
+                    // The map shows where the branch is; these are the numbers
+                    // behind that pin, which the branch record is the only
+                    // source of.
+                    if (branch.hasCoordinates) ...[
+                      const SizedBox(height: 14),
+                      _InformationRow(
+                        icon: Icons.my_location_outlined,
+                        title: 'Coordinates',
+                        value:
+                            '${branch.latitude!.toStringAsFixed(4)}, '
+                            '${branch.longitude!.toStringAsFixed(4)}',
+                      ),
+                    ],
+
                     if (_hasText(branch.phone)) ...[
                       const SizedBox(height: 14),
                       _InformationRow(
@@ -592,11 +606,10 @@ class AgencyDetailsScreen extends StatelessWidget {
                           SizedBox(width: 9),
                           Expanded(
                             child: Text(
-                              'The branch coordinates come from the agency, not '
-                              'from a lookup, so they are only as accurate as '
-                              'the record. The map needs a Google Maps key to '
-                              'draw; without one the coordinates above are '
-                              'shown instead.',
+                              'The branch coordinates come from the agency '
+                              'record, not from a lookup, so the pin is only as '
+                              'accurate as that record. The map tiles come from '
+                              'OpenStreetMap.',
                               style: TextStyle(fontSize: 12, height: 1.5),
                             ),
                           ),

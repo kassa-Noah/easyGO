@@ -123,12 +123,32 @@ enum NotificationType {
   TRIP
   LUGGAGE
   PARCEL
+
+  /// A person wrote to you, as opposed to the platform telling you something.
+  /// Kept apart from SYSTEM so that the two can be filtered separately.
+  MESSAGE
+
   SYSTEM
 }
 
 enum NotificationStatus {
   UNREAD
   READ
+}
+
+/// What a notification is about.
+///
+/// A notification that only says something happened leaves the reader to go and
+/// find the thing themselves. This names the kind of record the message
+/// describes, and [Notification.referenceId] gives its id, so that opening the
+/// notification can lead to it.
+enum NotificationReference {
+  CONVERSATION
+  BOOKING
+  TRIP
+  PARCEL
+  LUGGAGE
+  AGENCY
 }
 
 // ======================================================
@@ -677,6 +697,14 @@ model Notification {
   type NotificationType
 
   status NotificationStatus @default(UNREAD)
+
+  /// The record this notification describes, so it can be opened from the
+  /// notification itself. Both halves are nullable together: a platform-wide
+  /// notice has no single record behind it, and the interface treats a
+  /// notification with no reference as read-only rather than offering a link
+  /// that would lead nowhere.
+  referenceType NotificationReference?
+  referenceId   String?
 
   userId String
 

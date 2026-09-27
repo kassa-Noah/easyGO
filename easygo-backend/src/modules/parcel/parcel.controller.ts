@@ -428,6 +428,9 @@ export const changeParcelStatus =
           `${validatedData.status.toLowerCase().split("_").join(" ")}.`,
 
         type: "PARCEL",
+
+        referenceType: "PARCEL",
+        referenceId: parcel.id,
       });
 
       return res.status(200).json({

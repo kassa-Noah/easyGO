@@ -13,28 +13,31 @@ The app reads it from `lib/core/network/api_config.dart`, which points at
 flutter run -d chrome
 ```
 
-## Google Maps
+## Branch maps
 
-Branch locations can be shown on a map. This is **off until a key is supplied**:
-without one the app shows the branch coordinates and says the map is not
-configured, rather than drawing an empty map that looks broken.
+A branch with coordinates is drawn on a map, using `flutter_map` and raster
+tiles from OpenStreetMap. **There is no key to obtain or configure**, which is
+the reason for this choice: the app works the same on every platform out of the
+box, and there is no unconfigured state to explain to the reader.
 
-1. Enable **Maps JavaScript API** (and **Maps SDK for Android** / **Maps SDK for
-   iOS** if you build for those) in the Google Cloud console, and create a key.
+One thing to know before shipping. OpenStreetMap's tile server is donated
+capacity that is free to use but not free of rules:
 
-2. Pass the key at build time:
+- It asks to be identified. `BranchMap` passes `userAgentPackageName` for this.
+  The default is `unknown`, which is a way to be blocked without being told why.
+- It requires the attribution in the map's corner. `BranchMap` draws it with
+  `SimpleAttributionWidget`, which puts the credit on screen rather than behind
+  a button. **Do not remove it**; the credit is a condition of using the tiles,
+  not decoration.
+- Its tile usage policy forbids heavy or bulk use. A deployment with real
+traffic should run its own tile server and pass it to `BranchMap`:
 
-   ```bash
-   flutter run -d chrome --dart-define=GOOGLE_MAPS_API_KEY=your-key
-   ```
+  ```dart
+  BranchMap(points: points, tileServerUrl: 'https://tiles.example.com/{z}/{x}/{y}.png')
+  ```
 
-3. **On the web there is a second step that no build flag covers.** The Maps
-   JavaScript API has to be loaded by the browser before the app builds a map, so
-   uncomment the `<script>` tag in `web/index.html` and put the same key in it.
+  Self-hosted tiles, or a paid tile provider, lift the traffic limit without
+  changing the widget.
 
-A web key is visible to anyone who opens dev tools — that is how Google Maps
-works, not a mistake. Restrict it by **HTTP referrer** in the Google Cloud
-console rather than trying to hide it. Keys are platform-specific, so an Android
-key will not work on the web.
-
-The key is deliberately not stored in the repository.
+[The tile usage policy](https://operations.osmfoundation.org/policies/tiles/)
+is the authoritative source on the limits.

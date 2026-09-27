@@ -120,6 +120,9 @@ export const addAgency = async (
           `account attached, a branch and a route before it can sell a journey.`,
 
         type: "SYSTEM",
+
+        referenceType: "AGENCY",
+        referenceId: agency.id,
       });
     }
 

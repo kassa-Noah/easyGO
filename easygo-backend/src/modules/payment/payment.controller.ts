@@ -412,6 +412,9 @@ export const simulatePayment =
               `Open it to see your ticket and your pickup details.`,
 
             type: "BOOKING",
+
+            referenceType: "BOOKING",
+            referenceId: booking.id,
           });
         }
       }

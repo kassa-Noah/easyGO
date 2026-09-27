@@ -110,6 +110,9 @@ export const addBooking = async (
           `${route}. It is awaiting payment.`,
 
         type: "BOOKING",
+
+        referenceType: "BOOKING",
+        referenceId: booking.id,
       });
     }
 
@@ -123,6 +126,9 @@ export const addBooking = async (
         `Pay for it to confirm your seat.`,
 
       type: "BOOKING",
+
+      referenceType: "BOOKING",
+      referenceId: booking.id,
     });
 
     return res.status(201).json({
@@ -290,6 +296,9 @@ export const cancelMyBooking =
             `The seat is available again.`,
 
           type: "BOOKING",
+
+          referenceType: "BOOKING",
+          referenceId: booking.id,
         });
       }
 

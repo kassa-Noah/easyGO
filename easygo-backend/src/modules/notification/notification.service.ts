@@ -8,13 +8,37 @@ type NotificationType =
   | "TRIP"
   | "LUGGAGE"
   | "PARCEL"
+  | "MESSAGE"
   | "SYSTEM";
+
+/**
+ * The kind of record a notification describes.
+ *
+ * Must stay in step with the `NotificationReference` enum in the Prisma schema.
+ */
+export type NotificationReference =
+  | "CONVERSATION"
+  | "BOOKING"
+  | "TRIP"
+  | "PARCEL"
+  | "LUGGAGE"
+  | "AGENCY";
 
 interface CreateNotificationInput {
   userId: string;
   title: string;
   message: string;
   type: NotificationType;
+
+  /**
+   * The record the message is about.
+   *
+   * Both halves are supplied together or not at all. A notification with no
+   * reference is one that cannot lead anywhere, which is a normal state for a
+   * platform-wide notice.
+   */
+  referenceType?: NotificationReference;
+  referenceId?: string;
 }
 
 export const createNotification = async (
@@ -27,6 +51,9 @@ export const createNotification = async (
       message: data.message,
       type: data.type,
       status: "UNREAD",
+
+      referenceType: data.referenceType,
+      referenceId: data.referenceId,
     },
   });
 };
