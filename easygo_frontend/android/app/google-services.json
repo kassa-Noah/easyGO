@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "880499026564",
+    "project_id": "easygo-1946d",
+    "storage_bucket": "easygo-1946d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:880499026564:android:14582fe84644b76c0430d1",
+        "android_client_info": {
+          "package_name": "com.example.easygo_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1VC2zcIu79poBMxqFTMekukSIV1SvOl8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
