@@ -29,6 +29,31 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
+  <!--
+    Google Maps.
+
+    The Maps JavaScript API has to be loaded here, before the app builds a map,
+    because the browser is what loads the SDK. Uncomment the tag below and put
+    your key in it, then pass the same value at build time:
+
+      flutter run -d chrome --dart-define=GOOGLE_MAPS_API_KEY=your-key
+
+    Without both, the app shows the branch coordinates and says the map is not
+    configured rather than displaying an empty map.
+
+    A web key is readable in dev tools by anyone who visits the site; that is how
+    Google Maps works. Restrict it by HTTP referrer in the Google Cloud console
+    instead of trying to hide it, and enable only the Maps JavaScript API.
+
+    Leave this commented out until you have a key, so an unconfigured build does
+    not make a failing request to Google on every page load.
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&loading=async"
+      async
+    ></script>
+  -->
+
   <title>easygo_frontend</title>
   <link rel="manifest" href="manifest.json">
 </head>

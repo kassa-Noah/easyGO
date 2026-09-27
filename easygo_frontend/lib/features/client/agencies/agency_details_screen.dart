@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
+import '../../../../shared/widgets/branch_map.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../agencies/models/agency.dart';
 import '../../reviews/widgets/agency_reviews_section.dart';
@@ -511,123 +512,112 @@ class AgencyDetailsScreen extends StatelessWidget {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  branch.name,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 18),
-
-                Container(
-                  height: 170,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.map_outlined,
-                        size: 48,
-                        color: AppColors.primary,
+            // The sheet holds a map, the branch details and a notice, which can
+            // be taller than the screen on a short one. Scrolling it means the
+            // content is reachable instead of clipped.
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      branch.name,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
+                    ),
 
-                      const SizedBox(height: 10),
+                    const SizedBox(height: 18),
 
-                      Text(
-                        branch.hasCoordinates
-                            ? 'Branch coordinates available'
-                            : 'Map location unavailable',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    BranchMap(
+                      points: branch.hasCoordinates
+                          ? <MapPoint>[
+                              MapPoint(
+                                id: branch.id,
+                                title: branch.name,
+                                description:
+                                    '${branch.address}, ${branch.city}',
+                                latitude: branch.latitude!,
+                                longitude: branch.longitude!,
+                              ),
+                            ]
+                          : <MapPoint>[],
+                    ),
 
-                      if (branch.hasCoordinates) ...[
-                        const SizedBox(height: 5),
-                        Text(
-                          '${branch.latitude}, ${branch.longitude}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                    const SizedBox(height: 18),
 
-                const SizedBox(height: 18),
+                    _InformationRow(
+                      icon: Icons.location_city_outlined,
+                      title: 'City',
+                      value: branch.city,
+                    ),
 
-                _InformationRow(
-                  icon: Icons.location_city_outlined,
-                  title: 'City',
-                  value: branch.city,
-                ),
+                    const SizedBox(height: 14),
 
-                const SizedBox(height: 14),
+                    _InformationRow(
+                      icon: Icons.location_on_outlined,
+                      title: 'Address',
+                      value: branch.address,
+                    ),
 
-                _InformationRow(
-                  icon: Icons.location_on_outlined,
-                  title: 'Address',
-                  value: branch.address,
-                ),
-
-                if (_hasText(branch.phone)) ...[
-                  const SizedBox(height: 14),
-                  _InformationRow(
-                    icon: Icons.phone_outlined,
-                    title: 'Branch phone',
-                    value: branch.phone!,
-                  ),
-                ],
-
-                const SizedBox(height: 18),
-
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(13),
-                  ),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 20,
-                        color: AppColors.primary,
-                      ),
-                      SizedBox(width: 9),
-                      Expanded(
-                        child: Text(
-                          'The backend provides the branch coordinates. Interactive map navigation will be connected in a later integration step.',
-                          style: TextStyle(fontSize: 12, height: 1.5),
-                        ),
+                    if (_hasText(branch.phone)) ...[
+                      const SizedBox(height: 14),
+                      _InformationRow(
+                        icon: Icons.phone_outlined,
+                        title: 'Branch phone',
+                        value: branch.phone!,
                       ),
                     ],
-                  ),
-                ),
 
-                const SizedBox(height: 18),
+                    const SizedBox(height: 18),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                    },
-                    child: const Text('Close'),
-                  ),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 20,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(width: 9),
+                          Expanded(
+                            child: Text(
+                              'The branch coordinates come from the agency, not '
+                              'from a lookup, so they are only as accurate as '
+                              'the record. The map needs a Google Maps key to '
+                              'draw; without one the coordinates above are '
+                              'shown instead.',
+                              style: TextStyle(fontSize: 12, height: 1.5),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          Navigator.pop(sheetContext);
+                        },
+                        child: const Text('Close'),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
