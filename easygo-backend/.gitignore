@@ -3,6 +3,15 @@ node_modules
 # that is committed, so a clone can see what it has to provide.
 .env
 
+# Service account keys and other credentials.
+#
+# A Firebase service account key is not a configuration file. It is a password to
+# the whole Firebase project: whoever holds it can send messages to every user
+# and change settings without going through the console. It is ignored as a
+# whole directory rather than by filename so that a key dropped in later is
+# covered without anyone having to remember to edit this file.
+/secrets/
+
 # Compiled output. `npm run build` produces dist/ and `npm start` consumes it,
 # so it is a build artifact rather than source.
 /dist/
