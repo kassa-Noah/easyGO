@@ -42,6 +42,33 @@ export const getTripForBooking = async (
   });
 };
 
+/**
+ * The customers holding a booking on a trip, so a change to the trip can reach
+ * them.
+ *
+ * Cancelled bookings are left out: those passengers are no longer travelling,
+ * so a departure or a cancellation is not their news. One row per person, since
+ * a customer can hold more than one booking on the same trip.
+ */
+export const listTripPassengerUserIds = async (tripId: string) => {
+  const bookings = await prisma.booking.findMany({
+    where: {
+      tripId,
+      status: {
+        not: "CANCELLED",
+      },
+    },
+
+    select: {
+      userId: true,
+    },
+
+    distinct: ["userId"],
+  });
+
+  return bookings.map((booking) => booking.userId);
+};
+
 export const createBooking = async (
   data: CreateBookingInput
 ) => {

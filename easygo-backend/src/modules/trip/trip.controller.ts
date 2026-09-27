@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 
 import { messageOf } from "../../lib/error-message";
+import { notifySafely } from "../notification/notification.service";
+import { listTripPassengerUserIds } from "../booking/booking.service";
 
 import {
   createTrip,
@@ -17,6 +19,46 @@ import {
   createTripSchema,
   updateTripSchema,
 } from "./trip.schema";
+
+/** The heading a passenger sees for each state a trip can move to. */
+const tripStatusTitle = (status: string) => {
+  switch (status) {
+    case "BOARDING":
+      return "Your trip is boarding";
+    case "DEPARTED":
+      return "Your trip has departed";
+    case "ARRIVED":
+      return "Your trip has arrived";
+    case "CANCELLED":
+      return "Your trip was cancelled";
+    default:
+      return "Your trip was updated";
+  }
+};
+
+/**
+ * What the passenger needs to do about it, if anything.
+ *
+ * A cancellation is the one state someone has to act on, so it says so
+ * instead of leaving them to work it out from the word "cancelled".
+ */
+const tripStatusMessage = (status: string, route: string) => {
+  switch (status) {
+    case "BOARDING":
+      return `The trip ${route} is boarding now. Be at the departure point.`;
+    case "DEPARTED":
+      return `The trip ${route} has departed.`;
+    case "ARRIVED":
+      return `The trip ${route} has arrived.`;
+    case "CANCELLED":
+      return (
+        `The trip ${route} was cancelled by the agency. ` +
+        `Contact the agency to arrange another journey.`
+      );
+    default:
+      return `The trip ${route} is now ${status.toLowerCase()}.`;
+  }
+};
 
 const canManageAgencyTrips = async (
   userId: string,
@@ -278,6 +320,37 @@ export const editTrip = async (
       tripId,
       validatedData
     );
+
+    // Passengers are told when the trip they hold a booking on actually moves,
+    // and only then: editing a price or a departure time is not news, and
+    // notifying on every save would make the notifications worthless.
+    if (
+      validatedData.status &&
+      validatedData.status !== existingTrip.status
+    ) {
+      const route =
+        `${existingTrip.route.originBranch.city} → ` +
+        `${existingTrip.route.destinationBranch.city}`;
+
+      const passengerIds = await listTripPassengerUserIds(
+        tripId
+      );
+
+      for (const passengerId of passengerIds) {
+        await notifySafely({
+          userId: passengerId,
+
+          title: tripStatusTitle(validatedData.status),
+
+          message: tripStatusMessage(
+            validatedData.status,
+            route
+          ),
+
+          type: "TRIP",
+        });
+      }
+    }
 
     return res.status(200).json({
       success: true,

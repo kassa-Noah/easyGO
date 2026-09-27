@@ -4,13 +4,13 @@ import {
 } from "express";
 
 import { messageOf } from "../../lib/error-message";
+import { listAgencyStaffUserIds } from "../../lib/agency-staff";
 
 import {
   createConversation,
   createMessage,
   findThread,
   getConversationById,
-  listAgencyStaffUserIds,
   listConversationsForAgency,
   listConversationsForCustomer,
   markConversationRead,

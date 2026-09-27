@@ -4,6 +4,8 @@ import {
 } from "express";
 
 import { messageOf } from "../../lib/error-message";
+import { listAgencyStaffUserIds } from "../../lib/agency-staff";
+import { notifySafely } from "../notification/notification.service";
 
 import {
   cancelBooking,
@@ -82,6 +84,46 @@ export const addBooking = async (
         numberOfSeats:
           validatedData.numberOfSeats,
       });
+
+    // A booking is the platform's central event and it used to tell nobody: the
+    // agency found out by refreshing its bookings list, and the customer had to
+    // remember to go and pay. Both sides are told now, and neither notification
+    // can fail the booking that has already been stored.
+    const route =
+      `${trip.route.originBranch.city} → ` +
+      `${trip.route.destinationBranch.city}`;
+
+    const staffIds = await listAgencyStaffUserIds(
+      trip.agencyId
+    );
+
+    for (const staffId of staffIds) {
+      await notifySafely({
+        userId: staffId,
+
+        title: "New booking",
+
+        message:
+          `${booking.bookingReference} booked ` +
+          `${booking.numberOfSeats} ` +
+          `${booking.numberOfSeats === 1 ? "seat" : "seats"} on ` +
+          `${route}. It is awaiting payment.`,
+
+        type: "BOOKING",
+      });
+    }
+
+    await notifySafely({
+      userId: req.user!.userId,
+
+      title: "Booking created",
+
+      message:
+        `Your booking ${booking.bookingReference} on ${route} is created. ` +
+        `Pay for it to confirm your seat.`,
+
+      type: "BOOKING",
+    });
 
     return res.status(201).json({
       success: true,
@@ -229,6 +271,27 @@ export const cancelMyBooking =
         await cancelBooking(
           bookingId
         );
+
+      // A cancellation frees a seat the agency was counting on, and it used to
+      // happen silently.
+      const staffIds = await listAgencyStaffUserIds(
+        booking.trip.agencyId
+      );
+
+      for (const staffId of staffIds) {
+        await notifySafely({
+          userId: staffId,
+
+          title: "Booking cancelled",
+
+          message:
+            `${booking.bookingReference} was cancelled by ` +
+            `${booking.user.firstName} ${booking.user.lastName}. ` +
+            `The seat is available again.`,
+
+          type: "BOOKING",
+        });
+      }
 
       return res.status(200).json({
         success: true,

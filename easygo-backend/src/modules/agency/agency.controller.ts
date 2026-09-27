@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 
 import { messageOf } from "../../lib/error-message";
+import { listAdminUserIds } from "../../lib/agency-staff";
+import { notifySafely } from "../notification/notification.service";
 
 import {
   createAgency,
@@ -101,6 +103,25 @@ export const addAgency = async (
     const validatedData = createAgencySchema.parse(req.body);
 
     const agency = await createAgency(validatedData);
+
+    // The administrator console has a bell too, and until now nothing was ever
+    // written to it, so it could only ever be empty. A new agency is the
+    // platform-level event an administrator would want to see.
+    const adminIds = await listAdminUserIds();
+
+    for (const adminId of adminIds) {
+      await notifySafely({
+        userId: adminId,
+
+        title: "New agency registered",
+
+        message:
+          `${agency.name} has been added to the platform. It needs an ` +
+          `account attached, a branch and a route before it can sell a journey.`,
+
+        type: "SYSTEM",
+      });
+    }
 
     return res.status(201).json({
       success: true,

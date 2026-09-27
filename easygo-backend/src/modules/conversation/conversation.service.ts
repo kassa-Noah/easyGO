@@ -162,27 +162,6 @@ export const createMessage = async (data: {
 };
 
 /**
- * The active staff of an agency, so a new customer message can reach everyone
- * who might answer it.
- */
-export const listAgencyStaffUserIds = async (
-  agencyId: string
-) => {
-  const staff = await prisma.agencyStaff.findMany({
-    where: {
-      agencyId,
-      isActive: true,
-    },
-
-    select: {
-      userId: true,
-    },
-  });
-
-  return staff.map((member) => member.userId);
-};
-
-/**
  * Marks the other side's messages as read. A participant should never be able to
  * mark their own message as read on the other side's behalf.
  */
