@@ -19,6 +19,7 @@ import conversationRoutes from "./modules/conversation/conversation.routes";
 import reviewRoutes from "./modules/review/review.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import staffRoutes from "./modules/staff/staff.routes";
+import deviceRoutes from "./modules/device/device.routes";
 
 const app = express();
 
@@ -124,6 +125,11 @@ app.use(
 app.use(
   "/api/staff",
   staffRoutes
+);
+
+app.use(
+  "/api/devices",
+  deviceRoutes
 );
 
 export default app;

@@ -1,6 +1,7 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/token_storage.dart';
+import '../../../core/push/push_service.dart';
 import '../models/auth_user.dart';
 
 class AuthService {
@@ -168,6 +169,13 @@ class AuthService {
   }
 
   Future<void> logout() async {
+    // Before the token is cleared, because releasing the device is an
+    // authenticated call and there will be nothing left to authenticate with
+    // afterwards. Without it the phone keeps receiving the notifications of the
+    // account that just signed out, which is a privacy problem rather than an
+    // inconvenience.
+    await PushService.instance.stop();
+
     await _tokenStorage.deleteToken();
   }
 }

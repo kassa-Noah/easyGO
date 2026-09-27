@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/constants/app_strings.dart';
 import 'core/localization/app_localizations.dart';
+import 'core/push/push_service.dart';
 import 'core/settings/app_settings_controller.dart';
 import 'core/settings/app_settings_scope.dart';
 import 'core/theme/app_theme.dart';
@@ -18,11 +19,53 @@ class EasyGoApp extends StatefulWidget {
 class _EasyGoAppState extends State<EasyGoApp> {
   final AppSettingsController _settingsController = AppSettingsController();
 
+  /// Lets a push that arrives while the app is open be shown from outside any
+  /// screen's build. Android draws nothing for a foregrounded app, so without a
+  /// messenger reachable from here the reader would see nothing at all.
+  final GlobalKey<ScaffoldMessengerState> _messengerKey =
+      GlobalKey<ScaffoldMessengerState>();
+
+  @override
+  void initState() {
+    super.initState();
+
+    PushService.onForegroundMessage = _showForegroundPush;
+  }
+
   @override
   void dispose() {
+    PushService.onForegroundMessage = null;
+
     _settingsController.dispose();
 
     super.dispose();
+  }
+
+  /// Shows a push that arrived while the app was already open.
+  ///
+  /// A banner rather than a system notification, because a system notification
+  /// for something the reader is already looking at is noise. The same event is
+  /// also in the bell, which is where the reader would act on it.
+  void _showForegroundPush(String title, String body) {
+    _messengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            if (body.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(body),
+            ],
+          ],
+        ),
+        duration: const Duration(seconds: 5),
+      ),
+    );
   }
 
   @override
@@ -34,6 +77,8 @@ class _EasyGoAppState extends State<EasyGoApp> {
           controller: _settingsController,
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
+
+            scaffoldMessengerKey: _messengerKey,
 
             title: AppStrings.appName,
 

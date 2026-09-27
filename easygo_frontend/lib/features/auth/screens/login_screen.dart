@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/push/push_service.dart';
 import '../../admin/navigation/admin_main_navigation.dart';
 import '../../agency/navigation/agency_main_navigation.dart';
 import '../../client/home/main_screen.dart';
@@ -91,6 +94,13 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => destination),
         (route) => false,
       );
+
+      // Tells the server where to push to this account. Deliberately not
+      // awaited, and deliberately after the navigation: asking for the
+      // notification permission can show a system dialog, and the reader should
+      // be looking at the app they signed into while it does, not at a login
+      // button that appears to be stuck.
+      unawaited(PushService.instance.start());
     } on ApiException catch (error) {
       if (!mounted) {
         return;

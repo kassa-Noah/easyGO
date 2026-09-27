@@ -152,6 +152,44 @@ enum NotificationReference {
 }
 
 // ======================================================
+// DEVICE TOKENS
+// ======================================================
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+}
+
+/// One app installation that has asked to be pushed to, and the account it is
+/// signed in as.
+///
+/// The token is unique across the table rather than unique per account. Firebase
+/// issues one token per installation, not per user, so a phone that has been
+/// signed into two accounts still has a single token. Re-registering moves the
+/// row to the new account instead of adding a second one, which is what stops
+/// the previous account's notifications reaching whoever is holding the phone.
+///
+/// Releasing the row on sign-out matters for the same reason: without it, a
+/// signed-out phone would keep receiving the messages of the account that left.
+model DeviceToken {
+  id String @id @default(uuid())
+
+  token    String         @unique
+  platform DevicePlatform
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  /// Bumped on every registration, so the rows that are actually alive can be
+  /// told from the ones Firebase has quietly replaced.
+  lastSeenAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ======================================================
 // USER
 // ======================================================
 
@@ -175,6 +213,8 @@ model User {
   notifications   Notification[]
   reviews         Review[]
   agencyStaff     AgencyStaff?
+
+  deviceTokens DeviceToken[]
 
   luggageUpdates LuggageTrackingEvent[]
   parcelUpdates  ParcelTrackingEvent[]

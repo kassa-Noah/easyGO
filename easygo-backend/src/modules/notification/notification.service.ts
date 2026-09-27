@@ -1,4 +1,5 @@
 import prisma from "../../lib/prisma";
+import { sendPushToUser } from "../../lib/push";
 
 type NotificationType =
   | "BOOKING"
@@ -65,12 +66,18 @@ export const createNotification = async (
  * Notifications are a side effect of paying, of a status changing, and so on. A
  * problem writing one must never roll back or fail the action the user asked
  * for, so the error is logged and swallowed.
+ *
+ * It is also the single place a push is sent from. Every notification in the
+ * platform is written through here, so pushing from here means a new one cannot
+ * be added later that reaches the in-app list and silently forgets the phone.
  */
 export const notifySafely = async (
   data: CreateNotificationInput
 ) => {
+  let notification: Awaited<ReturnType<typeof createNotification>>;
+
   try {
-    return await createNotification(data);
+    notification = await createNotification(data);
   } catch (error) {
     console.error(
       `Unable to create a ${data.type} notification for ${data.userId}:`,
@@ -79,6 +86,47 @@ export const notifySafely = async (
 
     return null;
   }
+
+  // Only after the row is stored. A push that opened a notification the list
+  // does not contain would be worse than no push at all.
+  //
+  // `sendPushToUser` returns rather than throws, so this cannot fail the caller
+  // either. It is the same promise the write above makes: the thing being
+  // announced happened, and nothing about announcing it may undo that.
+  await sendPushToUser(data.userId, {
+    title: data.title,
+    body: data.message,
+    data: pushDataFor(notification),
+  });
+
+  return notification;
+};
+
+/**
+ * The payload a push carries so that opening it lands where opening the
+ * notification does.
+ *
+ * Every value has to be a string, because that is all FCM will carry. The
+ * reference is left out rather than sent empty when there is none, so the app
+ * can tell "no reference" from "a reference that happened to be blank".
+ */
+const pushDataFor = (
+  notification: Awaited<ReturnType<typeof createNotification>>
+): Record<string, string> => {
+  const data: Record<string, string> = {
+    notificationId: notification.id,
+    type: notification.type,
+  };
+
+  if (notification.referenceType) {
+    data.referenceType = notification.referenceType;
+  }
+
+  if (notification.referenceId) {
+    data.referenceId = notification.referenceId;
+  }
+
+  return data;
 };
 
 export const getUserNotifications = async (
