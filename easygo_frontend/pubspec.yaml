@@ -29,9 +29,54 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
   flutter_secure_storage_platform_interface: ^2.1.1
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/images/
+
+# Launcher icons, generated from one image.
+#
+# Regenerate with `dart run flutter_launcher_icons` after replacing the logo.
+# The source is the same file the app draws as its logo, so the icon and the
+# logo cannot drift apart into two different pictures of the brand.
+#
+# The adaptive layers are for Android 8 and later, which do not draw an icon as
+# given: they mask a background and a foreground into the launcher's shape and
+# crop the outer third doing it. `adaptive_icon_foreground` is therefore the logo
+# redrawn smaller on a transparent canvas by
+# `tool/make-adaptive-foreground.ps1` — handing over the full lockup would cut
+# the road, the bus and the wordmark off at the edges.
+flutter_launcher_icons:
+  image_path: 'assets/images/easygo_logo.png'
+
+  android: true
+  ios: true
+  macos:
+    generate: true
+    image_path: 'assets/images/easygo_logo.png'
+  windows:
+    generate: true
+    image_path: 'assets/images/easygo_logo.png'
+    icon_size: 256
+  web:
+    generate: true
+    image_path: 'assets/images/easygo_logo.png'
+    background_color: '#FFFFFF'
+    theme_color: '#1565C0'
+
+  adaptive_icon_background: '#FFFFFF'
+  adaptive_icon_foreground: 'assets/icon/adaptive_foreground.png'
+
+  # The tool insets the foreground by 16% of its own accord, which is a sensible
+  # default for a full-bleed image. Here it would stack on top of the padding the
+  # foreground already has, leaving the logo at about 42% of the canvas instead
+  # of the 62% the script chose. Set to zero so one place decides the size.
+  adaptive_icon_foreground_inset: 0
+
+  # The App Store rejects an icon that carries an alpha channel, and the tool
+  # says so on every run. Fixed here rather than later, because it is one line
+  # and the alternative is discovering it at submission.
+  remove_alpha_ios: true
