@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Backend API for the easyGO interurban travel management and luggage tracking system",
   "main": "dist/server.js",
+  "packageManager": "pnpm@12.3.4",
   "scripts": {
     "postinstall": "node scripts/prisma-generate.mjs",
     "dev": "tsx watch src/server.ts",

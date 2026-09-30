@@ -168,6 +168,45 @@ class AuthService {
     return _tokenStorage.hasToken();
   }
 
+  /// The account the stored token belongs to, when that token still works.
+  ///
+  /// Returns null both when nobody is signed in and when the server has rejected
+  /// the token. Those are the same thing to the reader, with one difference that
+  /// matters: a rejected token is cleared so it is not presented again, and a
+  /// token that simply could not be checked is kept.
+  ///
+  /// Keeping it is the point. Clearing on any failure would sign the reader out
+  /// — and lose the device's push registration with it — because a server was
+  /// restarting or a phone had a moment of no signal.
+  Future<AuthUser?> restoreSession() async {
+    final bool hasToken;
+
+    try {
+      hasToken = await _tokenStorage.hasToken();
+    } catch (_) {
+      // The token store could not be read, so there is no token to restore. It
+      // is caught rather than allowed out because this runs at start-up: a
+      // platform that cannot read its secure storage must start the app signed
+      // out, not crash it before the first frame.
+      return null;
+    }
+
+    if (!hasToken) {
+      return null;
+    }
+
+    try {
+      return await getCurrentUser();
+    } on ApiException catch (error) {
+      // Only a rejection means the token is no good.
+      if (error.statusCode == 401 || error.statusCode == 403) {
+        await _tokenStorage.deleteToken();
+      }
+
+      return null;
+    }
+  }
+
   Future<void> logout() async {
     // Before the token is cleared, because releasing the device is an
     // authenticated call and there will be nothing left to authenticate with

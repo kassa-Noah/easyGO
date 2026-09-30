@@ -7,9 +7,7 @@ import '../../../core/constants/app_strings.dart';
 import '../../../core/navigation/app_navigator.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/push/push_service.dart';
-import '../../admin/navigation/admin_main_navigation.dart';
-import '../../agency/navigation/agency_main_navigation.dart';
-import '../../client/home/main_screen.dart';
+import '../console_for_role.dart';
 import '../services/auth_service.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
@@ -65,29 +63,16 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      Widget destination;
+      final Widget? destination = consoleForRole(user.role);
 
-      switch (user.role) {
-        case 'ADMIN':
-          destination = const AdminMainNavigation();
-          break;
+      if (destination == null) {
+        await _authService.logout();
 
-        case 'AGENCY_STAFF':
-          destination = const AgencyMainNavigation();
-          break;
+        if (!mounted) {
+          return;
+        }
 
-        case 'CUSTOMER':
-          destination = const ClientMainScreen();
-          break;
-
-        default:
-          await _authService.logout();
-
-          if (!mounted) {
-            return;
-          }
-
-          throw ApiException(message: 'Unsupported account role: ${user.role}');
+        throw ApiException(message: 'Unsupported account role: ${user.role}');
       }
 
       Navigator.pushAndRemoveUntil(

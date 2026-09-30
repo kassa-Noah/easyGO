@@ -3,6 +3,8 @@ import 'package:easygo_frontend/core/navigation/app_navigator.dart';
 import 'package:easygo_frontend/core/push/push_service.dart';
 import 'package:easygo_frontend/features/notifications/screens/notifications_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/test/test_flutter_secure_storage_platform.dart';
+import 'package:flutter_secure_storage_platform_interface/flutter_secure_storage_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Push notifications, on the side the app controls.
@@ -14,6 +16,15 @@ import 'package:flutter_test/flutter_test.dart';
 /// build with no Firebase configuration, or a reader who declined the permission
 /// must not be able to break a sign-in or a booking.
 void main() {
+  setUp(() {
+    // The app's start-up path reads the stored session, which the secure-storage
+    // plugin cannot answer under `flutter test`. See the note in
+    // `widget_test.dart`.
+    FlutterSecureStoragePlatform.instance = TestFlutterSecureStoragePlatform(
+      <String, String>{},
+    );
+  });
+
   group('a build that cannot reach Firebase', () {
     test('starts, registers and releases without throwing', () async {
       // No Firebase configuration exists in a test, so `initialize` fails
@@ -68,9 +79,11 @@ void main() {
       );
 
       // Let the splash timer and the banner's own timer finish, so the test does
-      // not end with either still pending.
+      // not end with either still pending. `pumpAndSettle` is not used: the
+      // splash shows a circular progress indicator that schedules a frame
+      // forever.
       await tester.pump(const Duration(seconds: 8));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 8));
     });
 
     testWidgets('leaves nowhere to show one once the app is gone', (
@@ -114,7 +127,7 @@ void main() {
       expect(find.byType(EasyGoApp), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 8));
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 8));
     });
 
     testWidgets('reports when there is nowhere to open it', (

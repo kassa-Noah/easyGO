@@ -3,6 +3,12 @@ node_modules
 # that is committed, so a clone can see what it has to provide.
 .env
 
+# npm's lockfile. pnpm owns the dependency tree here — see `packageManager` in
+# package.json and `pnpm-lock.yaml` — and a second lockfile means a second answer
+# to what that tree is. Ignored rather than merely deleted, so running `npm
+# install` out of habit does not quietly add one back to the commit.
+package-lock.json
+
 # Service account keys and other credentials.
 #
 # A Firebase service account key is not a configuration file. It is a password to
