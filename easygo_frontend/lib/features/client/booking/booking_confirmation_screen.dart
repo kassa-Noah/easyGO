@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../trips/models/trip.dart';
+import '../home/main_screen.dart';
 import 'digital_ticket_screen.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
@@ -82,6 +83,20 @@ class BookingConfirmationScreen extends StatelessWidget {
     );
   }
 
+  /// Leaves the booking flow and puts the client back on its console.
+  ///
+  /// `pushAndRemoveUntil` rather than a pop: the stack behind this screen is the
+  /// search, the trip and the payment steps the reader has just been through,
+  /// and returning to a half-filled one of those is not what "home" means. The
+  /// same is done by the parcel confirmation.
+  void _returnHome(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const ClientMainScreen()),
+      (route) => false,
+    );
+  }
+
   void _viewTicket(BuildContext context) {
     Navigator.push(
       context,
@@ -118,6 +133,10 @@ class BookingConfirmationScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Booking confirmation'),
+        // The back arrow is deliberately absent. The screen this replaced was
+        // the payment one, and a reader who walked back into it could pay a
+        // second time for the same seat. There is still a way out — the button
+        // below — which is what the arrow would otherwise have to be.
         automaticallyImplyLeading: false,
       ),
       body: Container(
@@ -178,6 +197,25 @@ class BookingConfirmationScreen extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // The only other action on this screen pushed the ticket
+                      // screen, whose back arrow returned here. Without this the
+                      // reader could reach the ticket and then find themselves
+                      // with nowhere to go but the ticket again.
+                      //
+                      // The parcel confirmation has had this button all along.
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            _returnHome(context);
+                          },
+                          icon: const Icon(Icons.home_outlined),
+                          label: Text(l10n.returnToHome),
                         ),
                       ),
                       const SizedBox(height: 20),

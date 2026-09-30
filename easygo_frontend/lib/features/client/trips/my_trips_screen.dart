@@ -180,7 +180,14 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        // This screen is two things at once. It is the Trips tab of the client
+        // console, and it is where a booking notification opens.
+        //
+        // A back button belongs on the second and is noise on the first, where
+        // it would point at nothing. `canPop` is what tells them apart: as a tab
+        // the console is the only route there is, and when a notification opens
+        // this over that console, there is somewhere to go back to.
+        automaticallyImplyLeading: Navigator.canPop(context),
         title: Text(l10n.myTrips),
         actions: [
           IconButton(
