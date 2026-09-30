@@ -1,6 +1,14 @@
 allowBuilds:
-  '@firebase/util': set this to true or false
+  # Writes dist/postinstall.js and dist/postinstall.mjs into its own package,
+  # which its runtime may then load. Allowed because denying it would be a
+  # behaviour change, and confirming that a clean install still works without
+  # those files is not something this line can establish.
+  '@firebase/util': true
   '@prisma/engines': true
   esbuild: true
   prisma: true
-  protobufjs: set this to true or false
+  # Read its scripts/postinstall.js: it returns early unless the package sets a
+  # versionScheme, and otherwise only prints a warning about a dependency's
+  # version scheme. It writes nothing, so there is no reason for package code to
+  # run at install time, and not running it is the safer default.
+  protobufjs: false
