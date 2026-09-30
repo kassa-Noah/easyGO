@@ -1,5 +1,7 @@
 import 'package:easygo_frontend/app.dart';
+import 'package:easygo_frontend/core/navigation/app_navigator.dart';
 import 'package:easygo_frontend/core/push/push_service.dart';
+import 'package:easygo_frontend/features/notifications/screens/notifications_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -86,6 +88,58 @@ void main() {
       expect(PushService.onForegroundMessage, isNull);
 
       await tester.pump(const Duration(seconds: 4));
+    });
+  });
+
+  group('a push the reader taps', () {
+    testWidgets('opens the notifications, on top of where they were', (
+      WidgetTester tester,
+    ) async {
+      // The payload carries a reference so that opening a push leads somewhere.
+      // Everything else about that payload is wasted if nothing acts on the
+      // tap, which is what this pins.
+      await tester.pumpWidget(const EasyGoApp());
+      await tester.pump();
+
+      expect(PushService.onNotificationOpened, isNotNull);
+
+      PushService.onNotificationOpened!.call();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.byType(NotificationsScreen), findsOneWidget);
+
+      // On top of the sign-in flow rather than replacing it, so the reader can
+      // go back to what they were doing.
+      expect(find.byType(EasyGoApp), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 8));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('reports when there is nowhere to open it', (
+      WidgetTester tester,
+    ) async {
+      // Called from a Firebase callback, which has no context to catch an
+      // error with. A push arriving before the app has a navigator must return
+      // rather than throw.
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      expect(AppNavigator.openNotifications(), isFalse);
+    });
+
+    test('a launch by push is acted on once, not on every later sign-in', () {
+      // The cold-start case: the push arrives before there is any screen to
+      // open it over, so the sign-in flow has to be told about it afterwards.
+      PushService.debugSetOpenedFromPush(true);
+
+      expect(PushService.takeOpenedFromPush(), isTrue);
+
+      // Consumed. Reading it again must not reopen the list, which is what
+      // would happen if the flag were a getter beside a separate
+      // acknowledgement that someone forgot to call.
+      expect(PushService.takeOpenedFromPush(), isFalse);
+      expect(PushService.takeOpenedFromPush(), isFalse);
     });
   });
 }

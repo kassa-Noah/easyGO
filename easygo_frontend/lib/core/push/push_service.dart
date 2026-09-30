@@ -46,8 +46,52 @@ class PushService {
   /// is another native dependency to configure and verify for one banner.
   static void Function(String title, String body)? onForegroundMessage;
 
+  /// Set once by the app, for a push the reader has tapped.
+  ///
+  /// This is the other half of sending a `referenceType` and `referenceId` with
+  /// the push: the payload exists so that opening a push leads somewhere, and
+  /// without this it was carried, delivered and thrown away.
+  static void Function()? onNotificationOpened;
+
+  /// Whether the app was started by a tap on a push, and that has not been
+  /// honoured yet.
+  ///
+  /// The app is launched by a push into the splash screen and then the sign-in
+  /// screen, so there is no console to open the notification list over at the
+  /// moment the push arrives. The sign-in flow collects this instead, which is
+  /// the first point at which there is somewhere to go.
+  static bool _openedFromPush = false;
+
+  /// Whether the app was started by a tap on a push, consumed as it is read.
+  ///
+  /// One call rather than a getter beside a separate acknowledgement, so the
+  /// sign-in flow cannot read the flag and forget to clear it. If it did, the
+  /// notification list would reopen on every later sign-in.
+  static bool takeOpenedFromPush() {
+    final bool opened = _openedFromPush;
+
+    _openedFromPush = false;
+
+    return opened;
+  }
+
+  /// Puts the service in the state a push would have left it in.
+  ///
+  /// `getInitialMessage` is the only thing that sets the flag, and it needs
+  /// Firebase and a real push to open the app, so this is the only way to reach
+  /// that state from a test. The behaviour behind it — consumed exactly once —
+  /// is real, so the seam is worth having.
+  @visibleForTesting
+  static void debugSetOpenedFromPush(bool value) {
+    _openedFromPush = value;
+  }
+
   bool _firebaseReady = false;
   bool _listening = false;
+
+  /// Whether an account is signed in, which decides whether a tapped push has
+  /// anywhere to go. The sign-in screen has no console to open the list over.
+  bool _signedIn = false;
 
   /// The token this device was last registered with, so signing out can release
   /// exactly this device rather than every device the account uses.
@@ -68,6 +112,20 @@ class PushService {
       await Firebase.initializeApp();
 
       instance._firebaseReady = true;
+
+      // The app can be started *by* a tap on a push, from a state where it was
+      // not running at all. Firebase hands that one message back here, once.
+      //
+      // It is read during start-up rather than later because that is the only
+      // point at which it is guaranteed to still be available; it is acted on
+      // much later, after sign-in, because that is the first point at which
+      // there is anything to open.
+      final RemoteMessage? launched =
+          await FirebaseMessaging.instance.getInitialMessage();
+
+      if (launched != null) {
+        _openedFromPush = true;
+      }
     } catch (error) {
       debugPrint(
         'Push is unavailable on this build, so notifications stay in the app: '
@@ -82,6 +140,10 @@ class PushService {
   /// is re-registered rather than duplicated, which also picks up a token
   /// Firebase rotated while the app was closed.
   Future<void> start() async {
+    // Recorded before the Firebase check, because whether an account is signed
+    // in is a fact about the app rather than about push.
+    _signedIn = true;
+
     if (!_firebaseReady) {
       return;
     }
@@ -111,6 +173,8 @@ class PushService {
   /// request has to be authenticated. Without it a signed-out phone keeps
   /// receiving the notifications of whichever account left it.
   Future<void> stop() async {
+    _signedIn = false;
+
     final String? token = _registeredToken;
 
     _registeredToken = null;
@@ -175,6 +239,22 @@ class PushService {
       }
 
       onForegroundMessage?.call(title, body);
+    });
+
+    // The reader tapped a push while the app was in the background. This is the
+    // case the payload was sent for: without it, a push opened the app wherever
+    // it happened to be rather than at the thing it was about.
+    //
+    // Ignored when nobody is signed in, because the only screen showing is the
+    // sign-in screen and a notification list over it would be an error. The
+    // cold-start case is collected after sign-in instead, through
+    // `openedFromPush`.
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      if (!_signedIn) {
+        return;
+      }
+
+      onNotificationOpened?.call();
     });
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/navigation/app_navigator.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/push/push_service.dart';
 import '../../admin/navigation/admin_main_navigation.dart';
@@ -101,6 +102,13 @@ class _LoginScreenState extends State<LoginScreen> {
       // be looking at the app they signed into while it does, not at a login
       // button that appears to be stuck.
       unawaited(PushService.instance.start());
+
+      // If a push started the app, this is the first moment there is a console
+      // to open it over. On top of the console rather than instead of it, so
+      // the reader can carry on where they would have been.
+      if (PushService.takeOpenedFromPush()) {
+        AppNavigator.openNotifications();
+      }
     } on ApiException catch (error) {
       if (!mounted) {
         return;

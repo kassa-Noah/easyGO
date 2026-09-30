@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/constants/app_strings.dart';
 import 'core/localization/app_localizations.dart';
+import 'core/navigation/app_navigator.dart';
 import 'core/push/push_service.dart';
 import 'core/settings/app_settings_controller.dart';
 import 'core/settings/app_settings_scope.dart';
@@ -30,11 +31,13 @@ class _EasyGoAppState extends State<EasyGoApp> {
     super.initState();
 
     PushService.onForegroundMessage = _showForegroundPush;
+    PushService.onNotificationOpened = AppNavigator.openNotifications;
   }
 
   @override
   void dispose() {
     PushService.onForegroundMessage = null;
+    PushService.onNotificationOpened = null;
 
     _settingsController.dispose();
 
@@ -77,6 +80,10 @@ class _EasyGoAppState extends State<EasyGoApp> {
           controller: _settingsController,
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
+
+            // A push is handled by code that has no `BuildContext`, so the
+            // navigator has to be reachable from outside a widget.
+            navigatorKey: AppNavigator.key,
 
             scaffoldMessengerKey: _messengerKey,
 
