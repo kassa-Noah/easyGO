@@ -187,11 +187,7 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF2F8FF),
-                    Color(0xFFF7FBFF),
-                    Color(0xFFF1FFF6),
-                  ],
+                  colors: [...AppColors.lightPageGradient],
                 ),
         ),
         child: SafeArea(
@@ -213,23 +209,23 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
                       _buildError(context)
                     else ...[
                       _buildAgencyHeader(context, localizations),
-                    const SizedBox(height: 18),
-                    _buildContactInformation(context, localizations),
-                    const SizedBox(height: 18),
-                    _buildBranchInformation(context),
-                    const SizedBox(height: 18),
-                    _buildPublicInformation(context, localizations),
-                    const SizedBox(height: 18),
-                    _buildManagementNotice(context, localizations),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: _editProfile,
-                        icon: const Icon(Icons.edit_outlined),
-                        label: Text(localizations.editAgencyInformation),
+                      const SizedBox(height: 18),
+                      _buildContactInformation(context, localizations),
+                      const SizedBox(height: 18),
+                      _buildBranchInformation(context),
+                      const SizedBox(height: 18),
+                      _buildPublicInformation(context, localizations),
+                      const SizedBox(height: 18),
+                      _buildManagementNotice(context, localizations),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _editProfile,
+                          icon: const Icon(Icons.edit_outlined),
+                          label: Text(localizations.editAgencyInformation),
+                        ),
                       ),
-                    ),
                     ],
                   ],
                 ),
@@ -385,9 +381,11 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
               if (index > 0) const SizedBox(height: 14),
               _InformationRow(
                 icon: Icons.location_city_outlined,
-                label: '${_branches[index].name} '
+                label:
+                    '${_branches[index].name} '
                     '(${_branches[index].city})',
-                value: '${_branches[index].address}'
+                value:
+                    '${_branches[index].address}'
                     '${_branches[index].phone == null ? '' : ' • ${_branches[index].phone}'}',
               ),
             ],

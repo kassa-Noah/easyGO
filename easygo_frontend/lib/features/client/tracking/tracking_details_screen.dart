@@ -121,11 +121,7 @@ class TrackingDetailsScreen extends StatelessWidget {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF2F8FF),
-                    Color(0xFFF7FBFF),
-                    Color(0xFFF1FFF6),
-                  ],
+                  colors: [...AppColors.lightPageGradient],
                 ),
         ),
         child: SafeArea(

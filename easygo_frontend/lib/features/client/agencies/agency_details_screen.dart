@@ -111,7 +111,7 @@ class AgencyDetailsScreen extends StatelessWidget {
     return const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
-      colors: [Color(0xFFF2F8FF), Color(0xFFF7FBFF), Color(0xFFF1FFF6)],
+      colors: AppColors.lightPageGradient,
     );
   }
 
@@ -187,9 +187,7 @@ class AgencyDetailsScreen extends StatelessWidget {
                     const SizedBox(width: 5),
 
                     Text(
-                      agency.isActive
-                          ? l10n.activeAgency
-                          : l10n.inactiveAgency,
+                      agency.isActive ? l10n.activeAgency : l10n.inactiveAgency,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w500,
                       ),

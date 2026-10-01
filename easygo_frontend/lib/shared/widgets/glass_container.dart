@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_colors.dart';
+
 class GlassContainer extends StatelessWidget {
   final Widget child;
   final double blur;
@@ -30,13 +32,17 @@ class GlassContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // In light mode the panel has to stay nearly opaque. A translucent white
+    // panel over a near-white canvas produced no edge and no depth, so cards
+    // were invisible; the floor of 0.75 keeps the panel solid enough to read
+    // against the tinted page while still honouring a caller asking for more.
     final Color glassColor = isDark
         ? Colors.white.withValues(alpha: opacity * 0.10)
-        : Colors.white.withValues(alpha: opacity);
+        : Colors.white.withValues(alpha: opacity.clamp(0.75, 1.0));
 
     final Color borderColor = isDark
         ? Colors.white.withValues(alpha: 0.14)
-        : Colors.white.withValues(alpha: 0.75);
+        : AppColors.cardBorder;
 
     final Widget glass = ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
@@ -53,8 +59,13 @@ class GlassContainer extends StatelessWidget {
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(color: borderColor),
             boxShadow: [
+              // Light mode gets a soft brand-tinted shadow instead of grey.
+              // Grey shadow under a blue-tinted card looked like dirt; this
+              // reads as the card lifting off the page.
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.20 : 0.06),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.20)
+                    : AppColors.primary.withValues(alpha: 0.10),
                 blurRadius: 22,
                 offset: const Offset(0, 8),
               ),

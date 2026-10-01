@@ -16,8 +16,7 @@ class AgencyOperationsScreen extends StatefulWidget {
   const AgencyOperationsScreen({super.key});
 
   @override
-  State<AgencyOperationsScreen> createState() =>
-      _AgencyOperationsScreenState();
+  State<AgencyOperationsScreen> createState() => _AgencyOperationsScreenState();
 }
 
 class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
@@ -88,9 +87,7 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
   void _openTicketVerification(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const TicketVerificationScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const TicketVerificationScreen()),
     );
   }
 
@@ -119,11 +116,7 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF2F8FF),
-                    Color(0xFFF7FBFF),
-                    Color(0xFFF1FFF6),
-                  ],
+                  colors: [...AppColors.lightPageGradient],
                 ),
         ),
         child: SafeArea(
@@ -206,9 +199,9 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     _errorMessage!,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.error,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: AppColors.error),
                   ),
                 ],
               ],

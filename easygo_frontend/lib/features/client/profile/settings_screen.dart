@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/settings/app_settings_controller.dart';
 import '../../../../core/settings/app_settings_scope.dart';
@@ -70,7 +71,7 @@ class SettingsScreen extends StatelessWidget {
     return const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
-      colors: [Color(0xFFF2F8FF), Color(0xFFF7FBFF), Color(0xFFF1FFF6)],
+      colors: AppColors.lightPageGradient,
     );
   }
 

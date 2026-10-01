@@ -21,7 +21,9 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: colorScheme,
 
-      scaffoldBackgroundColor: const Color(0xFFF4F7FB),
+      // The visible canvas for the screens that let the Scaffold show through.
+      // Most screens paint [AppColors.lightPageGradient] over this themselves.
+      scaffoldBackgroundColor: AppColors.background,
 
       appBarTheme: const AppBarTheme(
         elevation: 0,
@@ -59,7 +61,7 @@ class AppTheme {
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.80),
+        fillColor: Colors.white.withValues(alpha: 0.90),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
@@ -76,6 +78,34 @@ class AppTheme {
           borderRadius: BorderRadius.circular(_defaultRadius),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.7),
         ),
+      ),
+
+      // Buttons carry the brand colour into the light theme. Without this the
+      // light screens were almost entirely white with a single blue button.
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: AppColors.primaryDark),
+      ),
+
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+        selectedColor: AppColors.primary.withValues(alpha: 0.16),
+        side: BorderSide(color: AppColors.border),
+        labelStyle: const TextStyle(
+          color: AppColors.primaryDark,
+          fontWeight: FontWeight.w600,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      ),
+
+      listTileTheme: ListTileThemeData(
+        iconColor: AppColors.primaryDark,
+        selectedTileColor: AppColors.primary.withValues(alpha: 0.08),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
 
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -104,8 +134,8 @@ class AppTheme {
 
       navigationBarTheme: NavigationBarThemeData(
         elevation: 0,
-        backgroundColor: Colors.white.withValues(alpha: 0.92),
-        indicatorColor: AppColors.primaryLight.withValues(alpha: 0.18),
+        backgroundColor: Colors.white.withValues(alpha: 0.96),
+        indicatorColor: AppColors.primaryLight.withValues(alpha: 0.24),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const TextStyle(
@@ -121,11 +151,11 @@ class AppTheme {
 
       cardTheme: CardThemeData(
         elevation: 0,
-        color: Colors.white.withValues(alpha: 0.82),
+        color: Colors.white.withValues(alpha: 0.94),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.75)),
+          side: const BorderSide(color: AppColors.cardBorder),
         ),
       ),
 

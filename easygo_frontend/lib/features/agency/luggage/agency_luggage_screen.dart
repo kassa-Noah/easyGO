@@ -123,11 +123,7 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
       borderRadius: 18,
       child: Column(
         children: [
-          Icon(
-            Icons.cloud_off_outlined,
-            color: AppColors.error,
-            size: 34,
-          ),
+          Icon(Icons.cloud_off_outlined, color: AppColors.error, size: 34),
           const SizedBox(height: 12),
           Text(
             _errorMessage ?? 'Unable to load luggage.',
@@ -222,11 +218,7 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF2F8FF),
-                    Color(0xFFF7FBFF),
-                    Color(0xFFF1FFF6),
-                  ],
+                  colors: [...AppColors.lightPageGradient],
                 ),
         ),
         child: SafeArea(

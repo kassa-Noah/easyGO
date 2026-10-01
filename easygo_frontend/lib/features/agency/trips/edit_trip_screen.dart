@@ -243,9 +243,7 @@ class _EditTripScreenState extends State<EditTripScreen> {
     final int arrivalMinutes = _minutesFromMidnight(_arrivalTime);
 
     if (arrivalMinutes <= departureMinutes) {
-      _showMessage(
-        'Arrival time must be after departure time.',
-      );
+      _showMessage('Arrival time must be after departure time.');
 
       return false;
     }
@@ -413,11 +411,7 @@ class _EditTripScreenState extends State<EditTripScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF2F8FF),
-                    Color(0xFFF7FBFF),
-                    Color(0xFFF1FFF6),
-                  ],
+                  colors: [...AppColors.lightPageGradient],
                 ),
         ),
         child: SafeArea(

@@ -231,9 +231,7 @@ class _AgencyConversationScreenState extends State<AgencyConversationScreen> {
         child: Column(
           children: [
             if (_isLoading)
-              const Expanded(
-                child: Center(child: CircularProgressIndicator()),
-              )
+              const Expanded(child: Center(child: CircularProgressIndicator()))
             else if (_errorMessage != null)
               Expanded(child: _buildError(context))
             else ...[
@@ -352,7 +350,7 @@ class _AgencyConversationScreenState extends State<AgencyConversationScreen> {
     return const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
-      colors: [Color(0xFFF2F8FF), Color(0xFFF7FBFF), Color(0xFFF1FFF6)],
+      colors: AppColors.lightPageGradient,
     );
   }
 

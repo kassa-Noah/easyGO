@@ -234,9 +234,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
     final int arrivalMinutes = _minutesFromMidnight(_arrivalTime!);
 
     if (arrivalMinutes <= departureMinutes) {
-      _showMessage(
-        'Arrival time must be after departure time.',
-      );
+      _showMessage('Arrival time must be after departure time.');
       return false;
     }
 
@@ -368,7 +366,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
             'Fare: $fare FCFA\n'
             'Seats: $seats\n\n'
             'The vehicle and its class are not set from this screen.',
-            ),
+          ),
           actions: [
             FilledButton(
               onPressed: () {
@@ -436,11 +434,7 @@ class _CreateTripScreenState extends State<CreateTripScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF2F8FF),
-                    Color(0xFFF7FBFF),
-                    Color(0xFFF1FFF6),
-                  ],
+                  colors: [...AppColors.lightPageGradient],
                 ),
         ),
         child: SafeArea(

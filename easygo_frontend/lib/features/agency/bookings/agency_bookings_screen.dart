@@ -90,9 +90,7 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
         'departureTime': _formatTime(booking.departureTime),
         'arrivalTime': _formatTime(booking.arrivalTime),
         'travelClass': booking.vehicleDescription ?? '—',
-        'bookingMode': booking.hasJourney
-            ? 'Door-to-Door'
-            : 'Interurban Only',
+        'bookingMode': booking.hasJourney ? 'Door-to-Door' : 'Interurban Only',
         'passengers': booking.numberOfSeats,
         'luggage': booking.luggageCount,
         'amount': booking.totalAmount.round(),
@@ -215,11 +213,7 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF2F8FF),
-                    Color(0xFFF7FBFF),
-                    Color(0xFFF1FFF6),
-                  ],
+                  colors: [...AppColors.lightPageGradient],
                 ),
         ),
         child: SafeArea(

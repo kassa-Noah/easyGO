@@ -232,11 +232,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFF2F8FF),
-                    Color(0xFFF7FBFF),
-                    Color(0xFFF1FFF6),
-                  ],
+                  colors: [...AppColors.lightPageGradient],
                 ),
         ),
         child: SafeArea(
@@ -517,9 +513,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        AppLocalizations.of(context).amountPayable,
-                      ),
+                      child: Text(AppLocalizations.of(context).amountPayable),
                     ),
                     Text(
                       '${_formatPrice(widget.payableAmount)} '
