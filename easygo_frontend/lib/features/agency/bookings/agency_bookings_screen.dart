@@ -213,7 +213,7 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [...AppColors.lightPageGradient],
+                  colors: [...AppColors.agencyPageGradient],
                 ),
         ),
         child: SafeArea(

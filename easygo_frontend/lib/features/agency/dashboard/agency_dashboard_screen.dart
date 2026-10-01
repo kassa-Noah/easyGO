@@ -217,7 +217,7 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
             : const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [...AppColors.lightPageGradient],
+                colors: [...AppColors.agencyPageGradient],
               ),
       ),
       child: SafeArea(
@@ -342,7 +342,7 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AppColors.primary, AppColors.primaryDark],
+              colors: [AppColors.agencyAccent, AppColors.agencyAccentDark],
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -367,7 +367,7 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
               Text(
                 _agency?.name ?? 'Transport Agency',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.primary,
+                  color: AppColors.agencyAccentDark,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -551,10 +551,10 @@ class _StatisticCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.10),
+              color: AppColors.agencyAccent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AppColors.primary, size: 21),
+            child: Icon(icon, color: AppColors.agencyAccent, size: 21),
           ),
           const SizedBox(height: 16),
           Text(
@@ -659,7 +659,7 @@ class _UpcomingTripCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.10),
+                  color: AppColors.agencyAccent.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -667,7 +667,7 @@ class _UpcomingTripCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
+                    color: AppColors.agencyAccentDark,
                   ),
                 ),
               ),
@@ -679,7 +679,7 @@ class _UpcomingTripCard extends StatelessWidget {
               const Icon(
                 Icons.schedule_outlined,
                 size: 17,
-                color: AppColors.primary,
+                color: AppColors.agencyAccent,
               ),
               const SizedBox(width: 7),
               Text(
@@ -712,7 +712,8 @@ class _UpcomingTripCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: occupancy,
               minHeight: 6,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.10),
+              color: AppColors.agencyAccent,
+              backgroundColor: AppColors.agencyAccent.withValues(alpha: 0.12),
             ),
           ),
         ],
@@ -745,10 +746,10 @@ class _ActivityRow extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.10),
+              color: AppColors.agencyAccent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(icon, size: 19, color: AppColors.primary),
+            child: Icon(icon, size: 19, color: AppColors.agencyAccent),
           ),
           const SizedBox(width: 11),
           Expanded(

@@ -116,7 +116,7 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [...AppColors.lightPageGradient],
+                  colors: [...AppColors.agencyPageGradient],
                 ),
         ),
         child: SafeArea(

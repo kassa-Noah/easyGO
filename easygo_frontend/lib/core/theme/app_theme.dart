@@ -7,7 +7,20 @@ class AppTheme {
 
   static const double _defaultRadius = 16;
 
-  static ThemeData get lightTheme {
+  /// The customer console's theme, which is also the app's default.
+  ///
+  /// Left as a plain getter so a theme can still be built without knowing
+  /// anything about sessions.
+  static ThemeData get lightTheme => lightThemeFor(AppColors.client);
+
+  /// The light theme painted in [accent].
+  ///
+  /// Only the chrome is re-coloured: the navigation bar, and the canvas behind
+  /// the screens that do not paint a wash of their own. Buttons, links and
+  /// focused fields stay on [AppColors.primary] in every console, because that
+  /// colour answers "what can I do here?" and the answer is the same in all
+  /// three.
+  static ThemeData lightThemeFor(ConsoleAccent accent) {
     final ColorScheme colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.light,
@@ -22,8 +35,11 @@ class AppTheme {
       colorScheme: colorScheme,
 
       // The visible canvas for the screens that let the Scaffold show through.
-      // Most screens paint [AppColors.lightPageGradient] over this themselves.
-      scaffoldBackgroundColor: AppColors.background,
+      // Most screens paint a page wash over this themselves; the admin console
+      // is the one that does not, so this is where its colour comes from - on
+      // every admin screen, including the pushed ones no console theme can
+      // reach.
+      scaffoldBackgroundColor: accent.canvas,
 
       appBarTheme: const AppBarTheme(
         elevation: 0,
@@ -132,16 +148,25 @@ class AppTheme {
         ),
       ),
 
+      // The nav bar is the one piece of chrome every console always shows, so
+      // it is what actually tells the reader which console they are in.
       navigationBarTheme: NavigationBarThemeData(
         elevation: 0,
         backgroundColor: Colors.white.withValues(alpha: 0.96),
-        indicatorColor: AppColors.primaryLight.withValues(alpha: 0.24),
+        indicatorColor: accent.light.withValues(alpha: 0.24),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          return IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? accent.base
+                : AppColors.textSecondary,
+          );
+        }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
+            return TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.primary,
+              color: accent.base,
             );
           }
 
@@ -166,7 +191,14 @@ class AppTheme {
     );
   }
 
-  static ThemeData get darkTheme {
+  static ThemeData get darkTheme => darkThemeFor(AppColors.client);
+
+  /// The dark theme painted in [accent].
+  ///
+  /// Only the navigation bar differs between consoles here. The dark canvas is
+  /// a deliberate near-black and stays the same in all three; tinting it per
+  /// console would cost more contrast than the distinction is worth.
+  static ThemeData darkThemeFor(ConsoleAccent accent) {
     const Color darkBackground = Color(0xFF09111F);
 
     const Color darkSurface = Color(0xFF111C2E);
@@ -281,13 +313,20 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         elevation: 0,
         backgroundColor: darkSurface.withValues(alpha: 0.94),
-        indicatorColor: AppColors.primary.withValues(alpha: 0.30),
+        indicatorColor: accent.base.withValues(alpha: 0.30),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          return IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? accent.light
+                : darkTextSecondary,
+          );
+        }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
+            return TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.primaryLight,
+              color: accent.light,
             );
           }
 

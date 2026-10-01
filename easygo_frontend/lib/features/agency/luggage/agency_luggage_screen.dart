@@ -218,7 +218,7 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [...AppColors.lightPageGradient],
+                  colors: [...AppColors.agencyPageGradient],
                 ),
         ),
         child: SafeArea(

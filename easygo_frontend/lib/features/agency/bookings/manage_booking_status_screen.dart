@@ -244,7 +244,7 @@ class _ManageBookingStatusScreenState extends State<ManageBookingStatusScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [...AppColors.lightPageGradient],
+                  colors: [...AppColors.agencyPageGradient],
                 ),
         ),
         child: SafeArea(

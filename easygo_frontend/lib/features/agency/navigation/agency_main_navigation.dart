@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../dashboard/agency_dashboard_screen.dart';
 import '../messages/agency_conversations_screen.dart';
@@ -55,34 +54,31 @@ class _AgencyMainNavigationState extends State<AgencyMainNavigation> {
           child: pages[_selectedIndex],
         ),
       ),
+      // The selected icon and label colours are not set here on purpose. They
+      // come from the theme, which the app paints in this console's accent, so
+      // that all three consoles get the same treatment from one place.
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: _selectPage,
         destinations: [
           NavigationDestination(
             icon: const Icon(Icons.dashboard_outlined),
-            selectedIcon: const Icon(Icons.dashboard, color: AppColors.primary),
+            selectedIcon: const Icon(Icons.dashboard),
             label: localizations.agencyDashboard,
           ),
           NavigationDestination(
             icon: const Icon(Icons.grid_view_outlined),
-            selectedIcon: const Icon(
-              Icons.grid_view_rounded,
-              color: AppColors.primary,
-            ),
+            selectedIcon: const Icon(Icons.grid_view_rounded),
             label: localizations.operations,
           ),
           NavigationDestination(
             icon: const Icon(Icons.chat_bubble_outline),
-            selectedIcon: const Icon(
-              Icons.chat_bubble,
-              color: AppColors.primary,
-            ),
+            selectedIcon: const Icon(Icons.chat_bubble),
             label: localizations.messages,
           ),
           NavigationDestination(
             icon: const Icon(Icons.business_outlined),
-            selectedIcon: const Icon(Icons.business, color: AppColors.primary),
+            selectedIcon: const Icon(Icons.business),
             label: localizations.profile,
           ),
         ],

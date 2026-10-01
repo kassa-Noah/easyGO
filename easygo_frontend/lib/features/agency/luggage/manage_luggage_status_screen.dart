@@ -269,7 +269,7 @@ class _ManageLuggageStatusScreenState extends State<ManageLuggageStatusScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [...AppColors.lightPageGradient],
+                  colors: [...AppColors.agencyPageGradient],
                 ),
         ),
         child: SafeArea(

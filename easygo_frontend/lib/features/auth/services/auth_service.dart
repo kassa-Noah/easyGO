@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/token_storage.dart';
@@ -12,6 +14,24 @@ class AuthService {
   final ApiClient _apiClient = ApiClient.instance;
 
   final TokenStorage _tokenStorage = TokenStorage.instance;
+
+  /// The role of the account whose token is stored, or null when signed out.
+  ///
+  /// The app listens to this so it can paint itself in that console's colours.
+  /// It is session state rather than a preference, which is why it lives here
+  /// and not in the settings controller: a setting outlives a session, and this
+  /// one must not — signing out has to take the colour with it.
+  final ValueNotifier<String?> signedInRole = ValueNotifier<String?>(null);
+
+  /// Records [user] as the account this session belongs to.
+  ///
+  /// Every path that leaves a token in the store goes through here, which is
+  /// the only reason the accent and the session cannot disagree.
+  AuthUser _rememberRole(AuthUser user) {
+    signedInRole.value = user.role;
+
+    return user;
+  }
 
   Future<AuthUser> login({
     required String email,
@@ -43,7 +63,7 @@ class AuthService {
 
     await _tokenStorage.saveToken(token);
 
-    return AuthUser.fromJson(Map<String, dynamic>.from(user));
+    return _rememberRole(AuthUser.fromJson(Map<String, dynamic>.from(user)));
   }
 
   Future<AuthUser> register({
@@ -82,10 +102,14 @@ class AuthService {
     if (token is String && token.isNotEmpty && nestedUser is Map) {
       await _tokenStorage.saveToken(token);
 
-      return AuthUser.fromJson(Map<String, dynamic>.from(nestedUser));
+      return _rememberRole(
+        AuthUser.fromJson(Map<String, dynamic>.from(nestedUser)),
+      );
     }
 
     if (nestedUser is Map) {
+      // Registered but not signed in, so there is no session to carry a
+      // console colour yet.
       return AuthUser.fromJson(Map<String, dynamic>.from(nestedUser));
     }
 
@@ -110,7 +134,7 @@ class AuthService {
       throw const ApiException(message: 'User information is missing.');
     }
 
-    return AuthUser.fromJson(Map<String, dynamic>.from(data));
+    return _rememberRole(AuthUser.fromJson(Map<String, dynamic>.from(data)));
   }
 
   Future<AuthUser> updateProfile({
@@ -201,6 +225,10 @@ class AuthService {
       // Only a rejection means the token is no good.
       if (error.statusCode == 401 || error.statusCode == 403) {
         await _tokenStorage.deleteToken();
+
+        // The token was refused, so the console the previous session was in is
+        // not this session's console.
+        signedInRole.value = null;
       }
 
       return null;
@@ -216,5 +244,9 @@ class AuthService {
     await PushService.instance.stop();
 
     await _tokenStorage.deleteToken();
+
+    // Last, so a rebuild triggered by this cannot see a token that is already
+    // gone and still paint the old console's colours.
+    signedInRole.value = null;
   }
 }

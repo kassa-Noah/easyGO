@@ -4,6 +4,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../auth/screens/login_screen.dart';
+import '../../auth/services/auth_service.dart';
 import '../models/agency_console.dart';
 import '../services/agency_console_service.dart';
 import 'agency_branches_screen.dart';
@@ -19,12 +21,16 @@ class AgencyProfileScreen extends StatefulWidget {
 class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
   final AgencyConsoleService _console = AgencyConsoleService.instance;
 
+  final AuthService _authService = AuthService.instance;
+
   Map<String, dynamic> _agency = <String, dynamic>{};
 
   List<ConsoleBranch> _branches = <ConsoleBranch>[];
 
   bool _isLoading = true;
   String? _errorMessage;
+
+  bool _isLoggingOut = false;
 
   @override
   void initState() {
@@ -124,6 +130,78 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
     }
   }
 
+  Future<void> _logout() async {
+    if (_isLoggingOut) {
+      return;
+    }
+
+    final AppLocalizations localizations = AppLocalizations.of(context);
+
+    final bool? shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(localizations.logout),
+          content: Text(localizations.logoutQuestion),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: Text(localizations.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: Text(
+                localizations.logout,
+                style: const TextStyle(color: AppColors.error),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout != true || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    try {
+      // Clears the token and releases this device from the agency's
+      // notifications, so the phone stops receiving them after the staff member
+      // has signed out.
+      await _authService.logout();
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _isLoggingOut = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to log out. Please try again.')),
+      );
+    }
+  }
+
   Widget _buildError(BuildContext context) {
     return GlassContainer(
       width: double.infinity,
@@ -187,7 +265,7 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
               : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [...AppColors.lightPageGradient],
+                  colors: [...AppColors.agencyPageGradient],
                 ),
         ),
         child: SafeArea(
@@ -227,12 +305,46 @@ class _AgencyProfileScreenState extends State<AgencyProfileScreen> {
                         ),
                       ),
                     ],
+
+                    // Rendered outside the loading and error branches on
+                    // purpose. Signing out is the way off a screen this account
+                    // may not be able to load, so a profile that fails to load
+                    // must not be able to trap the reader in the app.
+                    const SizedBox(height: 24),
+                    _buildLogout(context, localizations),
                   ],
                 ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLogout(
+    BuildContext context,
+    AppLocalizations localizations,
+  ) {
+    return GlassContainer(
+      width: double.infinity,
+      padding: EdgeInsets.zero,
+      borderRadius: 17,
+      child: ListTile(
+        onTap: _isLoggingOut ? null : _logout,
+        leading: const Icon(Icons.logout, color: AppColors.error),
+        title: Text(
+          localizations.logout,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(localizations.logoutSubtitle),
+        trailing: _isLoggingOut
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.chevron_right),
       ),
     );
   }

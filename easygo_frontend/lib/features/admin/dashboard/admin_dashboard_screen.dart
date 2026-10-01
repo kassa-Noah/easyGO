@@ -179,12 +179,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         width: 58,
                         height: 58,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.12),
+                          color: AppColors.adminAccent.withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(18),
                         ),
                         child: const Icon(
                           Icons.admin_panel_settings_outlined,
-                          color: AppColors.primary,
+                          color: AppColors.adminAccent,
                           size: 32,
                         ),
                       ),
@@ -245,7 +245,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(item.$3, color: AppColors.primary),
+                              Icon(item.$3, color: AppColors.adminAccent),
                               const Spacer(),
                               Text(
                                 item.$2,
@@ -365,7 +365,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     children: [
                       const Icon(
                         Icons.security_outlined,
-                        color: AppColors.primary,
+                        color: AppColors.adminAccent,
                       ),
                       const SizedBox(width: 12),
                       Expanded(child: Text(l.adminAuthorizationNotice)),
@@ -401,7 +401,7 @@ class _Action extends StatelessWidget {
       padding: EdgeInsets.zero,
       child: ListTile(
         onTap: onTap,
-        leading: Icon(icon, color: AppColors.primary),
+        leading: Icon(icon, color: AppColors.adminAccent),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.chevron_right),
@@ -423,7 +423,7 @@ class _Status extends StatelessWidget {
       width: 180,
       child: Row(
         children: [
-          Icon(icon, color: AppColors.primary),
+          Icon(icon, color: AppColors.adminAccent),
           const SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
