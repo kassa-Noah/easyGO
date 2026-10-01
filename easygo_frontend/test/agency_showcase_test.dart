@@ -155,7 +155,7 @@ void main() {
 
       await tester.pump();
 
-      expect(find.text('Douala → Yaounde'), findsOneWidget);
+      expect(find.textContaining('Douala → Yaounde'), findsOneWidget);
       expect(find.textContaining('5\u202F500 FCFA'), findsOneWidget);
     });
 

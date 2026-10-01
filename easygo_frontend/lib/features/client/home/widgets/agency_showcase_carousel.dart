@@ -51,8 +51,10 @@ class AgencyShowcaseCarousel extends StatefulWidget {
 class _AgencyShowcaseCarouselState extends State<AgencyShowcaseCarousel> {
   static const Duration _travel = Duration(milliseconds: 600);
 
-  /// Tall enough for a badge, a name, a tagline and a fare without crowding.
-  static const double _height = 214;
+  /// Deliberately short. This is a rail a reader passes on the way to the agency
+  /// list, not the destination, so it is tall enough for a badge, a name, a
+  /// tagline and a fare, and no taller.
+  static const double _height = 158;
 
   late final PageController _controller;
 
@@ -272,10 +274,10 @@ class _AgencyAdCard extends StatelessWidget {
     final String? logoUrl = agency.logoUrl?.trim();
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 5),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         clipBehavior: Clip.antiAlias,
         child: Ink(
           decoration: BoxDecoration(
@@ -308,7 +310,7 @@ class _AgencyAdCard extends StatelessWidget {
                 ),
 
                 Padding(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -343,9 +345,9 @@ class _AgencyAdCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 22,
+                          fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          letterSpacing: -0.4,
+                          letterSpacing: -0.3,
                         ),
                       ),
 
@@ -353,18 +355,18 @@ class _AgencyAdCard extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(
                           tagline,
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.86),
-                            fontSize: 12.5,
-                            height: 1.35,
+                            fontSize: 11.5,
+                            height: 1.3,
                           ),
                         ),
                       ],
 
                       if (offer case final AgencyRouteOffer route) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 9),
                         _FarePill(offer: route),
                       ],
                     ],
@@ -408,43 +410,28 @@ class _FarePill extends StatelessWidget {
     final String? duration = offer.formattedDuration;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          const Icon(Icons.alt_route_rounded, color: Colors.white, size: 16),
-          const SizedBox(width: 8),
+          const Icon(Icons.alt_route_rounded, color: Colors.white, size: 14),
+          const SizedBox(width: 7),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${offer.fromCity} → ${offer.toCity}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  duration == null
-                      ? offer.formattedFare
-                      : '${offer.formattedFare} · $duration',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 11,
-                  ),
-                ),
-              ],
+            // One line: the card is short, and two stacked lines spent height
+            // the route and the fare do not need.
+            child: Text(
+              '${offer.fromCity} → ${offer.toCity} · ${offer.formattedFare}'
+              '${duration == null ? '' : ' · $duration'}',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -470,17 +457,17 @@ class _Badge extends StatelessWidget {
     final String? url = logoUrl?.trim();
 
     return Container(
-      width: 46,
-      height: 46,
-      padding: const EdgeInsets.all(3),
+      width: 38,
+      height: 38,
+      padding: const EdgeInsets.all(2.5),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(13),
       ),
       child: url == null || url.isEmpty
           ? _monogram()
           : ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               child: Image.network(
                 url,
                 fit: BoxFit.cover,
@@ -499,9 +486,9 @@ class _Badge extends StatelessWidget {
         _initials(name),
         style: TextStyle(
           color: monogramColor,
-          fontSize: 16,
+          fontSize: 13.5,
           fontWeight: FontWeight.w800,
-          letterSpacing: 0.5,
+          letterSpacing: 0.4,
         ),
       ),
     );
