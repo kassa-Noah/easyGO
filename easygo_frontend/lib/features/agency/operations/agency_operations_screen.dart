@@ -6,6 +6,7 @@ import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../bookings/agency_bookings_screen.dart';
 import '../luggage/agency_luggage_screen.dart';
+import '../luggage/scan_luggage_screen.dart';
 import '../models/agency_console.dart';
 import '../parcels/agency_parcels_screen.dart';
 import '../services/agency_console_service.dart';
@@ -88,6 +89,13 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const TicketVerificationScreen()),
+    );
+  }
+
+  void _openScanLuggage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ScanLuggageScreen()),
     );
   }
 
@@ -272,6 +280,16 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
                   _openTicketVerification(context);
                 },
               ),
+              const SizedBox(height: 14),
+              _OperationCard(
+                icon: Icons.qr_code_2_outlined,
+                title: localizations.scanLuggage,
+                description: localizations.scanLuggageCardDescription,
+                color: AppColors.warning,
+                onTap: () {
+                  _openScanLuggage(context);
+                },
+              ),
             ],
           );
         }
@@ -327,6 +345,15 @@ class _AgencyOperationsScreenState extends State<AgencyOperationsScreen> {
               color: AppColors.secondary,
               onTap: () {
                 _openTicketVerification(context);
+              },
+            ),
+            _OperationCard(
+              icon: Icons.qr_code_2_outlined,
+              title: localizations.scanLuggage,
+              description: localizations.scanLuggageCardDescription,
+              color: AppColors.warning,
+              onTap: () {
+                _openScanLuggage(context);
               },
             ),
           ],

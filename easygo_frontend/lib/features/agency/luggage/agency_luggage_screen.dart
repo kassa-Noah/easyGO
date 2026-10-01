@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../models/agency_console.dart';
 import '../services/agency_console_service.dart';
 import 'agency_luggage_details_screen.dart';
+import 'scan_luggage_screen.dart';
 
 class AgencyLuggageScreen extends StatefulWidget {
   const AgencyLuggageScreen({super.key});
@@ -50,7 +52,7 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
       }
 
       setState(() {
-        _luggageItems = luggage.map(_toCard).toList();
+        _luggageItems = luggage.map(consoleLuggageToCard).toList();
         _isLoading = false;
       });
 
@@ -80,26 +82,19 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
     }
   }
 
-  /// Projects a console luggage record onto the keys the cards render.
-  Map<String, dynamic> _toCard(ConsoleLuggage luggage) {
-    final DateTime? departure = luggage.departureTime;
+  /// Opens the scanner, then re-reads the list.
+  ///
+  /// A scan ends on the status screen, which can move the bag along; the list
+  /// behind it would otherwise still show the status from before.
+  Future<void> _openScanner() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ScanLuggageScreen()),
+    );
 
-    return <String, dynamic>{
-      'id': luggage.id,
-      'bookingReference': dashIfEmpty(luggage.bookingReference),
-      'ticketReference': dashIfEmpty(luggage.ticketNumber),
-      'clientName': dashIfEmpty(luggage.passengerName),
-      'clientPhone': dashIfEmpty(luggage.passengerPhone),
-      'tripId': dashIfEmpty(luggage.tripId),
-      'departureCity': luggage.originCity,
-      'destinationCity': luggage.destinationCity,
-      'travelDate': departure == null ? '—' : formatConsoleDate(departure),
-      'departureTime': departure == null ? '—' : formatConsoleTime(departure),
-      'description': dashIfEmpty(luggage.description ?? luggage.trackingNumber),
-      'trackingNumber': luggage.trackingNumber,
-      'weight': dashIfNull(luggage.weightKg),
-      'status': luggage.statusLabel,
-    };
+    if (mounted) {
+      await _loadLuggage();
+    }
   }
 
   Future<void> _openDetails(Map<String, dynamic> luggage) async {
@@ -200,7 +195,16 @@ class _AgencyLuggageScreenState extends State<AgencyLuggageScreen> {
     final items = _filteredItems;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Traveler Luggage')),
+      appBar: AppBar(
+        title: const Text('Traveler Luggage'),
+        actions: [
+          IconButton(
+            tooltip: AppLocalizations.of(context).scanLuggage,
+            onPressed: _openScanner,
+            icon: const Icon(Icons.qr_code_2_outlined),
+          ),
+        ],
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,

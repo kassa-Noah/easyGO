@@ -75,6 +75,29 @@ class AgencyConsoleService {
     return _toLuggage(_extractList(response));
   }
 
+  /// One piece of luggage, found by the code printed on it.
+  ///
+  /// Returns null when this agency has no such bag. The backend answers the same
+  /// way for a number that does not exist and for a bag belonging to another
+  /// agency, so a scan cannot be used to find out what a competitor is carrying.
+  /// That also means there is no distinction left to make here.
+  Future<ConsoleLuggage?> findLuggage(String trackingNumber) async {
+    try {
+      final dynamic response = await _apiClient.get(
+        '/staff/luggage/${Uri.encodeComponent(trackingNumber)}',
+        authenticated: true,
+      );
+
+      return ConsoleLuggage.fromJson(_extractData(response));
+    } on ApiException catch (error) {
+      if (error.statusCode == 404) {
+        return null;
+      }
+
+      rethrow;
+    }
+  }
+
   Future<List<ConsoleParcel>> getParcels() async {
     final dynamic response = await _apiClient.get(
       '/staff/parcels',

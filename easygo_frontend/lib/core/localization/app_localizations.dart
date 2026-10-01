@@ -912,6 +912,10 @@ class AppLocalizations {
 
   String get trackLuggage => isFrench ? 'Suivre le bagage' : 'Track Luggage';
 
+  String get scanThisCodeAtTheCounter => isFrench
+      ? 'Présentez ce code au guichet. L’agence le scanne pour mettre à jour le suivi.'
+      : 'Show this code at the counter. The agency scans it to update the tracking status.';
+
   String get travelerLuggageInformation => isFrench
       ? 'Les bagages du voyageur sont liés à une réservation de voyage confirmée. Leur état opérationnel est mis à jour par l’agence de transport responsable.'
       : 'Traveler luggage is linked to a confirmed travel booking. Its operational status is updated by the responsible transport agency.';
@@ -1434,6 +1438,35 @@ class AppLocalizations {
       isFrench ? 'Voir les réservations' : 'View Bookings';
 
   String get manageLuggage => isFrench ? 'Gérer les bagages' : 'Manage Luggage';
+
+  String get scanLuggage =>
+      isFrench ? 'Scanner un bagage' : 'Scan Luggage';
+
+  String get scanLuggageCardDescription => isFrench
+      ? 'Scannez le code d’un bagage pour mettre à jour son suivi.'
+      : 'Scan a luggage code to update its tracking status.';
+
+  String get scanLuggageDescription => isFrench
+      ? 'Visez le code sur l’étiquette du bagage. Le numéro de suivi peut aussi être saisi à la main si le code est abîmé ou si la caméra n’est pas disponible.'
+      : 'Point the camera at the code on the luggage label. The tracking number can also be typed below, for a damaged code or a device with no camera.';
+
+  String get scanLuggageFrameHint => isFrench
+      ? 'Gardez le code dans le cadre'
+      : 'Keep the code inside the frame';
+
+  String get cameraUnavailable => isFrench
+      ? 'La caméra n’a pas pu démarrer. Saisissez le numéro de suivi ci-dessous.'
+      : 'The camera could not be started. Enter the tracking number below.';
+
+  String get noLuggageForScannedCode => isFrench
+      ? 'Aucun bagage portant ce code n’appartient à votre agence.'
+      : 'No luggage with that code belongs to your agency.';
+
+  String get findLuggage =>
+      isFrench ? 'Rechercher le bagage' : 'Find Luggage';
+
+  String get scanAnotherLuggage =>
+      isFrench ? 'Scanner un autre bagage' : 'Scan another luggage';
 
   String get clientMessages =>
       isFrench ? 'Messages des clients' : 'Client Messages';

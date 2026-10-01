@@ -848,3 +848,32 @@ Map<String, dynamic> consoleTripToCard(ConsoleTrip trip) {
     'status': tripStatusLabel(trip.status),
   };
 }
+
+/// Projects a console luggage record onto the keys the agency luggage screens
+/// render.
+///
+/// Defined once because three places need the same shape: the luggage list, the
+/// details screen it opens, and the scan screen, which reaches a bag by a
+/// completely different route. A bag found by scanning a code and the same bag
+/// found by scrolling the list have to look identical, and the only way to be
+/// sure of that is for both to be built here.
+Map<String, dynamic> consoleLuggageToCard(ConsoleLuggage luggage) {
+  final DateTime? departure = luggage.departureTime;
+
+  return <String, dynamic>{
+    'id': luggage.id,
+    'bookingReference': dashIfEmpty(luggage.bookingReference),
+    'ticketReference': dashIfEmpty(luggage.ticketNumber),
+    'clientName': dashIfEmpty(luggage.passengerName),
+    'clientPhone': dashIfEmpty(luggage.passengerPhone),
+    'tripId': dashIfEmpty(luggage.tripId),
+    'departureCity': luggage.originCity,
+    'destinationCity': luggage.destinationCity,
+    'travelDate': departure == null ? '—' : formatConsoleDate(departure),
+    'departureTime': departure == null ? '—' : formatConsoleTime(departure),
+    'description': dashIfEmpty(luggage.description ?? luggage.trackingNumber),
+    'trackingNumber': luggage.trackingNumber,
+    'weight': dashIfNull(luggage.weightKg),
+    'status': luggage.statusLabel,
+  };
+}

@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import {
+  findLuggage,
   getDashboard,
   getMyAgency,
   listBookings,
@@ -35,6 +36,10 @@ router.get("/trips", listTrips);
 router.get("/bookings", listBookings);
 
 router.get("/luggage", listLuggage);
+
+// The same read as the list above, narrowed to the one bag whose code was just
+// scanned at the counter.
+router.get("/luggage/:trackingNumber", findLuggage);
 
 router.get("/parcels", listParcels);
 

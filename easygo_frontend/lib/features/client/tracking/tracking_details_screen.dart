@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
@@ -138,6 +139,10 @@ class TrackingDetailsScreen extends StatelessWidget {
 
                       const SizedBox(height: 20),
 
+                      _buildCodeCard(context, l10n),
+
+                      const SizedBox(height: 20),
+
                       _buildProgressCard(context, l10n),
 
                       const SizedBox(height: 20),
@@ -214,6 +219,73 @@ class TrackingDetailsScreen extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The code the agency scans at the counter.
+  ///
+  /// The same text is written underneath it, because a code is no use to a
+  /// person reading the screen and no use at all if a camera will not focus. The
+  /// staff screen accepts either, so both are shown.
+  Widget _buildCodeCard(BuildContext context, AppLocalizations l10n) {
+    return GlassContainer(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      borderRadius: 18,
+      child: Column(
+        children: [
+          Text(
+            l10n.scanThisCodeAtTheCounter,
+            textAlign: TextAlign.center,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(height: 1.45),
+          ),
+
+          const SizedBox(height: 16),
+
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              // Always white behind the code, at any theme: a QR on a tinted or
+              // dark panel reads badly, and some scanners refuse the inverted
+              // contrast outright.
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.10)),
+            ),
+            child: QrImageView(
+              data: trackingReference,
+              version: QrVersions.auto,
+              size: 156,
+              backgroundColor: Colors.white,
+              errorStateBuilder: (context, error) {
+                return const SizedBox(
+                  width: 156,
+                  height: 156,
+                  child: Center(
+                    child: Icon(
+                      Icons.qr_code_2_rounded,
+                      size: 100,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          SelectableText(
+            trackingReference,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
             ),
           ),
         ],

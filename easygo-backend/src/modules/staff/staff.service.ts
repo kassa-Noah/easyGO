@@ -342,6 +342,44 @@ export const getAgencyBookings = async (
   });
 };
 
+/// The shape the agency console reads a piece of luggage in.
+///
+/// Shared by the list and by the scan lookup so that a bag found by scanning is
+/// the same object as the same bag found by scrolling. The console must not be
+/// able to tell which route it arrived by.
+const agencyLuggageInclude = {
+  booking: {
+    include: {
+      user: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+        },
+      },
+
+      trip: {
+        include: {
+          route: {
+            include: {
+              originBranch: true,
+              destinationBranch: true,
+            },
+          },
+        },
+      },
+    },
+  },
+
+  trackingEvents: {
+    orderBy: {
+      createdAt: "asc" as const,
+    },
+  },
+};
+
 export const getAgencyLuggage = async (
   agencyId: string
 ) => {
@@ -354,42 +392,36 @@ export const getAgencyLuggage = async (
       },
     },
 
-    include: {
-      booking: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              phone: true,
-            },
-          },
-
-          trip: {
-            include: {
-              route: {
-                include: {
-                  originBranch: true,
-                  destinationBranch: true,
-                },
-              },
-            },
-          },
-        },
-      },
-
-      trackingEvents: {
-        orderBy: {
-          createdAt: "asc",
-        },
-      },
-    },
+    include: agencyLuggageInclude,
 
     orderBy: {
       createdAt: "desc",
     },
+  });
+};
+
+/// One piece of luggage, found by the code printed on it.
+///
+/// The agency is part of the *where*, not a check applied afterwards, so another
+/// agency's bag is simply not found. That is the point: a scan must not become a
+/// way to discover what a competitor is carrying.
+///
+export const getAgencyLuggageByTrackingNumber = async (
+  agencyId: string,
+  trackingNumber: string
+) => {
+  return prisma.luggage.findFirst({
+    where: {
+      trackingNumber,
+
+      booking: {
+        trip: {
+          agencyId,
+        },
+      },
+    },
+
+    include: agencyLuggageInclude,
   });
 };
 
