@@ -9,6 +9,7 @@ import '../../agencies/services/agency_service.dart';
 import '../agencies/agency_details_screen.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../notifications/services/notification_service.dart';
+import 'widgets/agency_showcase_carousel.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   const ClientHomeScreen({super.key});
@@ -179,6 +180,17 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildHeader(l10n),
+
+                        const SizedBox(height: 20),
+
+                        // Driven by every loaded agency, not by
+                        // [agencies]. The strip is how a reader discovers what
+                        // is on the platform; narrowing it by whatever is typed
+                        // in the search box would hide the very thing it is for.
+                        AgencyShowcaseCarousel(
+                          agencies: _agencies,
+                          onOpen: _openAgency,
+                        ),
 
                         const SizedBox(height: 24),
 
