@@ -5,7 +5,9 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../agencies/models/agency.dart';
+import '../../agencies/models/agency_route_offer.dart';
 import '../../agencies/services/agency_service.dart';
+import '../../agencies/services/route_offer_service.dart';
 import '../agencies/agency_details_screen.dart';
 import '../../notifications/screens/notifications_screen.dart';
 import '../../notifications/services/notification_service.dart';
@@ -24,6 +26,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   final AgencyService _agencyService = AgencyService.instance;
 
   List<Agency> _agencies = [];
+
+  Map<String, AgencyRouteOffer> _routeOffers = <String, AgencyRouteOffer>{};
 
   int _unreadNotifications = 0;
 
@@ -55,6 +59,17 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     try {
       final List<Agency> agencies = await _agencyService.getAgencies();
 
+      // The advertising rail and the agency list are separate concerns: an
+      // agency with no route yet is still an agency, so a failure here costs the
+      // fares on the cards and nothing else.
+      Map<String, AgencyRouteOffer> offers = const <String, AgencyRouteOffer>{};
+
+      try {
+        offers = await RouteOfferService.instance.getOffersByAgency();
+      } on ApiException {
+        offers = const <String, AgencyRouteOffer>{};
+      }
+
       // The badge is decorative, so failing to read it must not stop the page
       // from rendering.
       int unread = 0;
@@ -71,6 +86,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
       setState(() {
         _agencies = agencies;
+        _routeOffers = offers;
         _unreadNotifications = unread;
         _isLoading = false;
       });
@@ -181,16 +197,25 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                       children: [
                         _buildHeader(l10n),
 
-                        const SizedBox(height: 20),
+                        // Hidden until there is something to advertise, so the
+                        // heading cannot sit over an empty rail.
+                        if (_agencies.isNotEmpty) ...[
+                          const SizedBox(height: 22),
 
-                        // Driven by every loaded agency, not by
-                        // [agencies]. The strip is how a reader discovers what
-                        // is on the platform; narrowing it by whatever is typed
-                        // in the search box would hide the very thing it is for.
-                        AgencyShowcaseCarousel(
-                          agencies: _agencies,
-                          onOpen: _openAgency,
-                        ),
+                          _buildShowcaseHeading(l10n),
+
+                          const SizedBox(height: 14),
+
+                          // Driven by every loaded agency, not by [agencies].
+                          // The rail is how a reader discovers what is on the
+                          // platform; narrowing it by whatever is typed in the
+                          // search box would hide the very thing it is for.
+                          AgencyShowcaseCarousel(
+                            agencies: _agencies,
+                            offers: _routeOffers,
+                            onOpen: _openAgency,
+                          ),
+                        ],
 
                         const SizedBox(height: 24),
 
@@ -355,6 +380,25 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               ),
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildShowcaseHeading(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.featuredAgencies,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          l10n.featuredAgenciesSubtitle,
+          style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
     );

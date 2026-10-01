@@ -61,6 +61,17 @@ class AppLocalizations {
   String get transportAgencies =>
       isFrench ? 'Agences de transport' : 'Transport Agencies';
 
+  /// Heading over the agency showcase at the top of the customer home.
+  ///
+  /// "Featured" and not "Sponsored": nothing is paid for here, these are simply
+  /// the agencies the platform serves.
+  String get featuredAgencies =>
+      isFrench ? 'Agences en vedette' : 'Featured Agencies';
+
+  String get featuredAgenciesSubtitle => isFrench
+      ? 'Les compagnies qui desservent le réseau easyGO.'
+      : 'The companies serving the easyGO network.';
+
   String get agencySectionDescription => isFrench
       ? 'Choisissez une agence et découvrez les services disponibles.'
       : 'Choose an agency and explore available services.';

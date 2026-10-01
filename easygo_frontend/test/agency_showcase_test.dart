@@ -1,4 +1,5 @@
 import 'package:easygo_frontend/features/agencies/models/agency.dart';
+import 'package:easygo_frontend/features/agencies/models/agency_route_offer.dart';
 import 'package:easygo_frontend/features/client/home/widgets/agency_showcase_carousel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -101,7 +102,7 @@ void main() {
       expect(_pageOf(tester), 0);
 
       // The dwell, then enough for the travel animation to finish.
-      await tester.pump(const Duration(seconds: 4));
+      await tester.pump(AgencyShowcaseCarousel.dwell);
       await tester.pump(const Duration(milliseconds: 800));
 
       expect(_pageOf(tester), 1);
@@ -134,6 +135,90 @@ void main() {
       // report a pending timer at teardown and fail this test.
       await tester.pump(const Duration(seconds: 12));
     });
+
+    testWidgets('a card advertises the route and fare it was given', (
+      tester,
+    ) async {
+      const AgencyRouteOffer offer = AgencyRouteOffer(
+        agencyId: finexsId,
+        fromCity: 'Douala',
+        toCity: 'Yaounde',
+        baseFare: 5500,
+      );
+
+      await tester.pumpWidget(
+        _wrap(
+          <Agency>[_agency(id: finexsId, name: 'Finexs Voyages')],
+          offers: <String, AgencyRouteOffer>{finexsId: offer},
+        ),
+      );
+
+      await tester.pump();
+
+      expect(find.text('Douala → Yaounde'), findsOneWidget);
+      expect(find.textContaining('5\u202F500 FCFA'), findsOneWidget);
+    });
+
+    testWidgets('an agency with no route still gets a card', (tester) async {
+      await tester.pumpWidget(
+        _wrap(<Agency>[_agency(id: finexsId, name: 'Finexs Voyages')]),
+      );
+
+      await tester.pump();
+
+      expect(find.text('Finexs Voyages'), findsOneWidget);
+      expect(find.textContaining('FCFA'), findsNothing);
+    });
+  });
+
+  group('AgencyRouteOffer', () {
+    // The shape the API actually returns — baseFare included as a string,
+    // because Prisma serialises Decimal columns that way.
+    Map<String, dynamic> payload({Object? fare = '6000'}) => <String, dynamic>{
+      'baseFare': fare,
+      'estimatedDurationMinutes': 285,
+      'originBranch': <String, dynamic>{
+        'agencyId': 'agency-1',
+        'city': 'Bafoussam',
+      },
+      'destinationBranch': <String, dynamic>{
+        'agencyId': 'agency-1',
+        'city': 'Yaounde',
+      },
+    };
+
+    test('reads a route whose fare arrives as a string', () {
+      final AgencyRouteOffer? offer = AgencyRouteOffer.fromJson(payload());
+
+      expect(offer, isNotNull);
+      expect(offer!.agencyId, 'agency-1');
+      expect(offer.fromCity, 'Bafoussam');
+      expect(offer.toCity, 'Yaounde');
+      expect(offer.baseFare, 6000);
+    });
+
+    test('writes a fare the way a price is written', () {
+      final AgencyRouteOffer? offer = AgencyRouteOffer.fromJson(
+        payload(fare: '5500'),
+      );
+
+      expect(offer!.formattedFare, '5\u202F500 FCFA');
+    });
+
+    test('describes the journey time', () {
+      final AgencyRouteOffer? offer = AgencyRouteOffer.fromJson(payload());
+
+      expect(offer!.formattedDuration, '4h 45min');
+    });
+
+    test('a route it cannot read costs one card, not the screen', () {
+      // Null rather than throwing, so one bad route cannot take out the home
+      // screen that is trying to advertise it.
+      expect(AgencyRouteOffer.fromJson(payload(fare: null)), isNull);
+      expect(AgencyRouteOffer.fromJson(payload(fare: '0')), isNull);
+      expect(AgencyRouteOffer.fromJson(payload(fare: 'not a price')), isNull);
+      expect(AgencyRouteOffer.fromJson(<String, dynamic>{}), isNull);
+    });
   });
 }
 
@@ -141,11 +226,16 @@ double? _pageOf(WidgetTester tester) {
   return tester.widget<PageView>(find.byType(PageView)).controller?.page;
 }
 
-Widget _wrap(List<Agency> agencies, {void Function(Agency agency)? onOpen}) {
+Widget _wrap(
+  List<Agency> agencies, {
+  Map<String, AgencyRouteOffer> offers = const <String, AgencyRouteOffer>{},
+  void Function(Agency agency)? onOpen,
+}) {
   return MaterialApp(
     home: Scaffold(
       body: AgencyShowcaseCarousel(
         agencies: agencies,
+        offers: offers,
         onOpen: onOpen ?? (Agency agency) {},
       ),
     ),

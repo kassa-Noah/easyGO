@@ -5,40 +5,54 @@ import 'dart:ui' show PathMetric;
 import 'package:flutter/material.dart';
 
 import '../../../agencies/models/agency.dart';
-
-/// A strip of agency posters that advances on its own.
+import '../../../agencies/models/agency_route_offer.dart';
+/// A rail of agency advertisements that advances on its own.
 ///
-/// Every agency on the platform gets a slide. An agency that has a logo shows
-/// it; one that does not gets a poster built from its own record — a colour
-/// derived from its id so it looks the same every time the reader sees it, its
-/// monogram, and the cities its branches are in.
+/// Every agency on the platform gets a card, showing what it is called, what it
+/// says about itself, where it goes and what that costs. The route and the fare
+/// come from the public route catalogue, so a card advertises something real
+/// rather than a name over a pretty picture.
 ///
-/// Nothing here invents a photograph. `logoUrl` has been on the agency record
-/// and in the API since the beginning but no agency has ever set one, so the
-/// generated poster is the branch that actually renders today; the image branch
-/// starts working the moment an agency uploads a logo, with no change here.
+/// Everything drawn here comes from the agency's own record: the colour from its
+/// id, the artwork from the same hash, the words from its description and its
+/// branches. There is no agency photography in this project and none is
+/// invented — an agency that has set a logo shows it as the badge, and one that
+/// has not gets its monogram. `logoUrl` has been on the record and in the API
+/// since the schema was written and no agency has ever set one, so the monogram
+/// is the branch that actually renders today.
 class AgencyShowcaseCarousel extends StatefulWidget {
   const AgencyShowcaseCarousel({
     super.key,
     required this.agencies,
+    required this.offers,
     required this.onOpen,
   });
 
   final List<Agency> agencies;
 
+  /// The route to advertise each agency with, keyed by agency id. An agency with
+  /// no entry simply advertises less.
+  final Map<String, AgencyRouteOffer> offers;
+
   final void Function(Agency agency) onOpen;
+
+  /// How long a card is held before the rail moves on. Long enough to read a
+  /// name, a route and a fare; short enough that a reader who is only watching
+  /// still sees the whole set without waiting.
+  ///
+  /// Public so a test can wait for exactly one advance instead of guessing at
+  /// it and silently passing when the pacing changes.
+  static const Duration dwell = Duration(seconds: 5);
 
   @override
   State<AgencyShowcaseCarousel> createState() => _AgencyShowcaseCarouselState();
 }
 
 class _AgencyShowcaseCarouselState extends State<AgencyShowcaseCarousel> {
-  /// How long a slide is held before the strip moves on. Long enough to read a
-  /// name and two city names, short enough that a reader who is only watching
-  /// sees the whole set without waiting.
-  static const Duration _dwell = Duration(seconds: 4);
-
   static const Duration _travel = Duration(milliseconds: 600);
+
+  /// Tall enough for a badge, a name, a tagline and a fare without crowding.
+  static const double _height = 214;
 
   late final PageController _controller;
 
@@ -52,13 +66,13 @@ class _AgencyShowcaseCarouselState extends State<AgencyShowcaseCarousel> {
   void initState() {
     super.initState();
 
-    // Always opens on the first agency. The strip reaches every other agency
+    // Always opens on the first agency. The rail reaches every other agency
     // within a few seconds anyway, and one that opened somewhere different on
     // each visit would be unpredictable without being any more alive.
-    _controller = PageController(viewportFraction: 0.86);
+    _controller = PageController(viewportFraction: 0.87);
 
     // Started here, not in didChangeDependencies: that only fires when the
-    // accessibility setting *changes*, so a strip whose first frame is already
+    // accessibility setting *changes*, so a rail whose first frame is already
     // correct would never have started at all.
     _restartTimer();
   }
@@ -67,8 +81,8 @@ class _AgencyShowcaseCarouselState extends State<AgencyShowcaseCarousel> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // A reader who has asked the system to reduce motion has asked for this,
-    // among everything else. The strip still works by hand.
+    // A reader who has asked the system to reduce motion has asked for this
+    // among everything else. The rail still works by hand.
     final bool reduceMotion = MediaQuery.of(context).disableAnimations;
 
     if (reduceMotion != _reduceMotion) {
@@ -109,12 +123,12 @@ class _AgencyShowcaseCarouselState extends State<AgencyShowcaseCarousel> {
     _timer?.cancel();
     _timer = null;
 
-    // One slide has nothing to advance to, and nothing to advance for.
+    // One card has nothing to advance to, and nothing to advance for.
     if (_reduceMotion || widget.agencies.length < 2) {
       return;
     }
 
-    _timer = Timer.periodic(_dwell, (_) {
+    _timer = Timer.periodic(AgencyShowcaseCarousel.dwell, (_) {
       _advance();
     });
   }
@@ -133,11 +147,11 @@ class _AgencyShowcaseCarouselState extends State<AgencyShowcaseCarousel> {
     );
   }
 
-  /// Holds the strip still while a finger is on it.
+  /// Holds the rail still while a finger is on it.
   ///
-  /// Auto-advancing under someone who is mid-swipe moves the page they were
-  /// reaching for. The dwell restarts on release, so a reader who lifts a
-  /// finger still gets a full pause before the next move.
+  /// Auto-advancing under someone who is mid-swipe moves the card they were
+  /// reaching for. The dwell restarts on release, so a reader who lifts a finger
+  /// still gets a full pause before the next move.
   bool _onScroll(ScrollNotification notification) {
     if (notification is ScrollStartNotification &&
         notification.dragDetails != null) {
@@ -159,7 +173,7 @@ class _AgencyShowcaseCarouselState extends State<AgencyShowcaseCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 168,
+          height: _height,
           child: NotificationListener<ScrollNotification>(
             onNotification: _onScroll,
             child: PageView.builder(
@@ -173,8 +187,9 @@ class _AgencyShowcaseCarouselState extends State<AgencyShowcaseCarousel> {
               itemBuilder: (context, index) {
                 final Agency agency = widget.agencies[index];
 
-                return _AgencyPoster(
+                return _AgencyAdCard(
                   agency: agency,
+                  offer: widget.offers[agency.id],
                   onTap: () {
                     widget.onOpen(agency);
                   },
@@ -201,6 +216,19 @@ class _Dots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ten agencies would be ten dots in a row on a phone. Past a handful they
+    // stop being a position and become a texture, so the rail falls back to a
+    // count instead.
+    if (count > 6) {
+      return Text(
+        '${current + 1} / $count',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.w600,
+        ),
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List<Widget>.generate(count, (int index) {
@@ -208,13 +236,13 @@ class _Dots extends StatelessWidget {
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: isCurrent ? 20 : 7,
-          height: 7,
+          margin: const EdgeInsets.symmetric(horizontal: 2.5),
+          width: isCurrent ? 18 : 6,
+          height: 6,
           decoration: BoxDecoration(
             color: isCurrent
                 ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                : Theme.of(context).colorScheme.primary.withValues(alpha: 0.24),
             borderRadius: BorderRadius.circular(999),
           ),
         );
@@ -223,20 +251,25 @@ class _Dots extends StatelessWidget {
   }
 }
 
-/// One agency, as a poster.
-class _AgencyPoster extends StatelessWidget {
-  const _AgencyPoster({required this.agency, required this.onTap});
+/// One agency, as an advertisement.
+class _AgencyAdCard extends StatelessWidget {
+  const _AgencyAdCard({
+    required this.agency,
+    required this.offer,
+    required this.onTap,
+  });
 
   final Agency agency;
+  final AgencyRouteOffer? offer;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final int seed = _fnv1a(agency.id);
+
     final List<Color> colors = agencyPosterColors(agency.id);
 
     final String? logoUrl = agency.logoUrl?.trim();
-
-    final bool hasLogo = logoUrl != null && logoUrl.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -257,30 +290,18 @@ class _AgencyPoster extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (hasLogo)
-                  Image.network(
-                    logoUrl,
-                    fit: BoxFit.cover,
-                    // A logo that will not load must not leave a blank card,
-                    // so the generated poster is already behind it.
-                    errorBuilder: (context, error, stackTrace) {
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                CustomPaint(painter: _TravelPosterPainter(seed)),
 
-                if (!hasLogo)
-                  CustomPaint(painter: const _RouteMotifPainter()),
-
-                // Text sits on a photograph and on a gradient alike, so both
-                // get the same scrim rather than two different layouts.
+                // Text sits on artwork, and a photograph would need the same, so
+                // both get the same scrim rather than two layouts.
                 DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withValues(alpha: 0.10),
-                        Colors.black.withValues(alpha: 0.55),
+                        Colors.black.withValues(alpha: 0.12),
+                        Colors.black.withValues(alpha: 0.58),
                       ],
                     ),
                   ),
@@ -293,12 +314,16 @@ class _AgencyPoster extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          _Monogram(name: agency.name, logoUrl: logoUrl),
+                          _Badge(
+                            name: agency.name,
+                            logoUrl: logoUrl,
+                            monogramColor: colors.last,
+                          ),
                           const Spacer(),
                           Container(
-                            padding: const EdgeInsets.all(6),
+                            padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.18),
+                              color: Colors.white.withValues(alpha: 0.20),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -318,64 +343,29 @@ class _AgencyPoster extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 21,
+                          fontSize: 22,
                           fontWeight: FontWeight.w800,
-                          letterSpacing: -0.3,
+                          letterSpacing: -0.4,
                         ),
                       ),
 
-                      if (_subtitle(agency) case final String subtitle) ...[
+                      if (_tagline(agency) case final String tagline) ...[
                         const SizedBox(height: 3),
                         Text(
-                          subtitle,
-                          maxLines: 1,
+                          tagline,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.88),
+                            color: Colors.white.withValues(alpha: 0.86),
                             fontSize: 12.5,
-                            height: 1.3,
+                            height: 1.35,
                           ),
                         ),
                       ],
 
-                      if (_cities(agency) case final List<String> cities
-                          when cities.isNotEmpty) ...[
-                        const SizedBox(height: 11),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: cities.map((String city) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 9,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.20),
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.place_outlined,
-                                    color: Colors.white,
-                                    size: 11,
-                                  ),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    city,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
+                      if (offer case final AgencyRouteOffer route) ...[
+                        const SizedBox(height: 12),
+                        _FarePill(offer: route),
                       ],
                     ],
                   ),
@@ -388,78 +378,128 @@ class _AgencyPoster extends StatelessWidget {
     );
   }
 
-  /// The line under the name: what the agency says about itself, or the shape
-  /// of its network when it has not said anything.
-  static String? _subtitle(Agency agency) {
+  /// The line under the name: what the agency says about itself, or the shape of
+  /// its network when it has not said anything.
+  static String? _tagline(Agency agency) {
     final String? description = agency.description?.trim();
 
     if (description != null && description.isNotEmpty) {
       return description;
     }
 
-    final int branches = agency.activeBranches.length;
+    final String cities = agency.cities;
 
-    if (branches == 0) {
-      return null;
-    }
-
-    return branches == 1 ? '1 branch' : '$branches branches';
-  }
-
-  /// The cities the agency actually has branches in — never a route it does not
-  /// serve, and never a city invented to fill the row.
-  ///
-  /// Taken from [Agency.cities] rather than re-derived, so the poster and the
-  /// agency list under it cannot disagree about where an agency operates.
-  static List<String> _cities(Agency agency) {
-    return agency.cities
-        .split(', ')
-        .where((String city) => city.isNotEmpty)
-        .take(3)
-        .toList();
+    return cities.isEmpty ? null : cities;
   }
 }
 
-class _Monogram extends StatelessWidget {
-  const _Monogram({required this.name, required this.logoUrl});
+/// The advertised route and what that route costs, as one readable strip.
+///
+/// The fare is the price of *this* route, not a "from" price, because that is
+/// what the platform actually stores. Writing "from" over a single known fare
+/// would invent a range that nothing supports.
+class _FarePill extends StatelessWidget {
+  const _FarePill({required this.offer});
+
+  final AgencyRouteOffer offer;
+
+  @override
+  Widget build(BuildContext context) {
+    final String? duration = offer.formattedDuration;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.alt_route_rounded, color: Colors.white, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${offer.fromCity} → ${offer.toCity}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  duration == null
+                      ? offer.formattedFare
+                      : '${offer.formattedFare} · $duration',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The agency's badge: its logo when it has one, its monogram when it does not.
+class _Badge extends StatelessWidget {
+  const _Badge({
+    required this.name,
+    required this.logoUrl,
+    required this.monogramColor,
+  });
 
   final String name;
   final String? logoUrl;
+  final Color monogramColor;
 
   @override
   Widget build(BuildContext context) {
     final String? url = logoUrl?.trim();
 
     return Container(
-      width: 44,
-      height: 44,
+      width: 46,
+      height: 46,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
       ),
       child: url == null || url.isEmpty
-          ? _letters()
+          ? _monogram()
           : ClipRRect(
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(12),
               child: Image.network(
                 url,
                 fit: BoxFit.cover,
+                // A logo that will not load must not leave a blank badge.
                 errorBuilder: (context, error, stackTrace) {
-                  return _letters();
+                  return _monogram();
                 },
               ),
             ),
     );
   }
 
-  Widget _letters() {
+  Widget _monogram() {
     return Center(
       child: Text(
         _initials(name),
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 15,
+        style: TextStyle(
+          color: monogramColor,
+          fontSize: 16,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.5,
         ),
@@ -468,7 +508,7 @@ class _Monogram extends StatelessWidget {
   }
 }
 
-/// Up to two letters from the agency's name, for the poster's badge.
+/// Up to two letters from the agency's name, for the card's badge.
 String _initials(String name) {
   final Iterable<String> words = name
       .split(RegExp(r'\s+'))
@@ -484,62 +524,6 @@ String _initials(String name) {
       .join();
 
   return letters.toUpperCase();
-}
-
-/// A dashed route with two stops, drawn behind the text on a generated poster.
-///
-/// It reads as travel without depicting any particular vehicle or place, which
-/// is the honest thing for an agency the app knows almost nothing about.
-class _RouteMotifPainter extends CustomPainter {
-  const _RouteMotifPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Offset start = Offset(size.width * 0.10, size.height * 0.72);
-    final Offset end = Offset(size.width * 0.92, size.height * 0.30);
-
-    final Path path = Path()
-      ..moveTo(start.dx, start.dy)
-      ..quadraticBezierTo(
-        size.width * 0.55,
-        size.height * 0.10,
-        end.dx,
-        end.dy,
-      );
-
-    final Paint dash = Paint()
-      ..color = Colors.white.withValues(alpha: 0.30)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-
-    _drawDashed(canvas, path, dash);
-
-    final Paint node = Paint()..color = Colors.white.withValues(alpha: 0.55);
-
-    canvas.drawCircle(end, 5, node);
-    canvas.drawCircle(start, 3.5, node);
-  }
-
-  void _drawDashed(Canvas canvas, Path path, Paint paint) {
-    const double dash = 7;
-    const double gap = 8;
-
-    for (final PathMetric metric in path.computeMetrics()) {
-      double distance = 0;
-
-      while (distance < metric.length) {
-        final double next = math.min(distance + dash, metric.length);
-
-        canvas.drawPath(metric.extractPath(distance, next), paint);
-
-        distance = next + gap;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_RouteMotifPainter oldDelegate) => false;
 }
 
 /// FNV-1a over the code units.
@@ -559,17 +543,17 @@ int _fnv1a(String value) {
   return hash;
 }
 
-/// The gradient an agency's generated poster is drawn in.
+/// The gradient an agency's generated card is drawn in.
 ///
 /// Derived from the agency's id rather than picked at random, so an agency keeps
-/// the same colour between visits — a poster that changed every time would be
+/// the same colour between visits — a card that changed every time would be
 /// decoration, not identity.
 ///
 /// The hue is spread around the whole wheel rather than drawn from a short list
 /// of palettes. A list is what made two agencies wear the same colour: with six
 /// entries that was arithmetic, not bad luck, and both seeded agencies landed on
 /// the same one twice over. Saturation and lightness are fixed, so every hue
-/// still produces a poster dark enough for the white text on it.
+/// still produces a card dark enough for the white text on it.
 List<Color> agencyPosterColors(String agencyId) {
   final double hue = (_fnv1a(agencyId) % 360).toDouble();
 
@@ -577,4 +561,92 @@ List<Color> agencyPosterColors(String agencyId) {
     HSLColor.fromAHSL(1, hue, 0.60, 0.30).toColor(),
     HSLColor.fromAHSL(1, (hue + 20) % 360, 0.66, 0.19).toColor(),
   ];
+}
+
+/// A travel poster: two ranges of hills with a dashed route running across them.
+///
+/// Drawn rather than photographed. It says "travel" without depicting a vehicle
+/// or a place this app knows nothing about, it scales cleanly, and it works with
+/// no network at all. Both the hill line and the route are moved by [seed], so
+/// two agencies that end up with similar colours still do not look like the same
+/// card.
+class _TravelPosterPainter extends CustomPainter {
+  const _TravelPosterPainter(this.seed);
+
+  final int seed;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _hill(canvas, size, base: 0.74, crest: 0.16 + (seed % 6) * 0.05, alpha: 0.09);
+
+    _hill(canvas, size, base: 0.88, crest: 0.44 + (seed % 4) * 0.06, alpha: 0.14);
+
+    _route(canvas, size);
+  }
+
+  /// One range of hills, as a single hump across the width.
+  void _hill(
+    Canvas canvas,
+    Size size, {
+    required double base,
+    required double crest,
+    required double alpha,
+  }) {
+    final double floor = size.height * base;
+
+    final Path path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(0, floor)
+      ..quadraticBezierTo(
+        size.width * crest,
+        size.height * (base - 0.34),
+        size.width,
+        floor,
+      )
+      ..lineTo(size.width, size.height)
+      ..close();
+
+    canvas.drawPath(path, Paint()..color = Colors.white.withValues(alpha: alpha));
+  }
+
+  /// A dashed route with a stop at each end.
+  void _route(Canvas canvas, Size size) {
+    final Offset start = Offset(size.width * 0.14, size.height * 0.62);
+    final Offset end = Offset(size.width * 0.86, size.height * 0.24);
+
+    final Path path = Path()
+      ..moveTo(start.dx, start.dy)
+      ..quadraticBezierTo(size.width * 0.50, size.height * 0.28, end.dx, end.dy);
+
+    final Paint dash = Paint()
+      ..color = Colors.white.withValues(alpha: 0.30)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+
+    const double dashLength = 7;
+    const double gap = 8;
+
+    for (final PathMetric metric in path.computeMetrics()) {
+      double distance = 0;
+
+      while (distance < metric.length) {
+        final double next = math.min(distance + dashLength, metric.length);
+
+        canvas.drawPath(metric.extractPath(distance, next), dash);
+
+        distance = next + gap;
+      }
+    }
+
+    final Paint node = Paint()..color = Colors.white.withValues(alpha: 0.60);
+
+    canvas.drawCircle(end, 5, node);
+    canvas.drawCircle(start, 3.5, node);
+  }
+
+  @override
+  bool shouldRepaint(_TravelPosterPainter oldDelegate) {
+    return oldDelegate.seed != seed;
+  }
 }
