@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
@@ -208,10 +210,7 @@ class _MyParcelsScreenState extends State<MyParcelsScreen> {
                       const SizedBox(height: 16),
 
                       if (_isLoading) ...[
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
+                        const SkeletonList(rows: 3),
                       ] else if (_errorMessage != null) ...[
                         _buildError(context),
                       ] else if (_parcels.isEmpty) ...[

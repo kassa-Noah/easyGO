@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/branch_map.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../../../shared/widgets/optional_hero.dart';
 import '../../agencies/models/agency.dart';
 import '../../reviews/widgets/agency_reviews_section.dart';
 import '../booking/booking_mode_screen.dart';
@@ -12,7 +13,23 @@ import 'agency_conversation_screen.dart';
 class AgencyDetailsScreen extends StatelessWidget {
   final Agency agency;
 
-  const AgencyDetailsScreen({super.key, required this.agency});
+  /// The tag of the [Hero] that carries the agency's avatar from the card the
+  /// reader tapped to the avatar below.
+  ///
+  /// Handed in rather than derived from [agency], because two different cards
+  /// can open the same agency: the advertising rail at the top of the home
+  /// screen and the list underneath it. Two [Hero]s sharing a tag inside one
+  /// tree is an error, so each card names its own flight.
+  final String? heroTag;
+
+  const AgencyDetailsScreen({super.key, required this.agency, this.heroTag});
+
+  /// The [Hero] tag for an agency avatar, unique to the card that raised it.
+  ///
+  /// Kept next to the avatar that receives it, so the card that sends and the
+  /// screen that lands cannot disagree about the name of the flight.
+  static String avatarTag(String card, String agencyId) =>
+      'agency-avatar-$card-$agencyId';
 
   @override
   Widget build(BuildContext context) {
@@ -121,17 +138,22 @@ class AgencyDetailsScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 82,
-            height: 82,
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.directions_bus_rounded,
-              size: 45,
-              color: AppColors.primary,
+          // The same tile the home cards draw, so tapping a card grows its
+          // avatar into this one instead of the screen simply appearing.
+          OptionalHero(
+            tag: heroTag,
+            child: Container(
+              width: 82,
+              height: 82,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Icon(
+                Icons.directions_bus_rounded,
+                size: 45,
+                color: AppColors.primary,
+              ),
             ),
           ),
 
@@ -373,7 +395,10 @@ class AgencyDetailsScreen extends StatelessWidget {
       showDragHandle: true,
       builder: (sheetContext) {
         return SafeArea(
-          child: Padding(
+          // The sheet is capped at a fraction of the screen and the content is
+          // taller than that on a short one, which used to clip the button at
+          // the bottom. A scroll view lets it be reached instead.
+          child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -443,7 +468,9 @@ class AgencyDetailsScreen extends StatelessWidget {
       showDragHandle: true,
       builder: (sheetContext) {
         return SafeArea(
-          child: Padding(
+          // Scrolling, for the same reason as the other sheets here: the branch
+          // list grows with the agency and the sheet does not.
+          child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -642,7 +669,9 @@ class AgencyDetailsScreen extends StatelessWidget {
       showDragHandle: true,
       builder: (sheetContext) {
         return SafeArea(
-          child: Padding(
+          // An agency with an email and a phone is already taller than the sheet
+          // allows; this one was clipping its Close button.
+          child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,

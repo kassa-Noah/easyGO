@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
@@ -235,10 +237,7 @@ class _AgencyDashboardScreenState extends State<AgencyDashboardScreen> {
                         _buildHeader(context),
                         const SizedBox(height: 26),
                         if (_isLoading) ...[
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 60),
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
+                          const SkeletonList(rows: 2, height: 150),
                         ] else if (_errorMessage != null) ...[
                           _buildError(context),
                         ] else ...[

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
@@ -232,10 +234,7 @@ class _AgencyBookingsScreenState extends State<AgencyBookingsScreen> {
                       _buildFilters(),
                       const SizedBox(height: 20),
                       if (_isLoading)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 50),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
+                          const SkeletonList(rows: 3)
                       else if (_errorMessage != null)
                         _buildError(context)
                       else

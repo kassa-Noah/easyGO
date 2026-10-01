@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../agencies/models/agency.dart';
 import '../../../agencies/models/agency_route_offer.dart';
+import '../../../client/agencies/agency_details_screen.dart';
 /// A rail of agency advertisements that advances on its own.
 ///
 /// Every agency on the platform gets a card, showing what it is called, what it
@@ -43,6 +44,15 @@ class AgencyShowcaseCarousel extends StatefulWidget {
   /// Public so a test can wait for exactly one advance instead of guessing at
   /// it and silently passing when the pacing changes.
   static const Duration dwell = Duration(seconds: 5);
+
+  /// Names this rail as the source of an agency avatar flight.
+  ///
+  /// The screen that receives the flight is opened from the list below this
+  /// rail as well, and two [Hero]s in one tree cannot share a tag, so each
+  /// source needs its own name. Kept here so the card that raises the avatar
+  /// and the code that opens the screen cannot disagree about it — a mismatch
+  /// is silent, and the flight simply stops happening.
+  static const String heroCard = 'rail';
 
   @override
   State<AgencyShowcaseCarousel> createState() => _AgencyShowcaseCarouselState();
@@ -316,10 +326,19 @@ class _AgencyAdCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          _Badge(
-                            name: agency.name,
-                            logoUrl: logoUrl,
-                            monogramColor: colors.last,
+                          // The badge the details screen grows its own avatar
+                          // out of. The tag comes from that screen so the two
+                          // ends of the flight cannot drift apart.
+                          Hero(
+                            tag: AgencyDetailsScreen.avatarTag(
+                              AgencyShowcaseCarousel.heroCard,
+                              agency.id,
+                            ),
+                            child: _Badge(
+                              name: agency.name,
+                              logoUrl: logoUrl,
+                              monogramColor: colors.last,
+                            ),
                           ),
                           const Spacer(),
                           Container(

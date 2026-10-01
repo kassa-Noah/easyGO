@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
@@ -240,7 +242,10 @@ class _TripResultsScreenState extends State<TripResultsScreen> {
 
   Widget _buildContent(BuildContext context, AppLocalizations l10n) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: SkeletonList(rows: 2, height: 140),
+      );
     }
 
     if (_errorMessage != null) {

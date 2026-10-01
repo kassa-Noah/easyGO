@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/app_colors.dart';
-
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -62,8 +60,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Read from the theme: the auth screens are the first thing anyone sees,
+    // and they used to be hardcoded light.
+    final ColorScheme colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -79,36 +81,36 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withValues(alpha: 0.15),
+                    color: colors.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.lock_reset_outlined,
                     size: 32,
-                    color: AppColors.primary,
+                    color: colors.primary,
                   ),
                 ),
 
                 const SizedBox(height: 28),
 
-                const Text(
+                Text(
                   'Forgot your password?',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: colors.onSurface,
                   ),
                 ),
 
                 const SizedBox(height: 10),
 
-                const Text(
+                Text(
                   'Enter the email address linked to your easyGO account. A platform '
                   'administrator uses it to find the account and set a new password.',
                   style: TextStyle(
                     fontSize: 15,
                     height: 1.5,
-                    color: AppColors.textSecondary,
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
 
@@ -117,21 +119,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withValues(alpha: 0.10),
+                    color: colors.primary.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: AppColors.primaryLight.withValues(alpha: 0.25),
+                      color: colors.primary.withValues(alpha: 0.25),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
                         Icons.info_outline,
                         size: 20,
-                        color: AppColors.primary,
+                        color: colors.primary,
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'easyGO cannot reset a password for you yet, so no reset '
@@ -139,7 +141,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.45,
-                            color: AppColors.textSecondary,
+                            color: colors.onSurfaceVariant,
                           ),
                         ),
                       ),

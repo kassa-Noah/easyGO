@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_exception.dart';
 import '../services/auth_service.dart';
 
@@ -107,8 +105,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Read from the theme, so a reader in dark mode does not get a white form
+    // with dark fields sitting on it.
+    final ColorScheme colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -118,22 +120,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Create your account',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: colors.onSurface,
                   ),
                 ),
 
                 const SizedBox(height: 8),
 
-                const Text(
+                Text(
                   'Join easyGO and manage your interurban journeys with ease.',
                   style: TextStyle(
                     fontSize: 15,
-                    color: AppColors.textSecondary,
+                    color: colors.onSurfaceVariant,
                   ),
                 ),
 
@@ -335,9 +337,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Already have an account?',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: colors.onSurfaceVariant),
                     ),
                     TextButton(
                       onPressed: _isLoading

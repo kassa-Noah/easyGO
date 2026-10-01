@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_exception.dart';
@@ -443,7 +445,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const SkeletonList(rows: 5, height: 88)
                   : _errorMessage != null
                   ? _buildErrorState()
                   : notifications.isEmpty

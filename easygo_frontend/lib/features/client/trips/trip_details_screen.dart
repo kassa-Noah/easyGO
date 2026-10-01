@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../../../shared/widgets/optional_hero.dart';
 import '../../bookings/models/booking.dart';
 import '../../bookings/services/booking_service.dart';
 import '../../journeys/models/journey.dart';
@@ -15,7 +16,16 @@ import 'booking_luggage_screen.dart';
 class TripDetailsScreen extends StatefulWidget {
   final Booking booking;
 
-  const TripDetailsScreen({super.key, required this.booking});
+  /// The tag of the [Hero] that carries the bus tile from the booking card the
+  /// reader tapped to the tile in the header below. Null when this screen was
+  /// opened from somewhere that raised nothing.
+  final String? heroTag;
+
+  const TripDetailsScreen({super.key, required this.booking, this.heroTag});
+
+  /// The [Hero] tag for a booking tile, unique to the card that raised it.
+  static String tileTag(String card, String bookingReference) =>
+      'booking-tile-$card-$bookingReference';
 
   @override
   State<TripDetailsScreen> createState() => _TripDetailsScreenState();
@@ -432,6 +442,26 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
         children: [
           Row(
             children: [
+              // The tile the booking card drew, so tapping a booking grows its
+              // icon into this header rather than cutting to a new page.
+              OptionalHero(
+                tag: widget.heroTag,
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.20),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: const Icon(
+                    Icons.directions_bus_rounded,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
               Expanded(
                 child: Text(
                   _booking.agencyName.isEmpty
@@ -444,6 +474,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   ),
                 ),
               ),
+
               _HeaderStatusBadge(label: l10n.tripStatusLabel(_displayStatus)),
             ],
           ),

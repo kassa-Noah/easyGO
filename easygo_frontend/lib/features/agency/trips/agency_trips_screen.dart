@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../shared/widgets/glass_container.dart';
@@ -184,10 +186,7 @@ class _AgencyTripsScreenState extends State<AgencyTripsScreen> {
                       _buildCreateAction(context),
                       const SizedBox(height: 18),
                       if (_isLoading)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 40),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
+                          const SkeletonList(rows: 3)
                       else if (_errorMessage != null)
                         _buildError(context)
                       else ...[

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_exception.dart';
@@ -153,10 +155,7 @@ class _AdminAgenciesScreenState extends State<AdminAgenciesScreen> {
           ),
           const SizedBox(height: 18),
           if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 50),
-              child: Center(child: CircularProgressIndicator()),
-            )
+            const SkeletonList(rows: 3)
           else if (_errorMessage != null)
             _buildMessage(
               context,

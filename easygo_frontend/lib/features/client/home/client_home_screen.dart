@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
@@ -156,11 +158,20 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
     }
   }
 
-  void _openAgency(Agency agency) {
+  /// Opens an agency, growing the avatar the reader tapped into the one on the
+  /// details screen.
+  ///
+  /// [card] names which card was tapped. The rail and the list below it both
+  /// open the same agency, and two [Hero]s sharing a tag inside one tree is an
+  /// error, so the tag has to come from the card rather than from the agency.
+  void _openAgency(Agency agency, String card) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => AgencyDetailsScreen(agency: agency),
+        builder: (context) => AgencyDetailsScreen(
+          agency: agency,
+          heroTag: AgencyDetailsScreen.avatarTag(card, agency.id),
+        ),
       ),
     );
   }
@@ -213,7 +224,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                           AgencyShowcaseCarousel(
                             agencies: _agencies,
                             offers: _routeOffers,
-                            onOpen: _openAgency,
+                            onOpen: (Agency agency) =>
+                                _openAgency(agency, AgencyShowcaseCarousel.heroCard),
                           ),
                         ],
 
@@ -256,10 +268,10 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 ),
 
                 if (_isLoading)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 60, bottom: 60),
-                      child: Center(child: CircularProgressIndicator()),
+                  const SliverPadding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverToBoxAdapter(
+                      child: SkeletonList(rows: 4, height: 104),
                     ),
                   )
                 else if (_errorMessage != null)
@@ -279,7 +291,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                           child: _AgencyCard(
                             agency: agency,
                             onTap: () {
-                              _openAgency(agency);
+                              _openAgency(agency, _listCardSource);
                             },
                           ),
                         );
@@ -553,6 +565,14 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 }
 
+/// The hero source used by [_AgencyCard] and by the code that opens an agency
+/// from the list.
+///
+/// File-level rather than a member, because the card and the tap handler that
+/// opens the details screen are two different classes, and a mismatched tag is
+/// silent: the avatar simply stops growing into the details header.
+const String _listCardSource = 'list';
+
 class _AgencyCard extends StatelessWidget {
   final Agency agency;
   final VoidCallback onTap;
@@ -575,17 +595,25 @@ class _AgencyCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 62,
-                  height: 62,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
+                // Raised so the details screen can grow it into its own
+                // larger avatar instead of cutting to a new page.
+                Hero(
+                  tag: AgencyDetailsScreen.avatarTag(
+                    _listCardSource,
+                    agency.id,
                   ),
-                  child: const Icon(
-                    Icons.directions_bus_rounded,
-                    size: 34,
-                    color: AppColors.primary,
+                  child: Container(
+                    width: 62,
+                    height: 62,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.directions_bus_rounded,
+                      size: 34,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
 

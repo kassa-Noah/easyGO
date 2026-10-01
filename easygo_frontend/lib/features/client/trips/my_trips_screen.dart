@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../shared/widgets/glass_container.dart';
@@ -232,7 +234,10 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
 
   Widget _buildBody(BuildContext context, AppLocalizations l10n) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: SkeletonList(rows: 3, height: 124),
+      );
     }
 
     if (_errorMessage != null) {
@@ -338,6 +343,11 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
     );
   }
 
+  /// This screen's own name as the source of a booking tile flight, paired with
+  /// the header tile in [TripDetailsScreen]. A mismatch between the two is
+  /// silent — the tile just stops growing into the header.
+  static const String _listCard = 'list';
+
   Widget _buildBookingCard(
     BuildContext context,
     Booking booking,
@@ -353,7 +363,13 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
         await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TripDetailsScreen(booking: booking),
+            builder: (context) => TripDetailsScreen(
+              booking: booking,
+              heroTag: TripDetailsScreen.tileTag(
+                _listCard,
+                booking.bookingReference,
+              ),
+            ),
           ),
         );
 
@@ -369,16 +385,24 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(13),
+                // Raised so the details screen can grow it into the tile in its
+                // header instead of cutting to a new page.
+                Hero(
+                  tag: TripDetailsScreen.tileTag(
+                    _listCard,
+                    booking.bookingReference,
                   ),
-                  child: const Icon(
-                    Icons.directions_bus_outlined,
-                    color: AppColors.primary,
+                  child: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: const Icon(
+                      Icons.directions_bus_outlined,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),

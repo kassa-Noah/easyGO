@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/widgets/skeleton.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/network/api_exception.dart';
@@ -405,10 +407,7 @@ class _ClientProfileScreenState extends State<ClientProfileScreen> {
   }
 
   Widget _buildLoadingProfile() {
-    return const SizedBox(
-      height: 130,
-      child: Center(child: CircularProgressIndicator()),
-    );
+    return const SkeletonList(rows: 1, height: 130);
   }
 
   Widget _buildProfileError() {

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_assets.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/navigation/app_navigator.dart';
 import '../../../core/push/push_service.dart';
@@ -109,8 +108,12 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // The first frame of the app, so it follows the theme. It used to be
+    // hardcoded white, which meant a bright flash before a dark app.
+    final ColorScheme colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -138,35 +141,35 @@ class _SplashScreenState extends State<SplashScreen> {
 
                         const SizedBox(height: 24),
 
-                        const Text(
+                        Text(
                           AppStrings.appName,
                           style: TextStyle(
                             fontSize: 38,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: colors.primary,
                           ),
                         ),
 
                         const SizedBox(height: 8),
 
-                        const Text(
+                        Text(
                           AppStrings.tagline,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 15,
-                            color: AppColors.textSecondary,
+                            color: colors.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
 
                         const SizedBox(height: 48),
 
-                        const SizedBox(
+                        SizedBox(
                           width: 28,
                           height: 28,
                           child: CircularProgressIndicator(
                             strokeWidth: 3,
-                            color: AppColors.secondary,
+                            color: colors.secondary,
                           ),
                         ),
                       ],

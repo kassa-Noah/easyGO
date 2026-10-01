@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
 import 'login_screen.dart';
 
@@ -9,8 +7,12 @@ class OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Read from the theme. Onboarding is the first screen a new reader sees,
+    // and it used to be hardcoded light.
+    final ColorScheme colors = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -29,20 +31,20 @@ class OnboardingScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
+                            Text(
                               'easy',
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
+                                color: colors.primary,
                               ),
                             ),
-                            const Text(
+                            Text(
                               'GO',
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.secondary,
+                                color: colors.secondary,
                               ),
                             ),
                           ],
@@ -55,7 +57,7 @@ class OnboardingScreen extends StatelessWidget {
                           width: 180,
                           height: 180,
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: colors.surface,
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -65,13 +67,13 @@ class OnboardingScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          child: const Stack(
+                          child: Stack(
                             alignment: Alignment.center,
                             children: [
                               Icon(
                                 Icons.route_rounded,
                                 size: 110,
-                                color: AppColors.primaryLight,
+                                color: colors.primary.withValues(alpha: 0.35),
                               ),
                               Positioned(
                                 top: 32,
@@ -79,7 +81,7 @@ class OnboardingScreen extends StatelessWidget {
                                 child: Icon(
                                   Icons.location_on,
                                   size: 45,
-                                  color: AppColors.secondary,
+                                  color: colors.secondary,
                                 ),
                               ),
                               Positioned(
@@ -88,7 +90,7 @@ class OnboardingScreen extends StatelessWidget {
                                 child: Icon(
                                   Icons.directions_bus_rounded,
                                   size: 45,
-                                  color: AppColors.primary,
+                                  color: colors.primary,
                                 ),
                               ),
                             ],
@@ -97,20 +99,20 @@ class OnboardingScreen extends StatelessWidget {
 
                         const SizedBox(height: 42),
 
-                        const Text(
+                        Text(
                           'Your complete interurban journey',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 27,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: colors.onSurface,
                             height: 1.2,
                           ),
                         ),
 
                         const SizedBox(height: 16),
 
-                        const Text(
+                        Text(
                           'Discover transport agencies, book your journey, '
                           'travel door-to-door and track your luggage or parcels '
                           'with ease.',
@@ -118,7 +120,7 @@ class OnboardingScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 15,
                             height: 1.6,
-                            color: AppColors.textSecondary,
+                            color: colors.onSurfaceVariant,
                           ),
                         ),
 
@@ -168,12 +170,12 @@ class OnboardingScreen extends StatelessWidget {
 
                         const SizedBox(height: 16),
 
-                        const Text(
+                        Text(
                           AppStrings.tagline,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textSecondary,
+                            color: colors.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -203,19 +205,23 @@ class _FeatureItem extends StatelessWidget {
           width: 52,
           height: 52,
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.border),
+            border: Border.all(color: Theme.of(context).dividerTheme.color!),
           ),
-          child: Icon(icon, color: AppColors.primary, size: 27),
+          child: Icon(
+            icon,
+            color: Theme.of(context).colorScheme.primary,
+            size: 27,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
